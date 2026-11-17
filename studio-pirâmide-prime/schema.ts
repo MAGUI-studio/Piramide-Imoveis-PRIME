@@ -6,8 +6,8 @@ const templates = [
   {title: 'Imersivo · cinema', value: 'immersive'},
   {title: 'Mosaico · galeria', value: 'mosaic'},
 ]
-const types = ['Casa/Mansão', 'Apartamento/Cobertura', 'Condomínio', 'Loteamento', 'Terreno']
-const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon'])
+const types = ['Casa/Mansão', 'Apartamento/Cobertura', 'Condomínio', 'Loteamento', 'Terreno', 'Comercial']
+const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon', 'empreendimentos'])
 
 type AssetValue = {asset?: {_ref?: string}}
 function validateAsset(maxMb: number, formats: string[]): CustomValidator<AssetValue> {
@@ -185,4 +185,22 @@ const home = defineType({
   preview: {prepare: () => ({title: 'Home'})},
 })
 
-export const schemaTypes = [photo, city, neighborhood, property, home]
+const marquee = defineType({
+  name: 'primeMarquee', title: 'Faixa informativa do rodapé', type: 'document',
+  fields: [defineField({
+    name: 'items', title: 'Mensagens', type: 'array',
+    description: 'Mensagens exibidas na faixa animada da Home, na ordem desta lista.',
+    of: [defineArrayMember({
+      name: 'marqueeItem', title: 'Mensagem', type: 'object',
+      fields: [
+        defineField({name: 'title', title: 'Título', type: 'string', validation: (rule) => rule.required().max(60)}),
+        defineField({name: 'description', title: 'Descrição', type: 'string', validation: (rule) => rule.required().max(120)}),
+      ],
+      preview: {select: {title: 'title', subtitle: 'description'}},
+    })],
+    validation: (rule) => rule.max(4),
+  })],
+  preview: {prepare: () => ({title: 'Faixa informativa do rodapé'})},
+})
+
+export const schemaTypes = [photo, city, neighborhood, property, home, marquee]
