@@ -1,0 +1,13 @@
+{
+  "name": "piramide-prime",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter web --filter studio dev",
+    "build": "pnpm --filter web build",
+    "check": "pnpm -r check"
+  }
+}

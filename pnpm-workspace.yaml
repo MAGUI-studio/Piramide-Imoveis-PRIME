@@ -1,0 +1,6 @@
+packages:
+  - web
+  - studio-pirâmide-prime
+allowBuilds:
+  esbuild: true
+  sharp: true
