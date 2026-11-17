@@ -133,14 +133,16 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
         onBlur={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)
         }}>
-        {items.map(({ photo, slug }, index) => (
-          <div key={slug} className="invisible absolute inset-0 transform-gpu backface-hidden will-change-[clip-path,transform] data-[outgoing=true]:visible data-[current=true]:visible data-[current=true]:z-1 motion-safe:[&[data-current=true][data-transition=true]]:animate-photo-wipe"
-            data-current={index === slide.current} data-outgoing={index === slide.previous}
-            data-transition={slide.previous >= 0} aria-hidden={index !== slide.current}>
-            <Frame photo={photo} className="size-full object-cover transform-gpu" priority sizes="(min-width: 1760px) 1760px, 100vw" />
-          </div>
-        ))}
-        <div className="absolute right-24 bottom-[calc(var(--hero-notch)+1.25rem)] left-5 z-3 text-ivory sm:right-auto sm:bottom-[calc(var(--hero-notch)+1.5rem)] sm:left-9 sm:w-[min(68%,48rem)] lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-14 lg:w-[min(68%,56rem)]"
+        <div className="pointer-events-none absolute inset-0 isolate overflow-hidden [contain:layout_paint]">
+          {items.map(({ photo, slug }, index) => (
+            <div key={slug} className="absolute inset-0 opacity-0 backface-hidden data-[outgoing=true]:z-0 data-[outgoing=true]:opacity-100 data-[current=true]:z-1 data-[current=true]:opacity-100 motion-safe:[&[data-current=true][data-transition=true]]:will-change-[clip-path] motion-safe:[&[data-current=true][data-transition=true]]:animate-photo-wipe"
+              data-current={index === slide.current} data-outgoing={index === slide.previous}
+              data-transition={slide.previous >= 0} aria-hidden={index !== slide.current}>
+              <Frame photo={photo} className="size-full object-cover" priority sizes="(min-width: 1760px) 1760px, 100vw" />
+            </div>
+          ))}
+        </div>
+        <div className="absolute right-24 bottom-[calc(var(--hero-notch)+1.25rem)] left-5 z-3 text-ivory sm:right-auto sm:bottom-[calc(var(--hero-notch)+1.5rem)] sm:left-9 sm:w-[min(68%,48rem)] lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-14 lg:w-[min(74%,72rem)]"
           aria-live={focused || !canAnimate ? 'polite' : 'off'}>
           <div className="grid items-end [grid-template-areas:'stack']">
             {items.map((item, idx) => (
@@ -152,8 +154,8 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
                   (idx === leftIndex ? 'opacity-100' : 'pointer-events-none select-none opacity-0')
                 }
               >
-                <p className={eyebrow + ' text-[.68rem] text-[#f8eddc] sm:text-xs'}>{item.location}</p>
-                <h1 className={heading + ' mt-2.5 line-clamp-2 pb-1.5 leading-[1.15] text-[clamp(2.6rem,5.2vw,5.6rem)] sm:line-clamp-1'} title={item.title}>{item.title}</h1>
+                <p className={eyebrow + ' text-[.68rem] text-white sm:text-xs'}>{item.location}</p>
+                <h1 className={heading + ' mt-2.5 line-clamp-2 pb-1.5 leading-[1.15] text-[clamp(2.6rem,5.2vw,5.6rem)] sm:line-clamp-1 lg:line-clamp-2'}>{item.title}</h1>
                 <p className="mt-3.5 max-w-[46ch] line-clamp-4 text-base font-light leading-relaxed text-[#fff5e6] sm:line-clamp-2 sm:text-lg lg:text-xl">{item.summary}</p>
               </div>
             ))}
@@ -191,7 +193,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
                       {index > 0 && <span aria-hidden="true" className="h-px w-8 bg-ivory/35 sm:w-10" />}
                       <div className="flex min-w-[4.2rem] flex-col items-center justify-center gap-1 py-1 text-center sm:min-w-[5rem]">
                         <dt className="text-[.56rem] font-light tracking-[.11em] text-[#f8eddc] uppercase sm:text-[.64rem] lg:text-[.68rem]">{label}</dt>
-                        <dd className={heading + ' relative isolate inline-flex items-baseline justify-center whitespace-nowrap text-lg leading-none text-ivory sm:text-2xl lg:text-3xl xl:text-4xl'}>
+                        <dd className="relative isolate inline-flex items-baseline justify-center whitespace-nowrap font-sans text-lg leading-none font-semibold tracking-tight text-ivory tabular-nums sm:text-2xl lg:text-3xl xl:text-4xl">
                           <span className="pointer-events-none absolute top-1/2 left-1/2 -z-1 size-10 -translate-x-1/2 -translate-y-1/2 bg-ivory opacity-12 mask-contain mask-center mask-no-repeat sm:size-12 lg:size-14"
                             style={{ maskImage: 'url(/brand/property-icons/' + icon + '.svg)' }} aria-hidden="true" />
                           {typeof value === 'number' ? number.format(value) : value}{icon === 'metragem' && <span className="ml-1 font-sans text-[.7rem] font-medium tracking-normal text-[#fff5e6] sm:text-xs lg:text-sm">m²</span>}
