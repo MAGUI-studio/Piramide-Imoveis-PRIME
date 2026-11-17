@@ -7,6 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const properties = await getPublishedSlugs()
   return [
     {url: siteUrl + '/'},
+    {url: siteUrl + '/empreendimentos'},
     ...properties.map(({slug, updated}) => ({url: siteUrl + '/' + slug, lastModified: updated})),
   ]
 }

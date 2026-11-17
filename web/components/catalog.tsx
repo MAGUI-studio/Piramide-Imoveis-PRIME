@@ -2,286 +2,365 @@
 
 import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
-import {useEffect, useRef, useState} from 'react'
-import {ArrowUpRight, Check, ChevronDown, MapPin, Search, SlidersHorizontal, X} from 'lucide-react'
+import {useEffect, useId, useRef, useState} from 'react'
+import {ArrowLeft, ArrowRight, ArrowUpRight, Building2, Check, ChevronDown, House, MapPin, Search, SlidersHorizontal, X} from 'lucide-react'
 import {locationOf, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
-import {button, heading, wrap} from '../lib/classes'
+import {button, heading, homeSectionHeading, wrap} from '../lib/classes'
 import {Frame} from './media'
+import {Reveal} from './motion'
 
 export type CatalogItem = Omit<PropertyCard, 'cover'> & {image: Picture; alternate?: Picture}
 const collator = new Intl.Collator('pt-BR', {sensitivity: 'base'})
 const normalize = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR')
+const homeLimit = 5
+const pageSize = 10
+const paginationLink = 'inline-flex min-h-11 items-center gap-2 px-3 text-sm font-semibold text-piramide transition-colors hover:bg-piramide/10'
+const filterField = 'flex min-h-15 items-center gap-3 border-b border-espresso/25 bg-transparent px-1 transition-colors hover:border-espresso/55 focus-within:border-piramide sm:px-2'
 
 type SelectOption = {value: string; label: string}
 
-function CustomSelect({
+function MultiSelect({
   label,
   placeholder,
-  value,
+  icon: Icon,
+  values,
   options,
   onChange,
 }: {
   label: string
   placeholder: string
-  value: string
+  icon: typeof MapPin
+  values: string[]
   options: SelectOption[]
-  onChange: (value: string) => void
+  onChange: (values: string[]) => void
 }) {
+  const id = useId()
   const [open, setOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const activeOption = options.find((opt) => opt.value === value)
+  const [search, setSearch] = useState('')
+  const container = useRef<HTMLDivElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
+  const input = useRef<HTMLInputElement>(null)
+  const selected = options.filter(({value}) => values.includes(value))
+  const term = normalize(search).trim()
+  const matching = options.filter((option) => normalize(option.label).includes(term))
+
+  function close() {
+    setOpen(false)
+    setSearch('')
+  }
 
   useEffect(() => {
     if (!open) return
-    function handlePointerDown(event: PointerEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false)
-      }
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) input.current?.focus()
+    function closeOutside(event: PointerEvent) {
+      if (!container.current?.contains(event.target as Node)) close()
     }
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
+    document.addEventListener('pointerdown', closeOutside)
+    return () => document.removeEventListener('pointerdown', closeOutside)
   }, [open])
 
   return (
-    <div ref={containerRef} className="relative">
-      <span className="sr-only">{label}</span>
+    <div
+      ref={container}
+      className="relative min-w-0"
+      onBlur={(event) => {
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) close()
+      }}
+      onKeyDown={(event) => {
+        if (!open || event.key !== 'Escape') return
+        event.preventDefault()
+        event.stopPropagation()
+        close()
+        trigger.current?.focus()
+      }}
+    >
       <button
+        ref={trigger}
         type="button"
-        aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => setOpen((prev) => !prev)}
-        className={
-          'flex h-12 w-full cursor-pointer items-center justify-between gap-2 border px-3.5 text-left text-xs transition-all duration-200 sm:px-4 sm:text-sm ' +
-          (open
-            ? 'border-piramide bg-white text-espresso ring-2 ring-piramide/15'
-            : value
-              ? 'border-piramide/55 bg-white font-medium text-espresso'
-              : 'border-rule bg-white/75 text-espresso hover:border-espresso/40 hover:bg-white')
-        }
+        aria-controls={open ? id : undefined}
+        onClick={() => open ? close() : setOpen(true)}
+        className={filterField + ' w-full cursor-pointer text-left aria-expanded:border-piramide'}
       >
-        <span className={'truncate ' + (activeOption ? 'text-espresso' : 'text-earth')}>
-          {activeOption ? activeOption.label : placeholder}
+        <Icon aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">{label}</span>
+          <span className="mt-0.5 block truncate text-sm font-medium text-espresso">{selected[0]?.label || placeholder}</span>
         </span>
-        <ChevronDown
-          size={16}
-          className={
-            'shrink-0 transition-transform duration-200 ' +
-            (open ? 'rotate-180 text-piramide' : 'text-earth')
-          }
-        />
+        {selected.length > 1 && <span className="shrink-0 bg-piramide/10 px-1.5 py-0.5 text-[10px] font-bold text-piramide">+{selected.length - 1}</span>}
+        <ChevronDown aria-hidden="true" size={15} className={'shrink-0 text-piramide motion-safe:transition-transform ' + (open ? 'rotate-180' : '')} />
       </button>
 
       {open && (
-        <div
-          role="listbox"
-          aria-label={label}
-          className="absolute top-[calc(100%+6px)] left-0 z-30 max-h-64 w-full min-w-[12rem] overflow-y-auto border border-rule/80 bg-white p-1.5 shadow-xl motion-safe:animate-enter"
-        >
-          <button
-            type="button"
-            role="option"
-            aria-selected={!value}
-            onClick={() => {
-              onChange('')
-              setOpen(false)
-            }}
-            className={
-              'flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-left text-xs transition-colors sm:text-sm ' +
-              (!value ? 'bg-piramide/10 font-semibold text-piramide' : 'text-espresso hover:bg-paper')
-            }
-          >
-            <span className="truncate">{placeholder}</span>
-            {!value && <Check size={14} className="shrink-0 text-piramide" />}
-          </button>
-          {options.map((option) => {
-            const isSelected = option.value === value
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                onClick={() => {
-                  onChange(option.value)
-                  setOpen(false)
-                }}
-                className={
-                  'flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-left text-xs transition-colors sm:text-sm ' +
-                  (isSelected ? 'bg-piramide/10 font-semibold text-piramide' : 'text-espresso hover:bg-paper')
-                }
-              >
-                <span className="truncate">{option.label}</span>
-                {isSelected && <Check size={14} className="shrink-0 text-piramide" />}
-              </button>
-            )
-          })}
+        <div id={id} className="absolute inset-x-0 top-full z-30 mt-2 border border-espresso/15 bg-paper p-2 shadow-lg motion-safe:animate-enter">
+          <label className="flex items-center gap-2 border-b border-espresso/20 px-2.5 text-piramide focus-within:border-piramide">
+            <Search aria-hidden="true" size={16} className="shrink-0" />
+            <span className="sr-only">Pesquisar opções de {label.toLowerCase()}</span>
+            <input
+              ref={input}
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Pesquisar opções"
+              className="h-10 w-full min-w-0 bg-transparent text-sm text-espresso placeholder:text-earth focus:outline-none"
+            />
+          </label>
+
+          <fieldset className="mt-2 max-h-52 min-w-0 overflow-y-auto overscroll-contain">
+            <legend className="sr-only">{label}</legend>
+            {matching.map(({value, label: optionLabel}) => {
+              const checked = values.includes(value)
+              return (
+                <label key={value} className="flex min-h-10 cursor-pointer items-center gap-2.5 px-2.5 py-2 text-sm text-espresso hover:bg-espresso/5 focus-within:bg-piramide/10">
+                  <span className="relative grid size-4 shrink-0 place-items-center">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => onChange(checked ? values.filter((selection) => selection !== value) : [...values, value])}
+                      className="peer size-4 appearance-none border border-espresso/30 checked:border-piramide checked:bg-piramide focus-visible:outline-piramide"
+                    />
+                    <Check aria-hidden="true" size={12} strokeWidth={2.5} className="pointer-events-none absolute hidden text-white peer-checked:block" />
+                  </span>
+                  <span className="min-w-0 break-words">{optionLabel}</span>
+                </label>
+              )
+            })}
+            {!matching.length && <p role="status" className="px-2.5 py-3 text-xs text-earth">Nenhuma opção encontrada.</p>}
+          </fieldset>
+          {!!selected.length && <div className="mt-2 flex items-center justify-between gap-2 border-t border-espresso/10 px-2.5 pt-2 text-xs">
+            <span className="text-earth">{selected.length} {selected.length === 1 ? 'selecionado' : 'selecionados'}</span>
+            <button type="button" className="cursor-pointer py-1 font-semibold text-piramide hover:underline" onClick={() => {
+              input.current?.focus()
+              onChange([])
+            }}>Limpar seleção</button>
+          </div>}
         </div>
       )}
     </div>
   )
 }
 
-export function Catalog({items}: {items: CatalogItem[]}) {
+export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boolean}) {
   const params = useSearchParams()
   const query = params.get('busca') || ''
   const cities = Array.from(new Map(items.flatMap(({city}) => city ? [[city.id, city]] : [])).values()).sort((a, b) => collator.compare(a.name, b.name))
-  const selectedCity = cities.some(({id}) => id === params.get('cidade')) ? params.get('cidade')! : ''
+  const selectedCities = params.getAll('cidade').filter((value) => cities.some(({id}) => id === value))
   const neighborhoods = Array.from(new Map(items.flatMap(({neighborhood, city}) => (
-    neighborhood && (!selectedCity || city?.id === selectedCity)
-      ? [[neighborhood.id, {...neighborhood, label: selectedCity ? neighborhood.name : [neighborhood.name, city?.name].filter(Boolean).join(', ')}]]
+    neighborhood && (!selectedCities.length || (city && selectedCities.includes(city.id)))
+      ? [[neighborhood.id, {...neighborhood, label: selectedCities.length === 1 ? neighborhood.name : [neighborhood.name, city?.name].filter(Boolean).join(', ')}]]
       : []
   ))).values()).sort((a, b) => collator.compare(a.label, b.label))
-  const selectedNeighborhood = neighborhoods.some(({id}) => id === params.get('bairro')) ? params.get('bairro')! : ''
+  const selectedNeighborhoods = params.getAll('bairro').filter((value) => neighborhoods.some(({id}) => id === value))
   const types = Array.from(new Set(items.map(({propertyType}) => propertyType))).filter(Boolean).sort(collator.compare)
-  const selectedType = types.find((type) => type === params.get('tipo')) || ''
+  const selectedTypes = params.getAll('tipo').filter((value) => types.includes(value))
   const words = normalize(query).trim().split(/\s+/).filter(Boolean)
   const results = items.filter((item) => {
-    if (selectedCity && item.city?.id !== selectedCity) return false
-    if (selectedNeighborhood && item.neighborhood?.id !== selectedNeighborhood) return false
-    if (selectedType && item.propertyType !== selectedType) return false
+    if (selectedCities.length && !selectedCities.includes(item.city?.id || '')) return false
+    if (selectedNeighborhoods.length && !selectedNeighborhoods.includes(item.neighborhood?.id || '')) return false
+    if (selectedTypes.length && !selectedTypes.includes(item.propertyType)) return false
     const copy = normalize([item.title, item.summary, locationOf(item)].join(' '))
     return words.every((word) => copy.includes(word))
   })
-  const displayed = results.slice(0, 10)
+  const totalPages = Math.max(1, Math.ceil(results.length / pageSize))
+  const requestedPage = params.get('pagina') || ''
+  const page = full && /^[1-9]\d*$/.test(requestedPage) ? Math.min(Number(requestedPage), totalPages) : 1
+  const start = (page - 1) * pageSize
+  const displayed = full ? results.slice(start, start + pageSize) : results.slice(0, homeLimit)
+  const hasLeadStack = displayed.length === 3 || displayed.length === homeLimit
+  const Title = full ? 'h1' : 'h2'
 
-  function update(key: string, value: string) {
+  function pageHref(target: number) {
+    const nextParams = new URLSearchParams(params.toString())
+    if (target === 1) nextParams.delete('pagina')
+    else nextParams.set('pagina', String(target))
+    const search = nextParams.toString()
+    return '/empreendimentos' + (search ? '?' + search : '') + '#resultados'
+  }
+
+  function updateSearch(value: string) {
     const url = new URL(window.location.href)
-    if (value) url.searchParams.set(key, value)
-    else url.searchParams.delete(key)
-    if (key === 'cidade' && value && selectedNeighborhood &&
-        !items.some((item) => item.neighborhood?.id === selectedNeighborhood && item.city?.id === value)) {
+    if (value) url.searchParams.set('busca', value)
+    else url.searchParams.delete('busca')
+    url.searchParams.delete('pagina')
+    window.history.replaceState(null, '', url)
+  }
+
+  function updateFilter(key: 'cidade' | 'bairro' | 'tipo', values: string[]) {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('pagina')
+    url.searchParams.delete(key)
+    values.forEach((value) => url.searchParams.append(key, value))
+    if (key === 'cidade' && values.length) {
+      const compatibleNeighborhoods = url.searchParams.getAll('bairro').filter((id) =>
+        items.some(({neighborhood, city}) => neighborhood?.id === id && city && values.includes(city.id)),
+      )
       url.searchParams.delete('bairro')
+      compatibleNeighborhoods.forEach((id) => url.searchParams.append('bairro', id))
     }
-    if (key === 'busca') window.history.replaceState(null, '', url)
-    else window.history.pushState(null, '', url)
+    window.history.pushState(null, '', url)
   }
 
   function clear() {
     const url = new URL(window.location.href)
-    for (const key of ['busca', 'cidade', 'bairro', 'tipo']) url.searchParams.delete(key)
+    for (const key of ['busca', 'cidade', 'bairro', 'tipo', 'pagina']) url.searchParams.delete(key)
     window.history.pushState(null, '', url)
   }
 
   return (
     <section id="empreendimentos" className={wrap + ' scroll-mt-4 pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]'}>
-      <div className="mb-7">
-        <h2 className={heading + ' text-[clamp(2.8rem,5vw,5.6rem)]'}>Explore os empreendimentos</h2>
-      </div>
+      <Reveal className="mb-7 motion-safe:data-[entered=true]:animate-enter">
+        <Title className={full ? heading + ' text-[clamp(2.8rem,5vw,5.6rem)]' : homeSectionHeading}>{full ? 'Todos os empreendimentos' : 'Explore os empreendimentos'}</Title>
+      </Reveal>
       {items.length ? <>
-        <form role="search" className="grid items-start gap-3 min-[801px]:grid-cols-[minmax(240px,1.25fr)_2fr]" onSubmit={(event) => event.preventDefault()}>
-          <label className="group flex h-12 items-center gap-3 border border-rule bg-white/75 px-3.5 text-earth transition-all duration-200 hover:border-espresso/40 focus-within:border-piramide focus-within:bg-white focus-within:ring-2 focus-within:ring-piramide/15">
-            <span className="sr-only">Buscar imóveis</span>
-            <Search size={18} className="shrink-0 text-earth transition-colors group-focus-within:text-piramide" />
-            <input
-              className="w-full min-w-0 appearance-none bg-transparent text-sm text-espresso placeholder:text-earth focus:outline-none [&::-webkit-search-cancel-button]:hidden"
-              type="text"
-              placeholder="Buscar por nome ou localização"
-              value={query}
-              onChange={(event) => update('busca', event.target.value)}
-            />
+        <form role="search" aria-label="Filtrar empreendimentos" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3fr)] xl:grid-cols-[minmax(17rem,1.2fr)_minmax(0,3fr)]" onSubmit={(event) => event.preventDefault()}>
+          <div className={filterField}>
+            <label className="flex min-w-0 flex-1 items-center gap-3">
+              <Search aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">Buscar imóveis</span>
+                <input
+                  className="mt-0.5 block w-full min-w-0 bg-transparent text-sm font-medium text-espresso placeholder:font-normal placeholder:text-earth focus:outline-none"
+                  type="text"
+                  placeholder="Nome ou localização"
+                  value={query}
+                  onChange={(event) => updateSearch(event.target.value)}
+                />
+              </span>
+            </label>
             {query && (
               <button
                 type="button"
-                onClick={() => update('busca', '')}
+                onClick={() => updateSearch('')}
                 aria-label="Limpar busca"
                 className="grid size-6 shrink-0 cursor-pointer place-items-center rounded-full text-earth transition-colors hover:bg-espresso/10 hover:text-espresso"
               >
                 <X size={14} />
               </button>
             )}
-          </label>
+          </div>
           <details className="min-[801px]:[&:not([open])::details-content]:[content-visibility:visible]" open>
             <summary className="flex h-11 cursor-pointer items-center gap-2 text-sm font-medium text-espresso min-[801px]:hidden"><SlidersHorizontal size={16} /> Filtros</summary>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
-              <CustomSelect
+              <MultiSelect
                 label="Cidade"
                 placeholder="Todas as cidades"
-                value={selectedCity}
+                icon={Building2}
+                values={selectedCities}
                 options={cities.map(({id, name}) => ({value: id, label: name}))}
-                onChange={(val) => update('cidade', val)}
+                onChange={(values) => updateFilter('cidade', values)}
               />
-              <CustomSelect
+              <MultiSelect
                 label="Bairro"
                 placeholder="Todos os bairros"
-                value={selectedNeighborhood}
+                icon={MapPin}
+                values={selectedNeighborhoods}
                 options={neighborhoods.map(({id, label}) => ({value: id, label}))}
-                onChange={(val) => update('bairro', val)}
+                onChange={(values) => updateFilter('bairro', values)}
               />
-              <CustomSelect
+              <MultiSelect
                 label="Tipo de imóvel"
                 placeholder="Todos os tipos"
-                value={selectedType}
+                icon={House}
+                values={selectedTypes}
                 options={types.map((type) => ({value: type, label: type}))}
-                onChange={(val) => update('tipo', val)}
+                onChange={(values) => updateFilter('tipo', values)}
               />
             </div>
           </details>
         </form>
-        <div className="flex min-h-12 items-center justify-between text-xs text-earth">
+        <div id={full ? 'resultados' : undefined} className="flex min-h-12 scroll-mt-4 items-center justify-between text-xs text-earth">
           <span aria-live="polite">{results.length} {results.length === 1 ? 'imóvel' : 'imóveis'}</span>
-          {(query || selectedCity || selectedNeighborhood || selectedType) && <button type="button" className="cursor-pointer py-2 font-medium text-piramide transition-opacity hover:opacity-80" onClick={clear}>Limpar filtros</button>}
+          {(query || selectedCities.length > 0 || selectedNeighborhoods.length > 0 || selectedTypes.length > 0) && <button type="button" className="cursor-pointer py-2 font-medium text-piramide transition-opacity hover:opacity-80" onClick={clear}>Limpar filtros</button>}
         </div>
-        {displayed.length ? <div className="grid items-stretch gap-x-[clamp(16px,2.2vw,32px)] gap-y-[clamp(24px,3.2vw,44px)] min-[801px]:grid-cols-12">
+        {displayed.length ? <Reveal className={'grid gap-3 motion-safe:data-[entered=true]:animate-enter sm:gap-4 xl:gap-5 ' + (full ? 'sm:grid-cols-2' : 'min-[801px]:grid-cols-12')}>
           {displayed.map((item, index) => {
-            const isHeroBento = index === 0
-            const isSideBento = index === 1 || index === 2
-            const colClass =
-              displayed.length === 1
-                ? 'min-[801px]:col-span-8'
-                : isHeroBento
-                  ? displayed.length >= 3
-                    ? 'min-[801px]:col-span-7 min-[801px]:row-span-2'
-                    : 'min-[801px]:col-span-7'
-                  : isSideBento
-                    ? 'min-[801px]:col-span-5'
-                    : 'min-[801px]:col-span-6'
+            const isLead = !full && index === 0
+            const isStacked = !full && hasLeadStack && index > 0 && index < 3
+            let gridClass = full ? '' : 'min-[801px]:col-span-6'
+            let desktopImageWidth = '50vw'
 
-            const imageAspectClass = isHeroBento
-              ? displayed.length >= 3
-                ? 'aspect-[1.32] min-[801px]:aspect-auto min-[801px]:flex-1 min-[801px]:min-h-[360px]'
-                : 'aspect-[1.32]'
-              : isSideBento
-                ? 'aspect-[1.82]'
-                : 'aspect-[1.5]'
+            if (!full && displayed.length === 1) {
+              gridClass = 'min-[801px]:col-span-12'
+              desktopImageWidth = '100vw'
+            } else if (isLead && hasLeadStack) {
+              gridClass = 'min-[801px]:col-span-7 min-[801px]:row-span-2'
+              desktopImageWidth = '60vw'
+            } else if (isStacked) {
+              gridClass = 'min-[801px]:col-span-5'
+              desktopImageWidth = '42vw'
+            } else if (!full && (displayed.length === 2 || displayed.length === 4)) {
+              const isWide = index === 0 || index === 3
+              gridClass = isWide ? 'min-[801px]:col-span-7' : 'min-[801px]:col-span-5'
+              desktopImageWidth = isWide ? '60vw' : '42vw'
+            }
 
-            const titleClass = isHeroBento
-              ? 'text-[clamp(2.1rem,3.6vw,4rem)]'
-              : isSideBento
-                ? 'text-[clamp(1.55rem,2.3vw,2.4rem)]'
-                : 'text-[clamp(1.75rem,2.8vw,3rem)]'
+            const sizes = full ? '(max-width: 639px) 100vw, 50vw' : '(max-width: 800px) 100vw, ' + desktopImageWidth
+            const cardHeight = isLead
+              ? 'min-h-[24rem] sm:min-h-[30rem]'
+              : isStacked
+                ? 'min-h-[19rem]'
+                : 'min-h-[20rem] xl:min-h-[24rem]'
+            const titleSize = isLead
+              ? 'text-[clamp(1.65rem,2.75vw,3.25rem)]'
+              : 'text-[clamp(1.2rem,1.65vw,1.95rem)]'
+            const titleStyle = isLead ? heading : 'font-sans font-semibold leading-tight tracking-tight'
+            const location = locationOf(item)
 
             return (
               <Link
-                className={'group flex flex-col ' + colClass}
+                className={'group relative isolate flex min-w-0 items-end overflow-hidden bg-coal px-5 pt-28 pb-5 sm:px-6 sm:pt-32 sm:pb-6 ' + gridClass + ' ' + cardHeight + (isLead ? ' xl:px-8 xl:pt-36 xl:pb-8' : '')}
                 key={item.id}
                 href={'/' + item.slug}
               >
-                <div className={'relative isolate w-full overflow-hidden bg-espresso/15 after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(153deg,#10100dbf,transparent_35%,transparent_73%,#10100d60)] ' + imageAspectClass}>
-                  <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-105" photo={item.image} sizes="(max-width: 800px) 100vw, (max-width: 1200px) 50vw, 60vw" />
+                <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
+                  <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-104 motion-safe:group-focus-visible:scale-104" photo={item.image} sizes={sizes} />
                   {item.alternate && <div className="absolute inset-0 [clip-path:inset(0_100%_0_0)] group-focus-visible:[clip-path:inset(0)] group-hover:[clip-path:inset(0)] motion-safe:transition-[clip-path] motion-safe:duration-700" aria-hidden="true">
-                    <Frame className="size-full object-cover" photo={item.alternate} sizes="(max-width: 800px) 100vw, 60vw" />
+                    <Frame className="size-full object-cover" photo={item.alternate} sizes={sizes} />
                   </div>}
-                  <span className="absolute top-4 left-4 z-1 text-xs tracking-widest text-ivory uppercase">{item.propertyType}</span>
-                  <span className="absolute right-3 bottom-3 z-1 grid size-11 place-items-center rounded-full border border-white/40 bg-coal/75 text-ivory group-hover:border-piramide group-hover:bg-piramide group-hover:text-white motion-safe:transition-colors"><ArrowUpRight size={20} strokeWidth={1.5} /></span>
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#080808_0%,#080808f2_28%,#080808b8_52%,#08080873_75%,#08080833_100%)]" />
                 </div>
-                <div className="pt-4">
-                  <span className="flex items-center gap-1.5 text-xs text-bronze"><MapPin size={13} />{locationOf(item)}</span>
-                  <h3 className={heading + ' my-1.5 line-clamp-1 pb-0.5 ' + titleClass}>{item.title}</h3>
-                  <p className="line-clamp-2 text-sm leading-relaxed text-earth">{item.summary}</p>
-                  {!!item.attributes?.length && <ul className="mt-3 flex flex-wrap gap-y-1.5 divide-x divide-rule text-xs text-espresso/85">{item.attributes.map((attribute) => <li className="px-3 first:pl-0" key={attribute}>{attribute}</li>)}</ul>}
+                <div className="w-full text-white">
+                  {item.propertyType && <p className="flex items-center gap-2 text-[10px] font-bold tracking-[.12em] text-white/90 uppercase">
+                    <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />{item.propertyType}
+                  </p>}
+                  <div className="mt-1.5 flex items-start justify-between gap-3">
+                    <h3 className={titleStyle + ' min-w-0 line-clamp-2 ' + titleSize} title={item.title}>{item.title}</h3>
+                    <ArrowUpRight aria-hidden="true" size={19} strokeWidth={1.6} className="mt-0.5 shrink-0 text-white motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-focus-visible:translate-x-0.5 motion-safe:group-focus-visible:-translate-y-0.5" />
+                  </div>
+                  {location && <p className="mt-2 flex items-start gap-1.5 text-xs font-medium text-white/90"><MapPin aria-hidden="true" size={13} className="mt-0.5 shrink-0" />{location}</p>}
+                  {item.summary && <p className="mt-2 line-clamp-2 max-w-[52ch] text-xs leading-relaxed text-white/85 sm:text-sm">{item.summary}</p>}
+                  {!!item.attributes?.length && <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-white/90">
+                    {item.attributes.map((attribute, index) => (
+                      <li key={attribute} className="flex items-center gap-2">
+                        {index > 0 && <span aria-hidden="true" className="size-1 shrink-0 bg-white/50" />}
+                        {attribute}
+                      </li>
+                    ))}
+                  </ul>}
                 </div>
               </Link>
             )
           })}
-        </div> : <div className="border border-rule p-7 text-earth"><p>Nenhum imóvel encontrado com esses filtros.</p><button type="button" className={button + ' mt-4 cursor-pointer border-bronze text-bronze'} onClick={clear}>Limpar filtros</button></div>}
+        </Reveal> : <div className="border border-rule p-7 text-earth"><p>Nenhum imóvel encontrado com esses filtros.</p><button type="button" className={button + ' mt-4 cursor-pointer border-bronze text-bronze'} onClick={clear}>Limpar filtros</button></div>}
+        {!full && items.length > homeLimit && (
+          <div className="mt-6 flex justify-end">
+            <Link href="/empreendimentos" className="group/explore inline-flex min-h-11 w-fit items-center gap-2.5 text-right text-sm text-espresso transition-colors hover:text-piramide motion-reduce:transition-none sm:text-base">
+              Ver todos os empreendimentos <ArrowUpRight aria-hidden="true" size={18} className="shrink-0 motion-safe:transition-transform motion-safe:group-hover/explore:translate-x-0.5 motion-safe:group-hover/explore:-translate-y-0.5" />
+            </Link>
+          </div>
+        )}
+        {full && totalPages > 1 && (
+          <nav aria-label="Paginação dos empreendimentos" className="mt-7 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-espresso/10 pt-4">
+            <div className="justify-self-start">
+              {page > 1 && <Link href={pageHref(page - 1)} rel="prev" className={paginationLink}><ArrowLeft aria-hidden="true" size={16} /> Anterior</Link>}
+            </div>
+            <span className="text-center text-xs text-earth" aria-current="page">Página {page} de {totalPages}</span>
+            <div className="justify-self-end">
+              {page < totalPages && <Link href={pageHref(page + 1)} rel="next" className={paginationLink}>Próxima <ArrowRight aria-hidden="true" size={16} /></Link>}
+            </div>
+          </nav>
+        )}
       </> : <div className="border border-rule p-7 text-earth">Nenhum empreendimento disponível no momento.</div>}
     </section>
   )
