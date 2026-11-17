@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-inter), "Inter", Arial, sans-serif;
-  --font-serif: var(--font-inter), "Inter", Arial, sans-serif;
+  --animate-property-marquee: property-marquee 30s linear infinite;
+
+  @keyframes property-marquee {
+    to { transform: translateX(-50%); }
+  }
+
+  --font-sans: var(--font-montserrat), Montserrat, Arial, sans-serif;
   --color-coal: #161616;
   --color-charcoal: #161616;
   --color-ivory: #f4eee3;
@@ -18,6 +23,12 @@
   --animate-enter: enter .65s cubic-bezier(.22,.8,.25,1) both;
   --animate-photo-wipe: photo-wipe 1.4s cubic-bezier(.68,.04,.22,1) both;
   --animate-image-in: image-in .85s cubic-bezier(.2,.65,.24,1) both;
+  --animate-rise: rise .9s cubic-bezier(.16,1,.3,1) both;
+
+  @keyframes rise {
+    from { transform: translateY(105%); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
 
   @keyframes enter {
     from { transform: translateY(12px); opacity: .45; }

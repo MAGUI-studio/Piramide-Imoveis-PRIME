@@ -1,5 +1,5 @@
 import imageUrlBuilder from '@sanity/image-url'
-import type {Photo} from './model'
+import type {Photo, PropertyCard} from './model'
 
 export function photoUrl(photo: Photo, width: number, aspect: number, projectId?: string, dataset = 'production') {
   if (!projectId || !photo.asset) return ''
@@ -14,5 +14,13 @@ export function picture(photo: Photo, aspect: number, width = 1920): Picture {
     alt: photo.alt || '',
     src: url(width),
     srcSet: variants.map((size) => url(size) + ' ' + size + 'w').join(', '),
+  }
+}
+
+export function catalogPictures({cover, alternate, ...item}: PropertyCard & {alternate?: Photo | null}) {
+  return {
+    ...item,
+    image: picture(cover, 1.38, 1600),
+    alternate: alternate ? picture(alternate, 1.38, 1200) : undefined,
   }
 }

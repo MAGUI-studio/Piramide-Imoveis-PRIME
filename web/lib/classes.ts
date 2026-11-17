@@ -1,5 +1,6 @@
 export const wrap = 'mx-auto w-[calc(100%-2.25rem)] md:w-[calc(100%-4.5rem)] xl:w-[min(96rem,calc(100%-7rem))]'
-export const heading = 'font-serif font-medium leading-[1.08] tracking-tight text-balance'
+export const heading = 'font-sans font-semibold leading-[1.08] tracking-tight text-balance'
+export const homeSectionHeading = heading + ' text-[clamp(1.85rem,3.4vw,3.25rem)]'
 export const eyebrow = 'text-xs font-semibold uppercase tracking-[.17em]'
 export const textLink = 'inline-flex w-fit items-center gap-2.5 border-b pb-2 text-sm transition-colors motion-reduce:transition-none'
 export const button = 'inline-flex min-h-12 w-fit items-center justify-center gap-4 border px-5 py-2.5 text-sm font-semibold transition-colors motion-reduce:transition-none'

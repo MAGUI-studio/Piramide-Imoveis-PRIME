@@ -5,6 +5,8 @@ export type Photo = {
   hotspot?: {x: number; y: number; width: number; height: number}
 }
 
+export type MarqueeItem = {_key: string; title: string; description: string}
+
 export type PropertyCard = {
   id: string
   title: string

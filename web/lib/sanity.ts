@@ -1,7 +1,7 @@
 import {createClient, type QueryParams} from '@sanity/client'
 import {draftMode} from 'next/headers'
 import {cache} from 'react'
-import type {Photo, Property, PropertyCard} from './model'
+import type {MarqueeItem, Photo, Property, PropertyCard} from './model'
 
 const projectId = process.env.SANITY_PROJECT_ID
 export const dataset = process.env.SANITY_DATASET || 'production'
@@ -28,7 +28,7 @@ const cardFields = `
 const mediaFields = 'gallery, "clip": clip.asset->url'
 const listing = '_type == "property" && defined(slug.current) && defined(cover.asset)'
 type CatalogProperty = PropertyCard & {alternate?: Photo | null}
-type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; whatsapp: string | null}
+type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; whatsapp: string | null; marquee: MarqueeItem[]}
 const homeQuery = `{
   "hero": *[_id == "primeHome"][0].hero->{
     ${cardFields}
@@ -37,7 +37,8 @@ const homeQuery = `{
   "catalog": *[${listing}] | order(coalesce(firstPublishedAt, _createdAt) desc, title asc, _id asc) {
     ${cardFields}, "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
   },
-  "whatsapp": *[_id == "primeHome"][0].whatsapp
+  "whatsapp": *[_id == "primeHome"][0].whatsapp,
+  "marquee": coalesce(*[_id == "primeMarquee"][0].items[defined(title) && defined(description)]{_key, title, description}, [])
 }`
 const propertyQuery = `{
   "property": *[${listing} && slug.current == $slug][0]{
@@ -47,7 +48,7 @@ const propertyQuery = `{
 }`
 
 export const getHome = cache(async (preview: boolean): Promise<Home> => {
-  return await read<Home>(homeQuery, {}, preview) || {hero: null, featured: [], catalog: [], whatsapp: null}
+  return await read<Home>(homeQuery, {}, preview) || {hero: null, featured: [], catalog: [], whatsapp: null, marquee: []}
 })
 
 export const getProperty = cache(async (slug: string, preview: boolean) => {
