@@ -52,7 +52,7 @@ function Contact({link}: {link: string | null}) {
 }
 
 function Terms({property, link}: {property: Property; link: string | null}) {
-  return <div className="grid content-start gap-3"><p className="text-[clamp(1.45rem,2.6vw,2.1rem)] leading-tight">{property.price ? currency.format(property.price) : 'Valor sob consulta'}</p><Contact link={link} /></div>
+  return <div className="grid content-start gap-3"><p className="text-[clamp(1.45rem,2.6vw,2.1rem)] leading-tight font-semibold tabular-nums">{property.price ? currency.format(property.price) : 'Valor sob consulta'}</p><Contact link={link} /></div>
 }
 
 function Description({property}: {property: Property}) {
@@ -118,7 +118,7 @@ export default async function PropertyPage({params}: Props) {
   const preview = await isPreview()
   const data = await getProperty(slug, preview)
   if (!data?.property) notFound()
-  return <>
+  return <div className="bg-coal text-ivory">
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
     <Header contact={whatsappLink(data.whatsapp, data.property.title)} />
     <main id="conteudo">
@@ -127,5 +127,5 @@ export default async function PropertyPage({params}: Props) {
     </main>
     <Footer contact={whatsappLink(data.whatsapp)} />
     <WhatsAppWidget phone={data.whatsapp} />
-  </>
+  </div>
 }
