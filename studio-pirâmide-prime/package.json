@@ -1,0 +1,23 @@
+{
+  "name": "studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "sanity": "^4.0.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-is": "19.2.8",
+    "styled-components": "^6.1.15"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/node": "^22",
+    "typescript": "^5.9.0"
+  }
+}
