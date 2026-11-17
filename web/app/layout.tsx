@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {default: 'Pirâmide PRIME', template: '%s | Pirâmide PRIME'},
   description: 'Explore os empreendimentos de alto padrão da Pirâmide Imóveis.',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 }
 
 export default async function RootLayout({children}: {children: ReactNode}) {
