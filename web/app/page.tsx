@@ -62,11 +62,11 @@ export default async function Home() {
         </Reveal>)}
         </div>
       </section>}
-      {!!data.catalog.length && <div className="bg-sand"><Catalog items={data.catalog.map(({cover, alternate, ...item}) => ({
+      {!!data.catalog.length && <Catalog items={data.catalog.map(({cover, alternate, ...item}) => ({
         ...item,
         image: picture(cover, 1.38, 1600),
         alternate: alternate ? picture(alternate, 1.38, 1200) : undefined,
-      }))} /></div>}
+      }))} />}
     </main>
     <Footer contact={contact} />
     <WhatsAppWidget phone={data.whatsapp} properties={getOpeningProperties(data)} />
