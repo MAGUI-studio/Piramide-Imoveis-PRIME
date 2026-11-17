@@ -1,18 +1,14 @@
 'use client'
 
 import {useEffect, useRef, useState} from 'react'
-import {ArrowUpRight, Building2, X} from 'lucide-react'
-import {locationOf, whatsappLink, type PropertyCard} from '../lib/model'
+import {ArrowUpRight, MessageCircle, X} from 'lucide-react'
+import {whatsappLink} from '../lib/model'
 
-type WidgetProperty = Pick<PropertyCard, 'id' | 'title' | 'propertyType' | 'city' | 'neighborhood'>
+export function WhatsAppWidget({phone}: {phone: string | null}) {
+  const href = whatsappLink(phone) ||
+    'https://wa.me/?text=' +
+      encodeURIComponent('Olá! Gostaria de conversar sobre os empreendimentos da Pirâmide PRIME.')
 
-export function WhatsAppWidget({
-  phone,
-  properties = [],
-}: {
-  phone: string | null
-  properties?: WidgetProperty[]
-}) {
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -59,31 +55,8 @@ export function WhatsAppWidget({
     return () => document.removeEventListener('pointerdown', handleClickOutside)
   }, [isOpen])
 
-  const buildUrl = (propertyTitle?: string) => {
-    return (
-      whatsappLink(phone, propertyTitle) ||
-      'https://wa.me/?text=' +
-        encodeURIComponent(
-          propertyTitle
-            ? 'Olá! Gostaria de saber mais sobre o empreendimento ' + propertyTitle + '.'
-            : 'Olá! Gostaria de conversar sobre os empreendimentos da Pirâmide PRIME.',
-        )
-    )
-  }
-
-  const handleSelectOption = (propertyTitle?: string) => {
-    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
-    window.open(buildUrl(propertyTitle), '_blank', 'noopener,noreferrer')
-    setIsOpen(false)
-    setIsHovered(false)
-  }
-
   const handleButtonClick = () => {
     if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
-    if (!properties.length) {
-      handleSelectOption()
-      return
-    }
     setIsOpen((prev) => !prev)
   }
 
@@ -94,11 +67,11 @@ export function WhatsAppWidget({
           data-whatsapp-widget
           className="pointer-events-auto relative size-14 sm:size-15"
         >
-          {isOpen && properties.length > 0 && (
+          {isOpen && (
             <div
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className=" absolute right-0 bottom-full mb-3 w-72 origin-bottom-right rounded-2xl border border-zinc-800 bg-zinc-900/95 p-3 shadow-xl backdrop-blur-xl sm:w-80 motion-safe:animate-enter"
+              className="absolute right-0 bottom-full mb-3 w-72 origin-bottom-right rounded-2xl border border-zinc-800 bg-zinc-900/95 p-3 shadow-xl backdrop-blur-xl sm:w-80 motion-safe:animate-enter"
             >
               <div className="mb-2 flex items-center justify-between border-b border-zinc-800 px-3 py-2">
                 <div className="flex items-center gap-2">
@@ -109,9 +82,6 @@ export function WhatsAppWidget({
                   <div>
                     <p className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
                       Atendimento Online
-                    </p>
-                    <p className="text-xs font-extrabold text-white">
-                      Fale com um Especialista
                     </p>
                   </div>
                 </div>
@@ -131,42 +101,22 @@ export function WhatsAppWidget({
                 </button>
               </div>
 
-              <div className="space-y-1">
-                {properties.slice(0, 4).map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => handleSelectOption(item.title)}
-                    className="group/item flex w-full cursor-pointer items-center justify-between rounded-xl p-2.5 text-left transition-all hover:bg-zinc-800/80"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="shrink-0 rounded-lg bg-piramide/15 p-2 text-piramide">
-                        <Building2 size={18} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="block truncate text-xs font-bold text-white">
-                            {item.title}
-                          </span>
-                          {item.propertyType && (
-                            <span className="border border-piramide/30 bg-piramide/15 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-ivory uppercase">
-                              {item.propertyType}
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-0.5 truncate text-[11px] leading-tight text-zinc-400">
-                          {locationOf(item)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <ArrowUpRight
-                      size={14}
-                      className="ml-1.5 shrink-0 text-zinc-400 transition-transform group-hover/item:translate-x-0.5 group-hover/item:-translate-y-0.5 group-hover/item:text-piramide"
-                    />
-                  </button>
-                ))}
-              </div>
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => {
+                  setIsOpen(false)
+                  setIsHovered(false)
+                }}
+                className="group flex w-full items-center gap-3 rounded-xl p-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800/80 hover:text-piramide"
+              >
+                <span className="rounded-lg bg-piramide/15 p-2 text-piramide">
+                  <MessageCircle aria-hidden="true" size={18} />
+                </span>
+                Fale com um Especialista
+                <ArrowUpRight aria-hidden="true" size={16} className="ml-auto text-zinc-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-piramide" />
+              </a>
             </div>
           )}
 
@@ -175,7 +125,8 @@ export function WhatsAppWidget({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={handleButtonClick}
-            aria-label="Conversar pelo WhatsApp"
+            aria-label="Atendimento pelo WhatsApp"
+            aria-expanded={isOpen}
             className={
               'relative flex size-14 cursor-pointer select-none items-center justify-center bg-transparent p-0.5 drop-shadow-xl transition-transform duration-300 active:scale-95 sm:size-15 ' +
               (isHovered || isOpen ? 'scale-108' : 'motion-safe:animate-[whatsapp-pulse_2.2s_ease-in-out_infinite]')

@@ -126,6 +126,6 @@ export default async function PropertyPage({params}: Props) {
       <PropertyLayout property={data.property} link={whatsappLink(data.whatsapp, data.property.title)} />
     </main>
     <Footer contact={whatsappLink(data.whatsapp)} />
-    <WhatsAppWidget phone={data.whatsapp} properties={[data.property]} />
+    <WhatsAppWidget phone={data.whatsapp} />
   </>
 }

@@ -69,6 +69,6 @@ export default async function Home() {
       }))} />}
     </main>
     <Footer contact={contact} />
-    <WhatsAppWidget phone={data.whatsapp} properties={getOpeningProperties(data)} />
+    <WhatsAppWidget phone={data.whatsapp} />
   </>
 }
