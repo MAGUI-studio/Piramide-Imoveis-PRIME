@@ -105,7 +105,7 @@ export function SiteUtilities() {
               <ShieldCheck aria-hidden="true" className="pointer-events-none absolute -right-5 -bottom-5 size-40 -rotate-12 text-piramide/[0.07]" />
               <div className="relative space-y-3.5">
                 <div className="flex items-start justify-between gap-3">
-                  <h2 id="cookie-notice-title" className="inline-flex items-center gap-1.5 border border-piramide/20 bg-piramide/10 px-2 py-0.5 font-mono text-[10px] font-black tracking-wider text-piramide uppercase">
+                  <h2 id="cookie-notice-title" className="inline-flex items-center gap-1.5 border border-piramide/20 bg-piramide/10 px-2 py-0.5 text-[10px] font-black tracking-wider text-piramide uppercase">
                     <ShieldCheck aria-hidden="true" size={14} /> LGPD &amp; Cookies
                   </h2>
                   <button type="button" onClick={() => setCookieNotice('dismissed')} aria-label="Fechar aviso" className="-mt-1.5 -mr-1.5 shrink-0 cursor-pointer p-1 text-zinc-400 transition-colors hover:text-zinc-700">
@@ -116,10 +116,10 @@ export function SiteUtilities() {
                   Utilizamos cookies e tecnologias semelhantes para aprimorar sua experiência, analisar o tráfego e apresentar conteúdos personalizados sobre o mercado imobiliário. Ao continuar navegando, você concorda com nossos termos.
                 </p>
                 <div className="flex flex-col gap-2.5 pt-1 sm:flex-row sm:items-center sm:gap-4">
-                  <button type="button" onClick={acceptCookies} className="w-full cursor-pointer bg-piramide px-4 py-2 text-center font-mono text-xs font-bold tracking-wider whitespace-nowrap text-white uppercase transition-all hover:bg-piramide/90 hover:shadow-md sm:w-auto">
+                  <button type="button" onClick={acceptCookies} className="w-full cursor-pointer bg-piramide px-4 py-2 text-center text-xs font-bold tracking-wider whitespace-nowrap text-white uppercase transition-all hover:bg-piramide/90 hover:shadow-md sm:w-auto">
                     Concordar e Continuar
                   </button>
-                  <button type="button" onClick={openPrivacy} className="w-full cursor-pointer py-1 text-center font-mono text-xs font-medium whitespace-nowrap text-zinc-500 underline underline-offset-4 transition-colors hover:text-piramide sm:w-auto sm:py-0 sm:text-left">
+                  <button type="button" onClick={openPrivacy} className="w-full cursor-pointer py-1 text-center text-xs font-medium whitespace-nowrap text-zinc-500 underline underline-offset-4 transition-colors hover:text-piramide sm:w-auto sm:py-0 sm:text-left">
                     Termos de Privacidade (LGPD)
                   </button>
                 </div>
@@ -150,7 +150,7 @@ export function SiteUtilities() {
       >
         <header className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-200 bg-zinc-50/70 p-6 sm:p-7">
           <div className="space-y-1.5">
-            <p className="inline-flex items-center gap-1.5 border border-piramide/20 bg-piramide/10 px-2.5 py-0.5 font-mono text-[11px] font-bold tracking-wider text-piramide uppercase">
+            <p className="inline-flex items-center gap-1.5 border border-piramide/20 bg-piramide/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wider text-piramide uppercase">
               <ShieldCheck aria-hidden="true" size={14} /> LGPD &amp; Transparência
             </p>
             <h2 id="privacy-modal-title" className="text-lg font-bold sm:text-xl">Política de Privacidade e Proteção de Dados</h2>
@@ -164,7 +164,7 @@ export function SiteUtilities() {
         <div className="min-h-0 space-y-6 overflow-y-auto overscroll-contain p-6 text-xs leading-relaxed font-light text-zinc-600 sm:p-8 sm:text-sm">
           {privacySections.map(([title, body]) => (
             <section key={title} className="space-y-2">
-              <h3 className="flex items-center gap-2 font-mono text-xs font-bold tracking-wider text-zinc-900 uppercase">
+              <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-zinc-900 uppercase">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-piramide" />
                 {title}
               </h3>
@@ -174,14 +174,14 @@ export function SiteUtilities() {
         </div>
 
         <footer className="flex shrink-0 flex-col items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/70 p-4 sm:flex-row sm:p-6">
-          <button type="button" onClick={() => dialogRef.current?.close()} className="w-full cursor-pointer border border-zinc-300 px-5 py-2.5 font-mono text-xs font-bold tracking-wider text-zinc-700 uppercase transition-colors hover:bg-zinc-100 sm:w-auto">
+          <button type="button" onClick={() => dialogRef.current?.close()} className="w-full cursor-pointer border border-zinc-300 px-5 py-2.5 text-xs font-bold tracking-wider text-zinc-700 uppercase transition-colors hover:bg-zinc-100 sm:w-auto">
             Fechar
           </button>
           <a
             href={'https://wa.me/5512991599801?text=' + encodeURIComponent('Olá! Gostaria de falar com o encarregado de atendimento sobre privacidade e dados (LGPD) da Pirâmide Imóveis.')}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex w-full items-center justify-center gap-2 bg-piramide px-5 py-2.5 text-center font-mono text-xs font-bold tracking-wider text-white uppercase shadow-sm transition-colors hover:bg-piramide/90 sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-2 bg-piramide px-5 py-2.5 text-center text-xs font-bold tracking-wider text-white uppercase shadow-sm transition-colors hover:bg-piramide/90 sm:w-auto"
           >
             <MessageCircle aria-hidden="true" size={16} />
             Falar com o Atendimento no WhatsApp

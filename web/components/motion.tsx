@@ -2,7 +2,7 @@
 
 import {useEffect, type ReactNode, useRef} from 'react'
 
-export function Reveal({children, className}: {children: ReactNode; className?: string}) {
+export function Reveal({children, className, id}: {children: ReactNode; className?: string; id?: string}) {
   const element = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const node = element.current
@@ -16,5 +16,5 @@ export function Reveal({children, className}: {children: ReactNode; className?: 
     observer.observe(node)
     return () => observer.disconnect()
   }, [])
-  return <div ref={element} className={className}>{children}</div>
+  return <div ref={element} className={className} id={id}>{children}</div>
 }
