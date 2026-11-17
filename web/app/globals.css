@@ -3,13 +3,13 @@
 @theme {
   --font-sans: var(--font-inter), "Inter", Arial, sans-serif;
   --font-serif: var(--font-inter), "Inter", Arial, sans-serif;
-  --color-coal: #10100d;
-  --color-charcoal: #191813;
+  --color-coal: #161616;
+  --color-charcoal: #161616;
   --color-ivory: #f4eee3;
   --color-gold: #d9be87;
   --color-muted: #b8b1a4;
-  --color-paper: #f5f1e9;
-  --color-sand: #e9e1d3;
+  --color-paper: #f1f1f1;
+  --color-sand: #f1f1f1;
   --color-espresso: #221f19;
   --color-earth: #5e5648;
   --color-rule: #c9bdaa;
@@ -26,7 +26,7 @@
   @keyframes photo-wipe {
     from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
     55% { clip-path: polygon(0 0, 66% 0, 39% 100%, 0 100%); }
-    to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+    to { clip-path: polygon(0 0, 101% 0, 101% 100%, 0 100%); }
   }
   @keyframes image-in {
     from { clip-path: inset(3% 4% 8%); scale: 1.06; }

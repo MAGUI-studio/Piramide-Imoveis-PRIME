@@ -10,10 +10,13 @@ import { Frame } from './media'
 
 type HeroItem = Pick<PropertyCard, 'slug' | 'title' | 'summary' | 'specifications'> & { location: string; photo: Picture }
 const slideDuration = 6500
+const wipeDuration = 1400
 const number = new Intl.NumberFormat('pt-BR')
 
 export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
   const [slide, setSlide] = useState({ current: 0, previous: -1, run: 0 })
+  const [leftIndex, setLeftIndex] = useState(0)
+  const [rightIndex, setRightIndex] = useState(0)
   const [focused, setFocused] = useState(false)
   const [visible, setVisible] = useState(false)
   const [canAnimate, setCanAnimate] = useState(false)
@@ -21,16 +24,20 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
   const progress = useRef<SVGSVGElement>(null)
   const elapsed = useRef(0)
   const active = items[slide.current] ?? items[0]
-  const specs = active.specifications
-  const facts: [string, number | undefined, string][] = [
-    ['Área', specs?.area, 'metragem'],
-    ['Dormitórios', specs?.bedrooms, 'quarto-solteiro'],
-    ['Banheiros', specs?.bathrooms, 'banheiro'],
-    ['Suítes', specs?.suites, 'quarto-casal'],
-    ['Vagas', specs?.parking, 'garagem'],
-  ]
-  const availableFacts = facts.filter(([, value]) => value != null)
+  const leftActive = items[leftIndex] ?? active
   const count = items.length
+
+  function factsOf(item: HeroItem) {
+    const specs = item.specifications
+    const list: [string, number | undefined, string][] = [
+      ['Área', specs?.area, 'metragem'],
+      ['Dormitórios', specs?.bedrooms, 'quarto-solteiro'],
+      ['Banheiros', specs?.bathrooms, 'banheiro'],
+      ['Suítes', specs?.suites, 'quarto-casal'],
+      ['Vagas', specs?.parking, 'garagem'],
+    ]
+    return list.filter(([, value]) => value != null)
+  }
 
   function syncProgress(ratio: number) {
     const pct = Math.max(0, Math.min(100, ratio * 100))
@@ -66,7 +73,22 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
   useEffect(() => {
     elapsed.current = 0
     syncProgress(count < 2 ? 1 : 0)
-  }, [slide.current, slide.run, count])
+    if (slide.previous < 0 || !canAnimate) {
+      setLeftIndex(slide.current)
+      setRightIndex(slide.current)
+      return
+    }
+    const leftTimer = window.setTimeout(() => {
+      setLeftIndex(slide.current)
+    }, wipeDuration * 0.5)
+    const rightTimer = window.setTimeout(() => {
+      setRightIndex(slide.current)
+    }, wipeDuration)
+    return () => {
+      window.clearTimeout(leftTimer)
+      window.clearTimeout(rightTimer)
+    }
+  }, [slide.current, slide.previous, slide.run, count, canAnimate])
 
   useEffect(() => {
     if (focused || !visible || !canAnimate || count < 2) return
@@ -101,7 +123,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
 
   return <>
     <div className="relative [--hero-notch:16px] lg:[--hero-notch:clamp(28px,2.6vw,42px)]">
-      <section className="relative isolate aspect-[.9] overflow-hidden bg-sand [clip-path:polygon(0_0,100%_0,100%_100%,54%_100%,46%_calc(100%_-_var(--hero-notch)),0_calc(100%_-_var(--hero-notch)))] after:pointer-events-none after:absolute after:inset-0 after:z-2 after:bg-[linear-gradient(0deg,#100e0ceb_0%,#100e0ca8_45%,transparent_100%),linear-gradient(180deg,#100e0c73_0%,transparent_22%),linear-gradient(270deg,#100e0c99_0%,transparent_28%)] sm:aspect-4/3 lg:aspect-[2.25]"
+      <section className="relative isolate aspect-[.9] overflow-hidden bg-coal transform-gpu [clip-path:polygon(0_0,101%_0,101%_100%,54%_100%,46%_calc(100%_-_var(--hero-notch)),0_calc(100%_-_var(--hero-notch)))] after:pointer-events-none after:absolute after:inset-0 after:z-2 after:bg-[linear-gradient(0deg,#100e0ceb_0%,#100e0ca8_45%,transparent_100%),linear-gradient(180deg,#100e0c73_0%,transparent_22%),linear-gradient(270deg,#100e0c99_0%,transparent_28%)] sm:aspect-4/3 lg:aspect-[2.25]"
         ref={hero} aria-label={'Fotos de ' + active.title}
         onFocus={(event) => {
           if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) {
@@ -112,21 +134,32 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
           if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)
         }}>
         {items.map(({ photo, slug }, index) => (
-          <div key={slug} className="invisible absolute inset-0 data-[outgoing=true]:visible data-[current=true]:visible data-[current=true]:z-1 motion-safe:[&[data-current=true][data-transition=true]]:animate-photo-wipe"
+          <div key={slug} className="invisible absolute inset-0 transform-gpu backface-hidden will-change-[clip-path,transform] data-[outgoing=true]:visible data-[current=true]:visible data-[current=true]:z-1 motion-safe:[&[data-current=true][data-transition=true]]:animate-photo-wipe"
             data-current={index === slide.current} data-outgoing={index === slide.previous}
             data-transition={slide.previous >= 0} aria-hidden={index !== slide.current}>
-            <Frame photo={photo} className="size-full object-cover" priority={index === 0} sizes="(min-width: 1760px) 1760px, 100vw" />
+            <Frame photo={photo} className="size-full object-cover transform-gpu" priority sizes="(min-width: 1760px) 1760px, 100vw" />
           </div>
         ))}
         <div className="absolute right-24 bottom-[calc(var(--hero-notch)+1.25rem)] left-5 z-3 text-ivory sm:right-auto sm:bottom-[calc(var(--hero-notch)+1.5rem)] sm:left-9 sm:w-[min(68%,48rem)] lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-14 lg:w-[min(68%,56rem)]"
           aria-live={focused || !canAnimate ? 'polite' : 'off'}>
-          <div key={active.slug} data-transition={slide.previous >= 0} className="motion-safe:data-[transition=true]:animate-enter">
-            <p className={eyebrow + ' text-[.68rem] text-[#f8eddc] sm:text-xs'}>{active.location}</p>
-            <h1 className={heading + ' mt-2.5 pb-1 leading-[1.12] text-[clamp(2.6rem,5.2vw,5.6rem)]'} title={active.title}>{active.title}</h1>
-            <p className="mt-3.5 max-w-[46ch] text-base font-light leading-relaxed text-[#fff5e6] sm:text-lg lg:text-xl">{active.summary}</p>
+          <div className="grid items-end [grid-template-areas:'stack']">
+            {items.map((item, idx) => (
+              <div
+                key={item.slug}
+                aria-hidden={idx !== leftIndex}
+                className={
+                  "[grid-area:stack] transition-opacity duration-500 ease-out motion-reduce:transition-none " +
+                  (idx === leftIndex ? 'opacity-100' : 'pointer-events-none select-none opacity-0')
+                }
+              >
+                <p className={eyebrow + ' text-[.68rem] text-[#f8eddc] sm:text-xs'}>{item.location}</p>
+                <h1 className={heading + ' mt-2.5 line-clamp-2 pb-1.5 leading-[1.15] text-[clamp(2.6rem,5.2vw,5.6rem)] sm:line-clamp-1'} title={item.title}>{item.title}</h1>
+                <p className="mt-3.5 max-w-[46ch] line-clamp-4 text-base font-light leading-relaxed text-[#fff5e6] sm:line-clamp-2 sm:text-lg lg:text-xl">{item.summary}</p>
+              </div>
+            ))}
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3.5">
-            <Link className="group/cta relative inline-flex cursor-pointer select-none items-center justify-center overflow-hidden border border-ivory/65 bg-coal/35 px-4 py-3 text-sm font-medium text-ivory backdrop-blur-xs transition-all duration-300 ease-out hover:border-piramide active:scale-[0.98] will-change-transform sm:px-5 sm:py-3.5 sm:text-base motion-reduce:transition-none" href={'/' + active.slug}>
+            <Link className="group/cta relative inline-flex cursor-pointer select-none items-center justify-center overflow-hidden border border-ivory/65 bg-coal/35 px-4 py-3 text-sm font-medium text-ivory backdrop-blur-xs transition-all duration-300 ease-out hover:border-piramide active:scale-[0.98] will-change-transform sm:px-5 sm:py-3.5 sm:text-base motion-reduce:transition-none" href={'/' + leftActive.slug}>
               <span aria-hidden="true" className="pointer-events-none absolute inset-0 size-full translate-y-full bg-piramide transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cta:translate-y-0" />
               <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white">
                 Ver empreendimento <ArrowUpRight size={18} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
@@ -138,23 +171,38 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
           </div>
         </div>
         <div className="absolute right-5 bottom-[calc(var(--hero-notch)+1rem)] z-3 flex flex-col items-end gap-3.5 text-ivory sm:right-9 sm:bottom-[calc(var(--hero-notch)+1.5rem)] sm:gap-4 lg:right-14 lg:bottom-[calc(var(--hero-notch)+2rem)] lg:gap-5">
-          {availableFacts.length > 0 && <dl className="flex flex-col items-center gap-y-2 sm:gap-y-2.5 lg:gap-y-3 motion-safe:data-[transition=true]:animate-enter"
-            key={active.slug + '-facts'} data-transition={slide.previous >= 0}
-            aria-label="Dados do empreendimento" aria-live={focused || !canAnimate ? 'polite' : 'off'}>
-            {availableFacts.map(([label, value, icon], index) => (
-              <div key={label} className="contents">
-                {index > 0 && <span aria-hidden="true" className="h-px w-8 bg-ivory/35 sm:w-10" />}
-                <div className="flex min-w-[4.2rem] flex-col items-center justify-center gap-1 py-1 text-center sm:min-w-[5rem]">
-                  <dt className="text-[.56rem] font-light tracking-[.11em] text-[#f8eddc] uppercase sm:text-[.64rem] lg:text-[.68rem]">{label}</dt>
-                  <dd className={heading + ' relative isolate inline-flex items-baseline justify-center whitespace-nowrap text-lg leading-none text-ivory sm:text-2xl lg:text-3xl xl:text-4xl'}>
-                    <span className="pointer-events-none absolute top-1/2 left-1/2 -z-1 size-10 -translate-x-1/2 -translate-y-1/2 bg-ivory opacity-12 mask-contain mask-center mask-no-repeat sm:size-12 lg:size-14"
-                      style={{ maskImage: 'url(/brand/property-icons/' + icon + '.svg)' }} aria-hidden="true" />
-                    {typeof value === 'number' ? number.format(value) : value}{icon === 'metragem' && <span className="ml-1 font-sans text-[.7rem] font-medium tracking-normal text-[#fff5e6] sm:text-xs lg:text-sm">m²</span>}
-                  </dd>
-                </div>
-              </div>
-            ))}
-          </dl>}
+          <div className="grid items-end justify-items-center [grid-template-areas:'stack']">
+            {items.map((item, idx) => {
+              const itemFacts = factsOf(item)
+              if (!itemFacts.length) return null
+              return (
+                <dl
+                  key={item.slug + '-facts'}
+                  aria-label="Dados do empreendimento"
+                  aria-hidden={idx !== rightIndex}
+                  aria-live={idx === rightIndex && (focused || !canAnimate) ? 'polite' : 'off'}
+                  className={
+                    "[grid-area:stack] flex w-20 flex-col items-center gap-y-2 sm:w-24 sm:gap-y-2.5 lg:gap-y-3 transition-opacity duration-500 ease-out motion-reduce:transition-none " +
+                    (idx === rightIndex ? 'opacity-100' : 'pointer-events-none select-none opacity-0')
+                  }
+                >
+                  {itemFacts.map(([label, value, icon], index) => (
+                    <div key={label} className="contents">
+                      {index > 0 && <span aria-hidden="true" className="h-px w-8 bg-ivory/35 sm:w-10" />}
+                      <div className="flex min-w-[4.2rem] flex-col items-center justify-center gap-1 py-1 text-center sm:min-w-[5rem]">
+                        <dt className="text-[.56rem] font-light tracking-[.11em] text-[#f8eddc] uppercase sm:text-[.64rem] lg:text-[.68rem]">{label}</dt>
+                        <dd className={heading + ' relative isolate inline-flex items-baseline justify-center whitespace-nowrap text-lg leading-none text-ivory sm:text-2xl lg:text-3xl xl:text-4xl'}>
+                          <span className="pointer-events-none absolute top-1/2 left-1/2 -z-1 size-10 -translate-x-1/2 -translate-y-1/2 bg-ivory opacity-12 mask-contain mask-center mask-no-repeat sm:size-12 lg:size-14"
+                            style={{ maskImage: 'url(/brand/property-icons/' + icon + '.svg)' }} aria-hidden="true" />
+                          {typeof value === 'number' ? number.format(value) : value}{icon === 'metragem' && <span className="ml-1 font-sans text-[.7rem] font-medium tracking-normal text-[#fff5e6] sm:text-xs lg:text-sm">m²</span>}
+                        </dd>
+                      </div>
+                    </div>
+                  ))}
+                </dl>
+              )
+            })}
+          </div>
           <div className="flex items-center gap-2.5" role="group" aria-label="Selecionar empreendimento">
             {items.map((item, idx) => (
               <button
