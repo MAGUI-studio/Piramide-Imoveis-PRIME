@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
 import {useEffect, useId, useRef, useState} from 'react'
-import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, Check, ChevronDown, House, MapPin, Search, SlidersHorizontal, X} from 'lucide-react'
+import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, CarFront, Check, ChevronDown, House, MapPin, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
 import {availabilityLabel, cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
 import {button, eyebrow, heading, homeSectionHeading, wrap} from '../lib/classes'
@@ -317,7 +317,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                 : 'min-h-[20rem] xl:min-h-[24rem]'
             const titleSize = isLead
               ? 'text-[clamp(1.65rem,2.75vw,3.25rem)]'
-              : 'text-[clamp(1.2rem,1.65vw,1.95rem)]'
+              : 'text-[clamp(1.35rem,1.8vw,2rem)]'
             const titleStyle = isLead ? heading : 'font-sans font-semibold leading-tight tracking-tight'
             const location = locationOf(item)
             const status = availabilityLabel(item.availability)
@@ -334,7 +334,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                   {item.alternate && <div className="absolute inset-0 [clip-path:inset(0_100%_0_0)] group-focus-visible:[clip-path:inset(0)] group-hover:[clip-path:inset(0)] motion-safe:transition-[clip-path] motion-safe:duration-700" aria-hidden="true">
                     <Frame className="size-full object-cover" photo={item.alternate} sizes={sizes} />
                   </div>}
-                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#080808_0%,#080808f2_28%,#080808b8_52%,#08080873_75%,#08080833_100%)]" />
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#080808_0%,#080808f5_30%,#080808c9_50%,#0808084d_75%,#08080814_100%)]" />
                 </div>
                 {(status || item.conditions?.exclusive) && (
                   <div className="absolute top-4 left-5 flex flex-wrap gap-1.5 sm:top-5 sm:left-6">
@@ -351,16 +351,17 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                   </div>
                 )}
                 <div className="w-full text-white">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className={titleStyle + ' min-w-0 line-clamp-2 ' + titleSize} title={item.title}>{item.title}</h3>
-                    <ArrowUpRight aria-hidden="true" size={19} strokeWidth={1.6} className="mt-0.5 shrink-0 text-white motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-focus-visible:translate-x-0.5 motion-safe:group-focus-visible:-translate-y-0.5" />
-                  </div>
-                  {location && <p className="mt-2 flex items-start gap-1.5 text-xs font-medium text-white/90"><MapPin aria-hidden="true" size={13} className="mt-0.5 shrink-0" />{location}</p>}
-                  {item.summary && <p className="mt-2 line-clamp-2 max-w-[52ch] text-xs leading-relaxed text-white/85 sm:text-sm">{item.summary}</p>}
-                  <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[11px] leading-snug font-semibold text-white/90">
-                    {area && <span className="whitespace-nowrap tabular-nums">{area}</span>}
-                    {item.propertyType && <span className="tracking-[.07em] uppercase">{item.propertyType}</span>}
-                    <span className="font-bold whitespace-nowrap text-white tabular-nums">{propertyPrice(item.price)}</span>
+                  {item.propertyType && <p className="mb-2 text-xs font-medium tracking-wide text-white/80">{item.propertyType}</p>}
+                  <h3 className={titleStyle + ' min-w-0 line-clamp-2 ' + titleSize} title={item.title}>{item.title}</h3>
+                  {location && <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-white/90"><MapPin aria-hidden="true" size={15} className="mt-0.5 shrink-0" /><span>{location}</span></p>}
+                  {item.summary && <p className="mt-2 line-clamp-2 max-w-[52ch] text-sm leading-relaxed text-white/80">{item.summary}</p>}
+                  <ul aria-label="Características do imóvel" className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-white [&>li]:inline-flex [&>li]:items-center [&>li]:gap-2 [&>li]:whitespace-nowrap [&>li]:tabular-nums [&>li:not(:first-child)]:before:me-1 [&>li:not(:first-child)]:before:size-1 [&>li:not(:first-child)]:before:rounded-full [&>li:not(:first-child)]:before:bg-white/50 [&_svg]:shrink-0 [&_svg]:text-white/80">
+                    {area && <li><Ruler size={16} strokeWidth={1.7} aria-hidden="true" /><span>{area}</span></li>}
+                    {!!item.specifications?.suites && <li><BedDouble size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.suites} {item.specifications.suites === 1 ? 'suíte' : 'suítes'}</span></li>}
+                    {!!item.specifications?.parking && <li><CarFront size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.parking} {item.specifications.parking === 1 ? 'vaga' : 'vagas'}</span></li>}
+                  </ul>
+                  <p className="mt-4 border-t border-white/20 pt-3 text-[clamp(1.15rem,1.6vw,1.65rem)] leading-snug font-semibold tracking-tight text-white tabular-nums">
+                    {propertyPrice(item.price)}
                   </p>
                 </div>
               </Link>
