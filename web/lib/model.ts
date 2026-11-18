@@ -8,6 +8,7 @@ export type Photo = {
 
 export type MarqueeItem = {_key: string; title: string; description: string}
 export type HomeStat = {_key: string; label: string; value: number; prefix?: string | null; suffix?: string | null}
+export type PropertyTypeOption = {id: string; name: string; image?: Photo | null}
 export type PropertyQuestion = {_key: string; question: string; answer: string}
 export type Seo = {title?: string | null; description?: string | null; socialImage?: Photo | null}
 export const catalogPageSize = 10

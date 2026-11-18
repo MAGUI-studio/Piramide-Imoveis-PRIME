@@ -1,4 +1,8 @@
 import {defineArrayMember, defineField, defineType, type CustomValidator, type DocumentDefinition, type SlugValidationContext} from 'sanity'
+import {defaultPropertyTypes, PropertyTypeInput} from './PropertyTypeInput'
+import {WatermarkedImageInput} from './WatermarkedImageInput'
+import {WatermarkedPhotoArrayInput} from './WatermarkedPhotoArrayInput'
+import {watermarkVersion} from './watermark'
 
 const apiVersion = '2026-02-01'
 const templates = [
@@ -35,7 +39,8 @@ const photo = defineType({
   name: 'primePhoto',
   title: 'Foto',
   type: 'image',
-  description: 'JPEG, PNG ou WebP com até 2 MB.',
+  description: 'JPEG, PNG ou WebP com até 2 MB. Nas fotos dos empreendimentos, a marca d’água é aplicada automaticamente.',
+  components: {input: WatermarkedImageInput},
   options: {hotspot: true, accept: imageFormats.join(',')},
   fields: [
     defineField({
@@ -48,7 +53,17 @@ const photo = defineType({
       validation: (rule) => rule.max(120),
     }),
   ],
-  validation: (rule) => rule.custom((value, context) => value ? validateAsset(2, imageFormats)(value, context) : true),
+  validation: (rule) => rule.custom(async (value, context) => {
+    if (!value) return true
+    const valid = await validateAsset(2, imageFormats)(value, context)
+    if (valid !== true) return valid
+    if (context.document?._type !== 'property') return true
+    const assetId = (value as AssetValue).asset?._ref
+    const description = await context.getClient({apiVersion}).fetch<string | null>(
+      '*[_id == $id][0].description', {id: assetId},
+    )
+    return description === watermarkVersion || 'Aguarde a aplicação da marca d’água antes de publicar. Se houve uma falha, envie a foto novamente.'
+  }),
 })
 
 const seo = defineType({
@@ -98,6 +113,37 @@ function uniqueName(type: string, byCity = false): CustomValidator<string | unde
     return !duplicate || 'Já existe um cadastro com este nome nesta lista.'
   }
 }
+
+const propertyTypeOption = defineType({
+  name: 'propertyTypeOption',
+  title: 'Tipos de imóvel',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'name',
+      title: 'Nome do tipo de imóvel',
+      type: 'string',
+      description: 'Ex.: Casa/Mansão, Apartamento/Cobertura, Condomínio, Terreno, Comercial.',
+      validation: (rule) =>
+        rule
+          .required()
+          .min(2)
+          .max(60)
+          .custom((value) => !value || value === value.trim() || 'Remova os espaços nas extremidades.')
+          .custom(uniqueName('propertyTypeOption')),
+    }),
+    defineField({
+      name: 'image',
+      title: 'Imagem na Home (sem marca d’água)',
+      type: 'primePhoto',
+      description: 'Imagem exibida no card deste tipo de imóvel na seção "Qual imóvel você procura?" da Home. Esta imagem não recebe marca d’água.',
+      validation: (rule) => rule.required(),
+    }),
+  ],
+  preview: {
+    select: {title: 'name', media: 'image'},
+  },
+} satisfies DocumentDefinition)
 
 const city = defineType({
   name: 'city', title: 'Cidades', type: 'document',
@@ -181,7 +227,24 @@ const property = defineType({
         return !existing || existing === slug || 'O endereço da ficha já publicada deve permanecer /' + existing + '.'
       }),
     }),
-    defineField({name: 'propertyType', title: 'Tipo de imóvel', type: 'string', group: 'details', options: {list: types}, validation: (rule) => rule.required().custom((value) => !value || types.includes(value) || 'Selecione um tipo de imóvel.')}),
+    defineField({
+      name: 'propertyType',
+      title: 'Tipo de imóvel',
+      type: 'string',
+      group: 'details',
+      description: 'Gerencie as opções e fotos de cada tipo em "Tipos de imóvel" no menu lateral.',
+      components: {input: PropertyTypeInput},
+      validation: (rule) =>
+        rule.required().custom(async (value, {getClient}) => {
+          if (!value) return 'Selecione um tipo de imóvel.'
+          if (defaultPropertyTypes.includes(value)) return true
+          const exists = await getClient({apiVersion}).withConfig({perspective: 'raw'}).fetch<string | null>(
+            '*[_type == "propertyTypeOption" && lower(name) == $name][0]._id',
+            {name: value.trim().toLowerCase()},
+          )
+          return !!exists || 'Selecione um tipo de imóvel cadastrado.'
+        }),
+    }),
     defineField({name: 'neighborhood', title: 'Bairro e cidade', type: 'reference', group: ['details', 'location'], to: [{type: 'neighborhood'}], validation: (rule) => rule.required()}),
     defineField({
       name: 'address', title: 'Endereço público', type: 'object', group: 'location',
@@ -293,6 +356,7 @@ const property = defineType({
     defineField({name: 'cover', title: 'Foto de capa', type: 'primePhoto', group: 'media', validation: (rule) => rule.required()}),
     defineField({
       name: 'gallery', title: 'Galeria de fotos', type: 'array', group: 'media',
+      components: {input: WatermarkedPhotoArrayInput},
       description: 'No template Fotos, organize o ensaio na ordem em que deve ser visto.',
       of: [defineArrayMember({type: 'primePhoto'})],
       validation: (rule) => rule.custom((value, {document}) =>
@@ -339,6 +403,7 @@ const property = defineType({
     }),
     defineField({
       name: 'detailsPhoto', title: 'Imagens de Detalhes em foco', type: 'array', group: 'design',
+      components: {input: WatermarkedPhotoArrayInput},
       hidden: ({document}) => document?.template !== 'editorial',
       description: 'Até 2 fotos para a seção Detalhes em foco em Fotos (a primeira fica à esquerda e a segunda à direita).',
       of: [defineArrayMember({type: 'primePhoto'})],
@@ -476,4 +541,4 @@ const marquee = defineType({
   preview: {prepare: () => ({title: 'Faixa informativa do rodapé'})},
 })
 
-export const schemaTypes = [photo, seo, city, neighborhood, property, home, marquee]
+export const schemaTypes = [photo, seo, propertyTypeOption, city, neighborhood, property, home, marquee]

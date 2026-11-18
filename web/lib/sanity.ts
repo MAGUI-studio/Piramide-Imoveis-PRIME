@@ -1,7 +1,7 @@
 import {createClient, type QueryParams} from '@sanity/client'
 import {draftMode} from 'next/headers'
 import {cache} from 'react'
-import type {HomeStat, MarqueeItem, Photo, Property, PropertyCard, Seo} from './model'
+import type {HomeStat, MarqueeItem, Photo, Property, PropertyCard, PropertyTypeOption, Seo} from './model'
 
 const projectId = process.env.SANITY_PROJECT_ID
 export const dataset = process.env.SANITY_DATASET || 'production'
@@ -28,16 +28,19 @@ const cardFields = `
 `
 const mediaFields = 'gallery, "clip": clip.asset->url'
 const listing = '_type == "property" && defined(slug.current) && defined(cover.asset)'
-type CatalogProperty = PropertyCard & {alternate?: Photo | null}
-type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
+type CatalogProperty = PropertyCard & {alternate?: Photo | null; coverOriginalFilename?: string | null}
+type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
 const homeQuery = `{
   "hero": *[_id == "primeHome"][0].hero->{
     ${cardFields}
   },
   "featured": *[_id == "primeHome"][0].featured[]->{${cardFields}},
   "catalog": *[${listing}] | order(select(availability == "sold" => 1, 0) asc, coalesce(firstPublishedAt, _createdAt) desc, title asc, _id asc) {
-    ${cardFields}, "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
+    ${cardFields},
+    "coverOriginalFilename": cover.asset->originalFilename,
+    "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
   },
+  "propertyTypes": coalesce(*[_type == "propertyTypeOption" && defined(name)] | order(name asc) {"id": _id, name, image}, []),
   "whatsapp": *[_id == "primeHome"][0].whatsapp,
   "homeSeo": *[_id == "primeHome"][0].homeSeo,
   "catalogSeo": *[_id == "primeHome"][0].catalogSeo,
@@ -60,7 +63,7 @@ const propertyQuery = `{
 }`
 
 export const getHome = cache(async (preview: boolean): Promise<Home> => {
-  return await read<Home>(homeQuery, {}, preview) || {hero: null, featured: [], catalog: [], whatsapp: null, marquee: [], stats: []}
+  return await read<Home>(homeQuery, {}, preview) || {hero: null, featured: [], catalog: [], propertyTypes: [], whatsapp: null, marquee: [], stats: []}
 })
 
 export const getProperty = cache(async (slug: string, preview: boolean) => {

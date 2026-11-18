@@ -1,6 +1,7 @@
 import {defineConfig} from 'sanity'
 import {defineLocations, presentationTool} from 'sanity/presentation'
 import {structureTool} from 'sanity/structure'
+import {ensureDefaultPropertyTypes} from './PropertyTypeInput'
 import {schemaTypes} from './schema'
 import {withPublicationFields} from './publish'
 
@@ -26,13 +27,17 @@ export default defineConfig({
   plugins: [
     structureTool({
       title: 'Conteúdo',
-      structure: (S) => S.list().title('Pirâmide Imóveis Prime').items([
-        S.listItem().title('Home').child(S.document().schemaType('primeHome').documentId('primeHome')),
-        S.listItem().title('Faixa informativa do rodapé').child(S.document().schemaType('primeMarquee').documentId('primeMarquee')),
-        S.documentTypeListItem('property'),
-        S.documentTypeListItem('city'),
-        S.documentTypeListItem('neighborhood'),
-      ]),
+      structure: (S, context) => {
+        void ensureDefaultPropertyTypes(context.getClient({apiVersion: '2026-02-01'}))
+        return S.list().title('Pirâmide Imóveis Prime').items([
+          S.listItem().title('Home').child(S.document().schemaType('primeHome').documentId('primeHome')),
+          S.listItem().title('Faixa informativa do rodapé').child(S.document().schemaType('primeMarquee').documentId('primeMarquee')),
+          S.documentTypeListItem('property'),
+          S.documentTypeListItem('propertyTypeOption').title('Tipos de imóvel'),
+          S.documentTypeListItem('city'),
+          S.documentTypeListItem('neighborhood'),
+        ])
+      },
     }),
     presentationTool({
       title: 'Prévia',
