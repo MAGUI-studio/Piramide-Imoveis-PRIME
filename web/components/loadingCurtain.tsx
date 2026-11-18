@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from 'react'
 
-export function LoadingCurtain() {
+export function LoadingCurtain({embedded = false, onComplete}: {embedded?: boolean; onComplete?: () => void}) {
   const [stage, setStage] = useState<'showing' | 'revealing' | 'complete'>('showing')
   const [entered, setEntered] = useState(false)
 
@@ -15,6 +15,7 @@ export function LoadingCurtain() {
 
     const completeTimer = setTimeout(() => {
       setStage('complete')
+      onComplete?.()
     }, 1780)
 
     return () => {
@@ -22,7 +23,7 @@ export function LoadingCurtain() {
       clearTimeout(revealTimer)
       clearTimeout(completeTimer)
     }
-  }, [])
+  }, [onComplete])
 
   if (stage === 'complete') {
     return null
@@ -33,7 +34,8 @@ export function LoadingCurtain() {
   return (
     <div
       data-testid="loading-curtain"
-      className="pointer-events-none fixed inset-y-0 left-1/2 z-[999999] w-full max-w-[110rem] -translate-x-1/2 overflow-hidden select-none transform-gpu"
+      aria-hidden={embedded || undefined}
+      className={'pointer-events-none overflow-hidden select-none transform-gpu ' + (embedded ? 'absolute inset-0 z-10' : 'fixed inset-y-0 left-1/2 z-[999999] w-full max-w-[110rem] -translate-x-1/2')}
     >
       <div className="pointer-events-none absolute inset-0 z-[1000000] flex items-center justify-center px-6">
         <div
