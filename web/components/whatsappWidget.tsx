@@ -12,36 +12,6 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
 
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
-    }
-  }, [])
-
-  const handleMouseEnter = () => {
-    if (
-      typeof window !== 'undefined' &&
-      !window.matchMedia('(hover: hover) and (pointer: fine)').matches
-    ) {
-      return
-    }
-    if (leaveTimerRef.current) {
-      clearTimeout(leaveTimerRef.current)
-      leaveTimerRef.current = null
-    }
-    setIsOpen(true)
-    setIsHovered(true)
-  }
-
-  const handleMouseLeave = () => {
-    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
-    leaveTimerRef.current = setTimeout(() => {
-      setIsOpen(false)
-      setIsHovered(false)
-    }, 150)
-  }
 
   useEffect(() => {
     if (!isOpen) return
@@ -57,7 +27,6 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
   }, [isOpen])
 
   const handleButtonClick = () => {
-    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
     setIsOpen((prev) => !prev)
   }
 
@@ -71,7 +40,6 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
             if (event.key !== 'Escape' || !isOpen) return
             event.preventDefault()
             event.stopPropagation()
-            if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
             setIsOpen(false)
             setIsHovered(false)
             triggerRef.current?.focus()
@@ -84,18 +52,16 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
               id={panelId}
               role="region"
               aria-label="Atendimento pelo WhatsApp"
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              className="absolute right-0 bottom-full mb-3 w-72 origin-bottom-right rounded-none border border-white/15 bg-coal/95 p-3 shadow-xl backdrop-blur-xl sm:w-80 motion-safe:animate-enter"
+              className="absolute right-0 bottom-full mb-3 w-72 max-w-[calc(100vw-2rem)] origin-bottom-right rounded-none border border-zinc-200 bg-white/95 p-3 text-ink shadow-xl backdrop-blur-xl [color-scheme:light] sm:w-80 motion-safe:animate-enter"
             >
-              <div className="mb-2 flex items-center justify-between border-b border-zinc-800 px-3 py-2">
+              <div className="mb-2 flex items-center justify-between border-b border-zinc-200 px-3 py-2">
                 <div className="flex items-center gap-2">
                   <span className="relative flex size-2">
                     <span className="absolute inline-flex size-full motion-safe:animate-ping rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
                   </span>
                   <div>
-                    <p className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
+                    <p className="text-[10px] font-bold tracking-wider text-earth uppercase">
                       Atendimento Online
                     </p>
                   </div>
@@ -105,11 +71,10 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation()
-                    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
                     setIsOpen(false)
                     setIsHovered(false)
                   }}
-                  className="grid size-11 cursor-pointer place-items-center rounded-none text-zinc-400 transition-colors hover:text-zinc-200"
+                  className="grid size-11 cursor-pointer place-items-center rounded-none text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
                   aria-label="Fechar atendimento"
                 >
                   <X size={14} strokeWidth={2.5} />
@@ -124,7 +89,7 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
                   setIsOpen(false)
                   setIsHovered(false)
                 }}
-                className="group flex w-full items-center gap-3 rounded-none p-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800/80 hover:text-piramide"
+                className="group flex w-full items-center gap-3 rounded-none p-2.5 text-sm font-semibold text-ink transition-colors hover:bg-piramide/5 hover:text-piramide"
               >
                 <span className="rounded-none bg-piramide/15 p-2 text-piramide">
                   <MessageCircle aria-hidden="true" size={18} />
@@ -139,8 +104,8 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
             type="button"
             ref={triggerRef}
             aria-controls={isOpen ? panelId : undefined}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
             onClick={handleButtonClick}
             aria-label="Atendimento pelo WhatsApp"
             aria-expanded={isOpen}
