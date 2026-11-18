@@ -8,7 +8,7 @@ export function HomeStats({stats, intro}: {stats: HomeStat[]; intro?: ContentInt
   const entries = stats.filter(({label, value}) => label && Number.isFinite(value) && value >= 0)
   if (!entries.length) return null
   return (
-    <div id="numeros" aria-labelledby="home-stats-title" className={'group ' + wrap + ' pt-6 pb-12 sm:pt-8 sm:pb-16'}>
+    <div id="numeros" aria-labelledby="home-stats-title" className={'group ' + wrap + ' pt-10 pb-20 sm:pt-14 sm:pb-28'}>
       <Reveal className="group grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
         <div>
           <p className={eyebrow + ' mb-3 text-[.68rem] text-piramide'}>{intro?.eyebrow}</p>

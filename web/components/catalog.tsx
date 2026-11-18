@@ -211,7 +211,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
   }
 
   return (
-    <section id="empreendimentos" className={wrap + ' scroll-mt-4 ' + (full ? 'pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]' : 'pt-5 pb-6 sm:pt-7 sm:pb-8')}>
+    <section id="empreendimentos" className={wrap + ' scroll-mt-4 ' + (full ? 'pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]' : 'pt-10 pb-10 sm:pt-16 sm:pb-14')}>
       <Reveal className="group mb-7">
         <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide ' + riseIn}>Portfólio Pirâmide Imóveis Prime</p>
         <Title className={homeSectionHeading}><Words text={full ? 'Todos os empreendimentos' : 'Explore os empreendimentos'} start={100} /></Title>

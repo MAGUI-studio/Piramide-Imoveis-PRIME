@@ -11,7 +11,7 @@ export type LifestyleItem = {type: string; count: number; image: Picture}
 export function Lifestyle({items}: {items: LifestyleItem[]}) {
   if (!items.length) return null
   return (
-    <div id="estilos-de-vida" className="group pt-7 pb-16 sm:pt-9 sm:pb-24">
+    <div id="estilos-de-vida" className="group pt-12 pb-16 sm:pt-20 sm:pb-24">
       <div className={wrap + ' mb-6 sm:mb-8 flex flex-wrap items-end justify-between gap-4'}>
         <div>
           <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Curadoria por perfil</p>

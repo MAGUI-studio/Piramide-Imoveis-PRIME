@@ -7,6 +7,11 @@ export function LoadingCurtain({embedded = false, onComplete}: {embedded?: boole
   const [entered, setEntered] = useState(false)
 
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setStage('complete')
+      onComplete?.()
+      return
+    }
     const enterFrame = requestAnimationFrame(() => setEntered(true))
 
     const revealTimer = setTimeout(() => {
@@ -40,7 +45,7 @@ export function LoadingCurtain({embedded = false, onComplete}: {embedded?: boole
       <div className="pointer-events-none absolute inset-0 z-[1000000] flex items-center justify-center px-6">
         <div
           className={
-            'relative flex flex-col items-center justify-center transition-all ' +
+            'relative flex flex-col items-center justify-center transition-all motion-reduce:transition-none ' +
             (revealing
               ? '-translate-y-4 scale-104 opacity-0 duration-250 ease-in'
               : entered
@@ -60,7 +65,7 @@ export function LoadingCurtain({embedded = false, onComplete}: {embedded?: boole
 
       <div
         className={
-          'pointer-events-none absolute inset-0 size-full bg-black/75 backdrop-blur-md transition-[clip-path] duration-850 ease-[cubic-bezier(0.85,0,0.15,1)] transform-gpu will-change-[clip-path] ' +
+          'pointer-events-none absolute inset-0 size-full bg-black/75 backdrop-blur-md transition-[clip-path] motion-reduce:transition-none duration-850 ease-[cubic-bezier(0.85,0,0.15,1)] transform-gpu will-change-[clip-path] ' +
           (revealing
             ? '[clip-path:polygon(0%_0%,0%_100%,0%_100%,0%_0%,100%_0%,100%_100%,100%_100%,100%_0%)]'
             : '[clip-path:polygon(0%_0%,0%_100%,50%_100%,50%_0%,50%_0%,50%_100%,100%_100%,100%_0%)]')

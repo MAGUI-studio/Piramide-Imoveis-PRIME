@@ -6,34 +6,40 @@ import {socialIconPaths} from './socialIconPaths'
 import {getSiteSettings, isPreview} from '../lib/sanity'
 import {organizationAddress, safeExternalUrl} from '../lib/siteSettings'
 import {PrivacyLink} from './siteUtilities'
+import {HeaderSearch} from './headerSearch'
 
 const footerHeading = 'text-xs font-bold tracking-widest uppercase'
 const footerLink = 'flex w-fit items-center gap-1 transition-colors before:text-piramide before:opacity-0 before:transition-opacity before:content-["›"/""] hover:text-piramide hover:before:opacity-100 focus-visible:before:opacity-100'
 export function Header({overlay = false, light = false, splitOverlay = false, contact = null}: {home?: boolean; overlay?: boolean; light?: boolean; splitOverlay?: boolean; contact?: string | null}) {
   return (
-    <header className={overlay ? 'absolute inset-x-0 top-0 z-5' : undefined}>
-      <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-9 sm:py-5 lg:px-14 lg:py-6">
+    <header className={overlay ? 'absolute inset-x-0 top-0 z-20' : 'relative z-20'}>
+      <div className={wrap + ' relative flex min-h-20 items-center justify-between gap-2 py-3 sm:min-h-0 sm:gap-4 sm:py-5 lg:py-6'}>
         <Link href="/" className="inline-flex shrink-0" aria-label="Pirâmide Imóveis — início">
           {splitOverlay ? (
             <>
-              <img className="h-auto w-[clamp(60px,5.5vw,92px)] min-[801px]:hidden" src="/logos/piramide/logo_white.svg" alt="" width={1000} height={512} />
-              <img className="hidden h-auto w-[clamp(60px,5.5vw,92px)] min-[801px]:block" src="/logos/piramide/logo_black.svg" alt="" width={1000} height={512} />
+              <img className="h-auto w-[clamp(72px,6.5vw,110px)] min-[801px]:hidden" src="/logos/piramide/logo_white.svg" alt="" width={1000} height={512} />
+              <img className="hidden h-auto w-[clamp(72px,6.5vw,110px)] min-[801px]:block" src="/logos/piramide/logo_black.svg" alt="" width={1000} height={512} />
             </>
           ) : (
-            <img className="h-auto w-[clamp(60px,5.5vw,92px)]" src={light ? '/logos/piramide/logo_black.svg' : '/logos/piramide/logo_white.svg'} alt="" width={1000} height={512} />
+            <img className="h-auto w-[clamp(72px,6.5vw,110px)]" src={light ? '/logos/piramide/logo_black.svg' : '/logos/piramide/logo_white.svg'} alt="" width={1000} height={512} />
           )}
         </Link>
+        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+        <HeaderSearch light={light} hasContact={!!contact} />
         {contact && <a
           href={contact}
           target="_blank"
           rel="noreferrer"
-          className={sweepButton + ' px-3.5 py-2 text-xs font-medium sm:px-4 sm:py-2.5 sm:text-sm ' + (light ? 'border-zinc-900/30 text-zinc-900' : sweepOnCover)}
+          className={sweepButton + sweepCompact + ' shrink-0 px-2.5! text-center text-[11px]! whitespace-nowrap sm:px-4! sm:text-sm! ' + (light ? sweepOnLight : sweepOnCover)}
         >
           <span aria-hidden="true" className={sweepFill} />
-          <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
-            Falar com especialista <ArrowUpRight size={16} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+          <span className={sweepContent + ' gap-1.5! sm:gap-2.5!'}>
+            <span className="sm:hidden">Fale com especialista</span>
+            <span className="hidden sm:inline">Falar com especialista</span>
+            <ArrowUpRight size={16} className="size-3.5 shrink-0 transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none sm:size-4" />
           </span>
         </a>}
+        </div>
       </div>
     </header>
   )

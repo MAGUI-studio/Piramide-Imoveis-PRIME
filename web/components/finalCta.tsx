@@ -42,7 +42,7 @@ export async function FinalCta({contact, marquee}: {contact: string | null; marq
         <div aria-hidden="true" className="absolute inset-0 -z-1 md:bg-[linear-gradient(90deg,#101010d9_0%,#101010a6_44%,#10101052_75%,#10101038_100%)]" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 -z-1 h-[clamp(10rem,20vw,21rem)] bg-linear-to-t from-coal from-25% via-coal/85 via-50% to-transparent" />
         <ValueProposition content={settings.differentiators} />
-        {content?.title && <Reveal id="contato" className={wrap + ' flex min-h-[24rem] flex-col items-start justify-center pt-8 pb-24 motion-safe:data-[entered=true]:animate-enter md:min-h-[30rem] md:pb-28 lg:pb-32'}>
+        {content?.title && <Reveal id="contato" className={wrap + ' flex min-h-[24rem] flex-col items-start justify-center pt-16 pb-24 motion-safe:data-[entered=true]:animate-enter md:min-h-[30rem] md:pt-24 md:pb-28 lg:pb-32'}>
           {content.eyebrow && <p className={eyebrow + ' mb-3 text-ivory/75'}>{content.eyebrow}</p>}
           <h2 className={heading + ' max-w-[16ch] text-[clamp(2.4rem,5.6vw,5.5rem)]'}>
             {content.title}

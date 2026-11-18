@@ -1,13 +1,14 @@
 'use client'
 
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useId, useRef, useState} from 'react'
 import {ArrowUpRight, MessageCircle, X} from 'lucide-react'
+import {wrap} from '../lib/classes'
 import {whatsappLink} from '../lib/model'
 
 export function WhatsAppWidget({phone}: {phone: string | null}) {
-  const href = whatsappLink(phone) ||
-    'https://wa.me/?text=' +
-      encodeURIComponent('Olá! Gostaria de conversar sobre os empreendimentos da Pirâmide Imóveis Prime.')
+  const href = whatsappLink(phone)
+  const panelId = useId()
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -60,23 +61,37 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
     setIsOpen((prev) => !prev)
   }
 
+  if (!href) return null
+
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40">
-      <div className="mx-auto flex w-full max-w-[110rem] justify-end px-5 sm:px-9 lg:px-14">
+      <div className={wrap + ' flex justify-end'}>
         <div
+          onKeyDown={(event) => {
+            if (event.key !== 'Escape' || !isOpen) return
+            event.preventDefault()
+            event.stopPropagation()
+            if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current)
+            setIsOpen(false)
+            setIsHovered(false)
+            triggerRef.current?.focus()
+          }}
           data-whatsapp-widget
           className="pointer-events-auto relative size-14 sm:size-15"
         >
           {isOpen && (
             <div
+              id={panelId}
+              role="region"
+              aria-label="Atendimento pelo WhatsApp"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="absolute right-0 bottom-full mb-3 w-72 origin-bottom-right rounded-2xl border border-zinc-800 bg-zinc-900/95 p-3 shadow-xl backdrop-blur-xl sm:w-80 motion-safe:animate-enter"
+              className="absolute right-0 bottom-full mb-3 w-72 origin-bottom-right rounded-none border border-white/15 bg-coal/95 p-3 shadow-xl backdrop-blur-xl sm:w-80 motion-safe:animate-enter"
             >
               <div className="mb-2 flex items-center justify-between border-b border-zinc-800 px-3 py-2">
                 <div className="flex items-center gap-2">
                   <span className="relative flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="absolute inline-flex size-full motion-safe:animate-ping rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
                   </span>
                   <div>
@@ -94,7 +109,7 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
                     setIsOpen(false)
                     setIsHovered(false)
                   }}
-                  className="cursor-pointer rounded-lg p-1 text-zinc-400 transition-colors hover:text-zinc-200"
+                  className="grid size-11 cursor-pointer place-items-center rounded-none text-zinc-400 transition-colors hover:text-zinc-200"
                   aria-label="Fechar atendimento"
                 >
                   <X size={14} strokeWidth={2.5} />
@@ -109,9 +124,9 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
                   setIsOpen(false)
                   setIsHovered(false)
                 }}
-                className="group flex w-full items-center gap-3 rounded-xl p-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800/80 hover:text-piramide"
+                className="group flex w-full items-center gap-3 rounded-none p-2.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800/80 hover:text-piramide"
               >
-                <span className="rounded-lg bg-piramide/15 p-2 text-piramide">
+                <span className="rounded-none bg-piramide/15 p-2 text-piramide">
                   <MessageCircle aria-hidden="true" size={18} />
                 </span>
                 Fale com um Especialista
@@ -122,6 +137,8 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
 
           <button
             type="button"
+            ref={triggerRef}
+            aria-controls={isOpen ? panelId : undefined}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={handleButtonClick}
