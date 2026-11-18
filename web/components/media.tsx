@@ -138,7 +138,7 @@ export function ImmersiveCover({
 
   return (
     <div className="relative aspect-[5/6] min-[801px]:aspect-[2/1]">
-      <div ref={container} className={'isolate grid items-end overflow-hidden [&:fullscreen]:bg-black ' + (expanded ? 'fixed inset-0 z-[100000] bg-black' : 'absolute inset-0 bg-paper ' + (stage === 'player' ? 'z-50' : ''))}>
+      <div ref={container} className={'isolate grid place-items-center overflow-hidden [&:fullscreen]:bg-black ' + (expanded ? 'fixed inset-0 z-[100000] bg-black' : 'absolute inset-0 bg-paper ' + (stage === 'player' ? 'z-50' : ''))}>
       <Frame className="absolute inset-0 size-full object-cover motion-safe:animate-image-in" photo={photo} priority />
       {src && !failed && (
         <video
@@ -174,9 +174,9 @@ export function ImmersiveCover({
         />
       )}
       {showOverlay && <>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#161616e6_0%,#16161670_37%,transparent_68%),linear-gradient(to_bottom,#16161680_0%,transparent_34%)]" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,#16161680_0%,#16161640_60%,transparent_100%),linear-gradient(to_top,#161616bf_0%,#1616164d_50%,#16161680_100%)]" />
         {header}
-        <div className="pointer-events-none relative z-1 mx-auto w-[calc(100%-2.25rem)] max-w-6xl pb-[clamp(4.5rem,7vw,7rem)] text-center text-white">
+        <div className="pointer-events-none relative z-1 mx-auto w-[calc(100%-2.25rem)] max-w-6xl py-16 text-center text-white">
           {src && !failed && !fullscreen && (stage === 'cover' || stage === 'paused') && (
             <button
               type="button"
