@@ -2,7 +2,7 @@
 
 import {useEffect} from 'react'
 
-export function ScrollSpy({containerId, finalSectionId}: {containerId: string; finalSectionId?: string}) {
+export function ScrollSpy({containerId, finalSectionIds}: {containerId: string; finalSectionIds: string[]}) {
   useEffect(() => {
     const container = document.getElementById(containerId)
     if (!container) return
@@ -12,8 +12,10 @@ export function ScrollSpy({containerId, finalSectionId}: {containerId: string; f
     function syncHash() {
       if (!container || window.location.pathname !== pathname) return
       const sections = Array.from(container.querySelectorAll<HTMLElement>(':scope > [id]'))
-      const finalSection = finalSectionId ? document.getElementById(finalSectionId) : null
-      if (finalSection) sections.push(finalSection)
+      for (const id of finalSectionIds) {
+        const section = document.getElementById(id)
+        if (section) sections.push(section)
+      }
       const readingLine = Math.min(96, window.innerHeight * 0.2)
       let active = sections[0]
       for (const section of sections) {
@@ -40,7 +42,7 @@ export function ScrollSpy({containerId, finalSectionId}: {containerId: string; f
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
     }
-  }, [containerId, finalSectionId])
+  }, [containerId, finalSectionIds])
 
   return null
 }

@@ -7,7 +7,9 @@ import { Hero } from '../components/hero'
 import { Frame } from '../components/media'
 import { Reveal } from '../components/motion'
 import { ScrollSpy } from '../components/scrollSpy'
-import { FinalCta, Lifestyle, ValueProposition, type LifestyleItem } from '../components/sections'
+import { FinalCta } from '../components/finalCta'
+import { HomeStats } from '../components/homeStats'
+import { Lifestyle, type LifestyleItem } from '../components/lifestyle'
 import { WhatsAppWidget } from '../components/whatsappWidget'
 import { eyebrow, heading, previewBanner, textLink, wrap } from '../lib/classes'
 import { catalogPictures, picture } from '../lib/image'
@@ -46,7 +48,6 @@ export default async function Home() {
     }
   }
   const lifestyle = [...lifestyleMap.values()].sort((a, b) => b.count - a.count)
-  const ctaImage = data.catalog[0] ? picture(data.catalog[0].cover, 16 / 9, 2000) : undefined
   return <>
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
     {!hero && <Header home light contact={contact} />}
@@ -57,7 +58,6 @@ export default async function Home() {
           <p className="mt-6 text-earth">Nenhum empreendimento disponível no momento.</p>
         </section>}
       <Lifestyle items={lifestyle} />
-      {hero && <ValueProposition />}
       {!!featured.length && <section id="destaques" className={wrap + ' pt-[clamp(44px,6vw,88px)] pb-[clamp(48px,8vw,124px)]'} aria-labelledby="titulo-destaques">
         <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-t border-rule pt-6 md:mb-12">
           <div>
@@ -81,10 +81,11 @@ export default async function Home() {
         </div>
       </section>}
       {!!data.catalog.length && <Catalog items={data.catalog.map(catalogPictures)} />}
+      <HomeStats stats={data.stats} />
     </main>
-    <ScrollSpy containerId="conteudo" finalSectionId="contato" />
+    <ScrollSpy containerId="conteudo" finalSectionIds={['diferenciais', 'contato']} />
     <Footer contact={contact}>
-      {hero && <FinalCta image={ctaImage} contact={contact} marquee={data.marquee} />}
+      {hero && <FinalCta contact={contact} marquee={data.marquee} />}
     </Footer>
     <WhatsAppWidget phone={data.whatsapp} />
   </>
