@@ -2,9 +2,9 @@ import {defineArrayMember, defineField, defineType, type CustomValidator, type D
 
 const apiVersion = '2026-02-01'
 const templates = [
-  {title: 'Editorial · reportagem', value: 'editorial'},
-  {title: 'Imersivo · cinema', value: 'immersive'},
-  {title: 'Mosaico · galeria', value: 'mosaic'},
+  {title: 'Fotos', value: 'editorial'},
+  {title: 'Videos', value: 'immersive'},
+  {title: 'Padrão', value: 'mosaic'},
 ]
 const availabilities = [
   {title: 'Disponível', value: 'available'},

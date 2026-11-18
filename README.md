@@ -23,7 +23,7 @@ O catálogo, as fichas e os destaques vêm do dataset configurado, inclusive em 
 ## Fluxo editorial
 
 1. Abra o Studio com uma conta com acesso ao projeto. Cadastre e publique uma cidade e os bairros correspondentes.
-2. Crie um empreendimento, gere o slug, selecione o bairro, preencha os dados e escolha **Editorial**, **Imersivo** ou **Mosaico**. Publique para exibir o card na home e a ficha no endereço `/[slug]`.
+2. Crie um empreendimento, gere o slug, selecione o bairro, preencha os dados e escolha **Fotos**, **Videos** ou **Padrão**. Publique para exibir o card na home e a ficha no endereço `/[slug]`.
 3. Em **Home**, configure o número comercial em formato internacional, selecione um imóvel de abertura e organize os destaques. Publique a configuração. Sem imóvel de abertura, a home usa o primeiro destaque disponível ou o imóvel mais recente.
 4. Envie imagens JPEG, PNG ou WebP de até 2 MB e MP4 de até 12 MB para clipes ou 40 MB para tours. Use MP4 H.264 e fotos com descrições e enquadramentos revisados. Exporte o clipe de abertura curto e adequado para repetição.
 5. Use **Prévia** para revisar rascunhos. O template pode ser alterado após a publicação com o mesmo endereço.
