@@ -585,7 +585,7 @@ export function InlineVideoTour({videos, virtualTour}: {videos: StoryVideo[]; vi
                   <span className={'relative block w-full overflow-hidden bg-zinc-200 lg:aspect-auto lg:min-h-0 lg:flex-1 ' + (wide ? 'aspect-[3.4]' : 'aspect-video')}>
                     <Frame className="absolute inset-0 size-full object-cover motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover/chapter:scale-105" photo={{...video.poster, alt: ''}} sizes={wide ? '(max-width: 1023px) 100vw, 36vw' : '(max-width: 1023px) 50vw, 18vw'} />
                     <span aria-hidden="true" className="absolute inset-0 border-2 border-transparent group-aria-[current=true]/chapter:border-piramide" />
-                    <span aria-hidden="true" className={glassControl + ' pointer-events-none absolute right-2.5 bottom-2.5 size-10 min-h-0 opacity-0 group-hover/chapter:opacity-100 group-focus-visible/chapter:opacity-100 motion-safe:transition-opacity'}>
+                    <span aria-hidden="true" className={glassControl + ' pointer-events-none absolute top-1/2 left-1/2 size-10 min-h-0 -translate-1/2 opacity-0 group-hover/chapter:opacity-100 group-focus-visible/chapter:opacity-100 motion-safe:transition-opacity'}>
                       <Play size={14} className="ms-0.5 fill-current" />
                     </span>
                   </span>
