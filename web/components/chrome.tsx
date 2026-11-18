@@ -65,8 +65,16 @@ export function Footer({contact, children, light = false}: {contact: string | nu
   return (
     <footer className={'relative w-full overflow-hidden ' + (light ? 'border-t border-zinc-200 bg-paper text-zinc-600' : (children ? 'bg-paper' : 'bg-coal') + ' text-zinc-300')}>
       {children}
-      <div className={'relative z-1 isolate ' + (children ? '-mt-8 sm:-mt-14' : 'pt-10 sm:pt-14')}>
+      <div className={'relative z-1 isolate overflow-hidden ' + (children ? '-mt-8 sm:-mt-14' : 'pt-10 sm:pt-14')}>
         {children && <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-1 top-8 bg-coal sm:top-14" />}
+        {!light && (
+          <img
+            src="/logos/piramide/icon.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-4 bottom-0 -z-1 w-[clamp(18rem,38vw,34rem)] max-w-none select-none opacity-12 brightness-150 grayscale"
+          />
+        )}
         <div className={wrap + ' px-5 py-8 sm:px-8 sm:pt-14 sm:pb-10 lg:px-12'}>
           <div className="grid gap-8 md:grid-cols-[1fr_.8fr_1.25fr] lg:gap-14">
             <div className="space-y-4">
