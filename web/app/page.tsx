@@ -10,6 +10,7 @@ import { ScrollSpy } from '../components/scrollSpy'
 import { FinalCta } from '../components/finalCta'
 import { HomeStats } from '../components/homeStats'
 import { Lifestyle, type LifestyleItem } from '../components/lifestyle'
+import { SectionDivider } from '../components/sectionDivider'
 import { WhatsAppWidget } from '../components/whatsappWidget'
 import { JsonLd } from '../components/jsonLd'
 import { eyebrow, heading, previewBanner, textLink, wrap } from '../lib/classes'
@@ -39,12 +40,28 @@ export default async function Home() {
   const featured = (data.featured || []).filter((item) => item?.slug && item.cover && item.slug !== hero?.slug)
   const contact = whatsappLink(data.whatsapp)
 
+  const typePhotos = new Map(
+    (data.propertyTypes || [])
+      .filter((entry) => entry.name && entry.image?.asset)
+      .map((entry) => [entry.name.trim().toLowerCase(), entry.image!]),
+  )
   const lifestyleMap = new Map<string, LifestyleItem>()
   for (const item of data.catalog) {
     if (item.propertyType) {
       const entry = lifestyleMap.get(item.propertyType)
       if (entry) entry.count++
-      else lifestyleMap.set(item.propertyType, { type: item.propertyType, count: 1, image: picture(item.cover, 3 / 4, 900) })
+      else {
+        const customPhoto = typePhotos.get(item.propertyType.trim().toLowerCase())
+        const unwatermarkedRef = item.coverOriginalFilename?.replace(/-piramide-watermark-v1\.jpg$/, '')
+        const cleanCover = unwatermarkedRef?.startsWith('image-')
+          ? {...item.cover, asset: {_ref: unwatermarkedRef}}
+          : item.cover
+        lifestyleMap.set(item.propertyType, {
+          type: item.propertyType,
+          count: 1,
+          image: picture(customPhoto ?? cleanCover, 3 / 4, 900),
+        })
+      }
     }
   }
   const lifestyle = [...lifestyleMap.values()].sort((a, b) => b.count - a.count)
@@ -82,6 +99,7 @@ export default async function Home() {
         </div>
       </section>}
       {!!data.catalog.length && <Catalog items={data.catalog.map(catalogPictures)} />}
+      {!!data.catalog.length && <SectionDivider />}
       <HomeStats stats={data.stats} />
     </main>
     <ScrollSpy containerId="conteudo" finalSectionIds={['diferenciais', 'contato']} />

@@ -10,7 +10,7 @@ import { Frame } from './media'
 
 type HeroItem = Pick<PropertyCard, 'slug' | 'title' | 'summary' | 'specifications'> & { location: string; photo: Picture }
 const slideDuration = 6500
-const wipeDuration = 1400
+const transitionDuration = 1400
 const number = new Intl.NumberFormat('pt-BR')
 
 export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
@@ -23,6 +23,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
   const hero = useRef<HTMLElement>(null)
   const progress = useRef<SVGSVGElement>(null)
   const elapsed = useRef(0)
+  const selectionRequest = useRef(0)
   const active = items[slide.current] ?? items[0]
   const leftActive = items[leftIndex] ?? active
   const count = items.length
@@ -45,7 +46,16 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
     hero.current?.style.setProperty('--slide-progress', pct + '%')
   }
 
-  function selectSlide(idx: number) {
+  async function selectSlide(idx: number) {
+    const request = ++selectionRequest.current
+    const image = hero.current?.querySelectorAll('img')[idx]
+    if (!image) return
+    try {
+      await image.decode()
+    } catch {
+      return
+    }
+    if (request !== selectionRequest.current) return
     elapsed.current = 0
     syncProgress(count < 2 ? 1 : 0)
     setFocused(false)
@@ -80,10 +90,10 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
     }
     const leftTimer = window.setTimeout(() => {
       setLeftIndex(slide.current)
-    }, wipeDuration * 0.5)
+    }, transitionDuration * 0.5)
     const rightTimer = window.setTimeout(() => {
       setRightIndex(slide.current)
-    }, wipeDuration)
+    }, transitionDuration)
     return () => {
       window.clearTimeout(leftTimer)
       window.clearTimeout(rightTimer)
@@ -107,8 +117,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
         if (hero.current?.querySelectorAll('img')[next]?.naturalWidth) {
           elapsed.current = 0
           syncProgress(0)
-          setSlide((prev) => ({ current: next, previous: prev.current, run: prev.run + 1 }))
-          return
+          void selectSlide(next)
         }
       }
       frame = window.requestAnimationFrame(tick)
@@ -123,7 +132,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
 
   return <>
     <div className="relative [--hero-notch:16px] lg:[--hero-notch:clamp(28px,2.6vw,42px)]">
-      <section className="relative isolate aspect-[.9] overflow-hidden bg-coal transform-gpu [clip-path:polygon(0_0,101%_0,101%_100%,54%_100%,46%_calc(100%_-_var(--hero-notch)),0_calc(100%_-_var(--hero-notch)))] after:pointer-events-none after:absolute after:inset-0 after:z-2 after:bg-[linear-gradient(0deg,#100e0ceb_0%,#100e0ca8_45%,transparent_100%),linear-gradient(180deg,#100e0c73_0%,transparent_22%),linear-gradient(270deg,#100e0c99_0%,transparent_28%)] sm:aspect-4/3 lg:aspect-[2.25]"
+      <section className="relative isolate h-[clamp(34rem,80svh,54rem)] overflow-hidden bg-coal transform-gpu [clip-path:polygon(0_0,101%_0,101%_100%,54%_100%,46%_calc(100%_-_var(--hero-notch)),0_calc(100%_-_var(--hero-notch)))] after:pointer-events-none after:absolute after:inset-0 after:z-2 after:bg-[linear-gradient(0deg,#100e0ceb_0%,#100e0ca8_45%,transparent_100%),linear-gradient(180deg,#100e0c73_0%,transparent_22%),linear-gradient(270deg,#100e0c99_0%,transparent_28%)] sm:h-[clamp(30rem,76svh,54rem)]"
         ref={hero} aria-label={'Fotos de ' + active.title}
         onFocus={(event) => {
           if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) {
@@ -135,14 +144,16 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
         }}>
         <div className="pointer-events-none absolute inset-0 isolate overflow-hidden [contain:layout_paint]">
           {items.map(({ photo, slug }, index) => (
-            <div key={slug} className="absolute inset-0 opacity-0 backface-hidden data-[outgoing=true]:z-0 data-[outgoing=true]:opacity-100 data-[current=true]:z-1 data-[current=true]:opacity-100 motion-safe:[&[data-current=true][data-transition=true]]:will-change-[clip-path] motion-safe:[&[data-current=true][data-transition=true]]:animate-photo-wipe"
+            <div key={slug} className="absolute inset-0 opacity-0 backface-hidden data-[outgoing=true]:z-0 data-[outgoing=true]:opacity-100 data-[current=true]:z-1 data-[current=true]:opacity-100"
               data-current={index === slide.current} data-outgoing={index === slide.previous}
-              data-transition={slide.previous >= 0} aria-hidden={index !== slide.current}>
-              <Frame photo={photo} className="size-full object-cover" priority sizes="(min-width: 1760px) 1760px, 100vw" />
+              aria-hidden={index !== slide.current}>
+              <div key={index === slide.current ? slug + '-' + slide.run : slug} className={'size-full ' + (index === slide.current && slide.previous >= 0 ? 'motion-safe:will-change-[clip-path] motion-safe:animate-photo-wipe' : '')}>
+                <Frame photo={photo} className="size-full object-cover" priority sizes="(min-width: 1760px) 1760px, 100vw" />
+              </div>
             </div>
           ))}
         </div>
-        <div className="absolute right-24 bottom-[calc(var(--hero-notch)+1.25rem)] left-5 z-3 text-ivory sm:right-auto sm:bottom-[calc(var(--hero-notch)+1.5rem)] sm:left-9 sm:w-[min(68%,48rem)] lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-14 lg:w-[min(74%,72rem)]"
+        <div className="absolute inset-x-5 bottom-[calc(var(--hero-notch)+8.5rem)] z-3 text-white sm:inset-x-9 sm:bottom-[calc(var(--hero-notch)+7rem)] lg:inset-x-auto lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-10 lg:w-[min(74%,64rem)]"
           aria-live={focused || !canAnimate ? 'polite' : 'off'}>
           <div className="grid items-end [grid-template-areas:'stack']">
             {items.map((item, idx) => (
@@ -155,8 +166,8 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
                 }
               >
                 <p className={eyebrow + ' text-[.68rem] text-white sm:text-xs'}>{item.location}</p>
-                <h2 className={heading + ' mt-2.5 line-clamp-2 pb-1.5 leading-[1.15] text-[clamp(2.6rem,5.2vw,5.6rem)] sm:line-clamp-1 lg:line-clamp-2'}>{item.title}</h2>
-                <p className="mt-3.5 max-w-[46ch] line-clamp-4 text-base font-light leading-relaxed text-[#fff5e6] sm:line-clamp-2 sm:text-lg lg:text-xl">{item.summary}</p>
+                <h2 className={heading + ' mt-2.5 line-clamp-2 pb-1.5 leading-[1.15] text-[clamp(2.15rem,4.6vw,4.75rem)]'}>{item.title}</h2>
+                <p className="mt-3 max-w-[50ch] line-clamp-2 text-sm leading-relaxed text-white/90 sm:text-base lg:text-lg">{item.summary}</p>
               </div>
             ))}
           </div>
@@ -172,8 +183,8 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
             </a>
           </div>
         </div>
-        <div className="absolute right-5 bottom-[calc(var(--hero-notch)+1rem)] z-3 flex flex-col items-end gap-3.5 text-ivory sm:right-9 sm:bottom-[calc(var(--hero-notch)+1.5rem)] sm:gap-4 lg:right-14 lg:bottom-[calc(var(--hero-notch)+2rem)] lg:gap-5">
-          <div className="grid items-end justify-items-center [grid-template-areas:'stack']">
+        <div className="absolute inset-x-5 bottom-[calc(var(--hero-notch)+1rem)] z-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-t border-white/25 pt-4 text-white sm:inset-x-9 sm:bottom-[calc(var(--hero-notch)+1.5rem)] lg:inset-x-auto lg:right-10 lg:bottom-[calc(var(--hero-notch)+2rem)] lg:flex-col lg:gap-y-5 lg:border-t-0 lg:pt-0">
+          <div className="grid items-end justify-items-start [grid-template-areas:'stack'] lg:justify-items-center">
             {items.map((item, idx) => {
               const itemFacts = factsOf(item)
               if (!itemFacts.length) return null
@@ -184,19 +195,16 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
                   aria-hidden={idx !== rightIndex}
                   aria-live={idx === rightIndex && (focused || !canAnimate) ? 'polite' : 'off'}
                   className={
-                    "[grid-area:stack] flex w-20 flex-col items-center gap-y-2 sm:w-24 sm:gap-y-2.5 lg:gap-y-3 transition-opacity duration-500 ease-out motion-reduce:transition-none " +
+                    "[grid-area:stack] flex flex-wrap items-start gap-x-5 gap-y-2 sm:gap-x-8 lg:w-24 lg:flex-col lg:items-center lg:gap-y-3 transition-opacity duration-500 ease-out motion-reduce:transition-none " +
                     (idx === rightIndex ? 'opacity-100' : 'pointer-events-none select-none opacity-0')
                   }
                 >
-                  {itemFacts.map(([label, value, icon], index) => (
+                  {itemFacts.map(([label, value, icon]) => (
                     <div key={label} className="contents">
-                      {index > 0 && <span aria-hidden="true" className="h-px w-8 bg-ivory/35 sm:w-10" />}
-                      <div className="flex min-w-[4.2rem] flex-col items-center justify-center gap-1 py-1 text-center sm:min-w-[5rem]">
-                        <dt className="text-[.56rem] font-light tracking-[.11em] text-[#f8eddc] uppercase sm:text-[.64rem] lg:text-[.68rem]">{label}</dt>
-                        <dd className="relative isolate inline-flex items-baseline justify-center whitespace-nowrap font-sans text-lg leading-none font-semibold tracking-tight text-ivory tabular-nums sm:text-2xl lg:text-3xl xl:text-4xl">
-                          <span className="pointer-events-none absolute top-1/2 left-1/2 -z-1 size-10 -translate-x-1/2 -translate-y-1/2 bg-ivory opacity-12 mask-contain mask-center mask-no-repeat sm:size-12 lg:size-14"
-                            style={{ maskImage: 'url(/brand/property-icons/' + icon + '.svg)' }} aria-hidden="true" />
-                          {typeof value === 'number' ? number.format(value) : value}{icon === 'metragem' && <span className="ml-1 font-sans text-[.7rem] font-medium tracking-normal text-[#fff5e6] sm:text-xs lg:text-sm">m²</span>}
+                      <div className="flex flex-col items-start justify-center gap-2 text-start lg:items-center lg:text-center">
+                        <dt className="text-[.56rem] font-medium tracking-[.08em] text-white/75 uppercase sm:text-[.64rem]">{label}</dt>
+                        <dd className="relative isolate inline-flex items-baseline justify-center whitespace-nowrap font-sans text-lg leading-none font-semibold tracking-tight text-white tabular-nums sm:text-2xl">
+                          {typeof value === 'number' ? number.format(value) : value}{icon === 'metragem' && <span className="ml-1 font-sans text-[.7rem] font-medium tracking-normal text-white/85 sm:text-xs">m²</span>}
                         </dd>
                       </div>
                     </div>

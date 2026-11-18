@@ -23,11 +23,11 @@ export function Reveal({children, className, id}: {children: ReactNode; classNam
     const node = element.current
     if (!node) return
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.15) {
         node.dataset.entered = 'true'
         observer.disconnect()
       }
-    }, {threshold: 0.07})
+    }, {threshold: 0.15, rootMargin: '0px 0px -24px 0px'})
     observer.observe(node)
     return () => observer.disconnect()
   }, [])

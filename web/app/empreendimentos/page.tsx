@@ -2,6 +2,7 @@ import type {Metadata} from 'next'
 import {Suspense} from 'react'
 import {Catalog} from '../../components/catalog'
 import {Footer, Header} from '../../components/chrome'
+import {CatalogCta} from '../../components/catalogCta'
 import {JsonLd} from '../../components/jsonLd'
 import {WhatsAppWidget} from '../../components/whatsappWidget'
 import {homeSectionHeading, previewBanner, wrap} from '../../lib/classes'
@@ -45,7 +46,9 @@ export default async function Empreendimentos() {
         <Catalog items={catalog.map(catalogPictures)} full />
       </Suspense>
     </main>
-    <Footer contact={contact} />
+    <Footer contact={contact} integrated>
+      <CatalogCta contact={contact} />
+    </Footer>
     <WhatsAppWidget phone={whatsapp} />
   </>
 }
