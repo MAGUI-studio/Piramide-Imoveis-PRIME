@@ -40,8 +40,8 @@
     to { clip-path: polygon(0 0, 101% 0, 101% 100%, 0 100%); }
   }
   @keyframes image-in {
-    from { clip-path: inset(3% 4% 8%); scale: 1.06; }
-    to { clip-path: inset(0); scale: 1; }
+    from { scale: 1.03; }
+    to { scale: 1; }
   }
   @keyframes whatsapp-pulse {
     0%, 100% { transform: scale(1); }
