@@ -49,7 +49,7 @@ export default async function Home() {
   const ctaImage = data.catalog[0] ? picture(data.catalog[0].cover, 16 / 9, 2000) : undefined
   return <>
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
-    {!hero && <Header home contact={contact} />}
+    {!hero && <Header home light contact={contact} />}
     <main id="conteudo" className="bg-paper text-espresso [color-scheme:light]">
       {hero ? <div id="inicio" className="relative"><Header home overlay contact={contact} /><Hero items={[hero, ...otherSlides]} /></div> :
         <section id={data.catalog.length ? 'inicio' : 'empreendimentos'} className={wrap + ' py-[clamp(85px,12vw,170px)]'}>
