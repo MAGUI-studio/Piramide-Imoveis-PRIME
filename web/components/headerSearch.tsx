@@ -39,7 +39,7 @@ export function HeaderSearch({light, hasContact}: {light: boolean; hasContact: b
   return (
     <div
       ref={container}
-      className="flex shrink-0 items-center gap-3 sm:gap-4"
+      className="flex shrink-0 items-center gap-2 min-[400px]:gap-3 sm:gap-4"
       onBlur={(event) => {
         if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) close()
       }}

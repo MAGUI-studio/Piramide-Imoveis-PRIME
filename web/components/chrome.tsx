@@ -24,17 +24,19 @@ export function Header({overlay = false, light = false, splitOverlay = false, co
             <img className="h-auto w-[clamp(72px,6.5vw,110px)]" src={light ? '/logos/piramide/logo_black.svg' : '/logos/piramide/logo_white.svg'} alt="" width={1000} height={512} />
           )}
         </Link>
-        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
+        <div className="flex min-w-0 items-center gap-2 min-[400px]:gap-3 sm:gap-5">
         <HeaderSearch light={light} hasContact={!!contact} />
         {contact && <a
           href={contact}
           target="_blank"
           rel="noreferrer"
+          aria-label="Falar com especialista"
           className={sweepButton + sweepCompact + ' shrink-0 px-2.5! text-center text-[11px]! whitespace-nowrap sm:px-4! sm:text-sm! ' + (light ? sweepOnLight : sweepOnCover)}
         >
           <span aria-hidden="true" className={sweepFill} />
           <span className={sweepContent + ' gap-1.5! sm:gap-2.5!'}>
-            <span className="sm:hidden">Fale com especialista</span>
+            <span className="min-[400px]:hidden">Fale conosco</span>
+            <span className="hidden min-[400px]:inline sm:hidden">Fale com especialista</span>
             <span className="hidden sm:inline">Falar com especialista</span>
             <ArrowUpRight size={16} className="size-3.5 shrink-0 transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none sm:size-4" />
           </span>
