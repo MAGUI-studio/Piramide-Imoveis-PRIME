@@ -9,7 +9,7 @@ const singletonTypes = ['primeHome', 'primeMarquee']
 
 export default defineConfig({
   name: 'piramide-prime',
-  title: 'Pirâmide PRIME',
+  title: 'Pirâmide Imóveis Prime',
   projectId: process.env.SANITY_STUDIO_PROJECT_ID || 'fc83c82x',
   dataset: process.env.SANITY_STUDIO_DATASET || 'production',
   schema: {
@@ -26,7 +26,7 @@ export default defineConfig({
   plugins: [
     structureTool({
       title: 'Conteúdo',
-      structure: (S) => S.list().title('Pirâmide PRIME').items([
+      structure: (S) => S.list().title('Pirâmide Imóveis Prime').items([
         S.listItem().title('Home').child(S.document().schemaType('primeHome').documentId('primeHome')),
         S.listItem().title('Faixa informativa do rodapé').child(S.document().schemaType('primeMarquee').documentId('primeMarquee')),
         S.documentTypeListItem('property'),

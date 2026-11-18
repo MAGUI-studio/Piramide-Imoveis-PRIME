@@ -51,6 +51,26 @@ const photo = defineType({
   validation: (rule) => rule.custom((value, context) => value ? validateAsset(2, imageFormats)(value, context) : true),
 })
 
+const seo = defineType({
+  name: 'primeSeo', title: 'SEO e compartilhamento', type: 'object',
+  fields: [
+    defineField({
+      name: 'title', title: 'Título da aba e da busca', type: 'string',
+      description: 'Escreva um título específico para a página. A marca Pirâmide Imóveis Prime é acrescentada automaticamente.',
+      validation: (rule) => rule.max(60).warning('Prefira um título com até 60 caracteres.'),
+    }),
+    defineField({
+      name: 'description', title: 'Descrição para busca', type: 'text', rows: 3,
+      description: 'Resuma o conteúdo da página em uma ou duas frases. Na ficha, mencione atributos relevantes, como localização e tipo de imóvel.',
+      validation: (rule) => rule.max(160).warning('Prefira uma descrição com até 160 caracteres.'),
+    }),
+    defineField({
+      name: 'socialImage', title: 'Imagem de compartilhamento', type: 'primePhoto',
+      description: 'Imagem horizontal, de preferência 1200 × 630 px. O site usa uma imagem padrão quando você deixa em branco.',
+    }),
+  ],
+})
+
 function video(name: string, title: string, maxMb: number) {
   return defineField({
     name, title, type: 'file',
@@ -119,8 +139,15 @@ const property = defineType({
     {name: 'commercial', title: 'Comercial'},
     {name: 'media', title: 'Fotos e vídeos'},
     {name: 'design', title: 'Página'},
+    {name: 'seo', title: 'SEO'},
   ],
   fields: [
+    defineField({name: 'seo', title: 'SEO da ficha', type: 'primeSeo', group: 'seo'}),
+    defineField({
+      name: 'noIndex', title: 'Ocultar ficha dos mecanismos de busca', type: 'boolean', group: 'seo',
+      description: 'Use para páginas que devem continuar acessíveis pelo link e ficar fora dos resultados de busca e do sitemap.',
+      initialValue: false,
+    }),
     defineField({name: 'firstPublishedSlug', type: 'string', hidden: true, readOnly: true}),
     defineField({name: 'firstPublishedAt', type: 'datetime', hidden: true, readOnly: true}),
     defineField({name: 'title', title: 'Nome', type: 'string', group: 'details', validation: (rule) => rule.required().max(100)}),
@@ -257,7 +284,7 @@ const property = defineType({
       name: 'conditions', title: 'Condições e destaques de negociação', type: 'object', group: 'commercial',
       options: {columns: 2},
       fields: [
-        defineField({name: 'exclusive', title: 'Exclusividade Pirâmide PRIME', type: 'boolean', initialValue: false}),
+        defineField({name: 'exclusive', title: 'Exclusividade Pirâmide Imóveis Prime', type: 'boolean', initialValue: false}),
         defineField({name: 'furnished', title: 'Mobiliado / Porteira fechada', type: 'boolean', initialValue: false}),
         defineField({name: 'acceptsTrade', title: 'Analisa permuta', type: 'boolean', initialValue: false}),
         defineField({name: 'acceptsFinancing', title: 'Aceita financiamento', type: 'boolean', initialValue: false}),
@@ -372,10 +399,13 @@ const property = defineType({
 
 const home = defineType({
   name: 'primeHome', title: 'Home', type: 'document',
+  groups: [{name: 'content', title: 'Conteúdo', default: true}, {name: 'seo', title: 'SEO'}],
   fields: [
-    defineField({name: 'hero', title: 'Empreendimento de abertura', type: 'reference', weak: true, to: [{type: 'property'}]}),
+    defineField({name: 'homeSeo', title: 'SEO da página inicial', type: 'primeSeo', group: 'seo'}),
+    defineField({name: 'catalogSeo', title: 'SEO do catálogo de empreendimentos', type: 'primeSeo', group: 'seo'}),
+    defineField({name: 'hero', title: 'Empreendimento de abertura', type: 'reference', group: 'content', weak: true, to: [{type: 'property'}]}),
     defineField({
-      name: 'featured', title: 'Destaques em ordem de exibição', type: 'array',
+      name: 'featured', title: 'Destaques em ordem de exibição', type: 'array', group: 'content',
       of: [defineArrayMember({type: 'reference', weak: true, to: [{type: 'property'}]})],
       validation: (rule) => rule.unique().custom((items) => {
         const refs = (items || []).map((item) => (item as {_ref?: string})._ref)
@@ -383,12 +413,12 @@ const home = defineType({
       }),
     }),
     defineField({
-      name: 'whatsapp', title: 'WhatsApp comercial', type: 'string',
+      name: 'whatsapp', title: 'WhatsApp comercial', type: 'string', group: 'content',
       description: 'Use código do país, DDD e número, somente dígitos. Exemplo de formato: 5512999999999.',
       validation: (rule) => rule.required().regex(/^[1-9]\d{9,14}$/),
     }),
     defineField({
-      name: 'stats', title: 'Números e dados em destaque', type: 'array',
+      name: 'stats', title: 'Números e dados em destaque', type: 'array', group: 'content',
       description: 'Indicadores animados de 0 até o valor cadastrado exibidos na Home (ex.: "Número de vendas" / 50000).',
       of: [defineArrayMember({
         name: 'homeStat', title: 'Indicador', type: 'object',
@@ -446,4 +476,4 @@ const marquee = defineType({
   preview: {prepare: () => ({title: 'Faixa informativa do rodapé'})},
 })
 
-export const schemaTypes = [photo, city, neighborhood, property, home, marquee]
+export const schemaTypes = [photo, seo, city, neighborhood, property, home, marquee]

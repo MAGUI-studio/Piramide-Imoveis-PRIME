@@ -11,18 +11,18 @@ import { FinalCta } from '../components/finalCta'
 import { HomeStats } from '../components/homeStats'
 import { Lifestyle, type LifestyleItem } from '../components/lifestyle'
 import { WhatsAppWidget } from '../components/whatsappWidget'
+import { JsonLd } from '../components/jsonLd'
 import { eyebrow, heading, previewBanner, textLink, wrap } from '../lib/classes'
 import { catalogPictures, picture } from '../lib/image'
 import { locationOf, whatsappLink } from '../lib/model'
 import { getHome, getOpeningProperties, isPreview } from '../lib/sanity'
+import { homeDescription, homeStructuredData, homeTitle, pageMetadata } from '../lib/seo'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const data = await getHome(false)
+  const preview = await isPreview()
+  const data = await getHome(preview)
   const [hero] = getOpeningProperties(data)
-  return {
-    alternates: { canonical: '/' },
-    openGraph: { url: '/', images: hero ? [picture(hero.cover, 1200 / 630, 1200).src] : undefined },
-  }
+  return pageMetadata({path: '/', title: homeTitle, description: homeDescription, seo: data.homeSeo, photo: hero?.cover, noIndex: preview})
 }
 
 export default async function Home() {
@@ -49,10 +49,11 @@ export default async function Home() {
   }
   const lifestyle = [...lifestyleMap.values()].sort((a, b) => b.count - a.count)
   return <>
+    {!preview && <JsonLd data={homeStructuredData()} />}
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
     {!hero && <Header home light contact={contact} />}
     <main id="conteudo" className="bg-paper text-espresso [color-scheme:light]">
-      {hero ? <div id="inicio" className="relative"><Header home overlay contact={contact} /><Hero items={[hero, ...otherSlides]} /></div> :
+      {hero ? <div id="inicio" className="relative"><Header home overlay contact={contact} /><h1 className="sr-only">{homeTitle}</h1><Hero items={[hero, ...otherSlides]} /></div> :
         <section id={data.catalog.length ? 'inicio' : 'empreendimentos'} className={wrap + ' py-[clamp(85px,12vw,170px)]'}>
           <h1 className={heading + ' text-[clamp(3.5rem,7vw,8rem)]'}>Empreendimentos de alto padrão</h1>
           <p className="mt-6 text-earth">Nenhum empreendimento disponível no momento.</p>

@@ -1,7 +1,7 @@
 import {createClient, type QueryParams} from '@sanity/client'
 import {draftMode} from 'next/headers'
 import {cache} from 'react'
-import type {HomeStat, MarqueeItem, Photo, Property, PropertyCard} from './model'
+import type {HomeStat, MarqueeItem, Photo, Property, PropertyCard, Seo} from './model'
 
 const projectId = process.env.SANITY_PROJECT_ID
 export const dataset = process.env.SANITY_DATASET || 'production'
@@ -29,7 +29,7 @@ const cardFields = `
 const mediaFields = 'gallery, "clip": clip.asset->url'
 const listing = '_type == "property" && defined(slug.current) && defined(cover.asset)'
 type CatalogProperty = PropertyCard & {alternate?: Photo | null}
-type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]}
+type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
 const homeQuery = `{
   "hero": *[_id == "primeHome"][0].hero->{
     ${cardFields}
@@ -39,12 +39,14 @@ const homeQuery = `{
     ${cardFields}, "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
   },
   "whatsapp": *[_id == "primeHome"][0].whatsapp,
+  "homeSeo": *[_id == "primeHome"][0].homeSeo,
+  "catalogSeo": *[_id == "primeHome"][0].catalogSeo,
   "stats": coalesce(*[_id == "primeHome"][0].stats[defined(label) && defined(value)]{_key, label, value, prefix, suffix}, []),
   "marquee": coalesce(*[_id == "primeMarquee"][0].items[defined(title) && defined(description)]{_key, title, description}, [])
 }`
 const propertyQuery = `{
   "property": *[${listing} && slug.current == $slug][0]{
-    ${cardFields}, ${mediaFields}, architect, description, features, condoFeatures,
+    ${cardFields}, ${mediaFields}, architect, description, features, condoFeatures, seo, noIndex,
     sectionPhoto, detailsPhoto,
     "detailsPhotos": select(defined(detailsPhoto[0]) => detailsPhoto, defined(detailsPhoto.asset) => [detailsPhoto], []),
     mediaPhoto, mediaVideoPhoto, videoTourPhoto,
@@ -83,7 +85,7 @@ export function getOpeningProperties(data: Home) {
 
 export async function getPublishedSlugs() {
   return await read<{slug: string; updated: string}[]>(
-    `*[${listing}]{"slug": slug.current, "updated": _updatedAt}`,
+    `*[${listing} && !coalesce(noIndex, false)]{"slug": slug.current, "updated": _updatedAt}`,
   ) || []
 }
 
@@ -91,4 +93,4 @@ export async function isPreview() {
   return !!process.env.SANITY_API_READ_TOKEN && (await draftMode()).isEnabled
 }
 
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://prime.piramideimoveissjc.com.br'
+export const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://prime.piramideimoveissjc.com.br').origin

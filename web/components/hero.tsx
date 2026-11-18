@@ -155,7 +155,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
                 }
               >
                 <p className={eyebrow + ' text-[.68rem] text-white sm:text-xs'}>{item.location}</p>
-                <h1 className={heading + ' mt-2.5 line-clamp-2 pb-1.5 leading-[1.15] text-[clamp(2.6rem,5.2vw,5.6rem)] sm:line-clamp-1 lg:line-clamp-2'}>{item.title}</h1>
+                <h2 className={heading + ' mt-2.5 line-clamp-2 pb-1.5 leading-[1.15] text-[clamp(2.6rem,5.2vw,5.6rem)] sm:line-clamp-1 lg:line-clamp-2'}>{item.title}</h2>
                 <p className="mt-3.5 max-w-[46ch] line-clamp-4 text-base font-light leading-relaxed text-[#fff5e6] sm:line-clamp-2 sm:text-lg lg:text-xl">{item.summary}</p>
               </div>
             ))}

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
 import {useEffect, useId, useRef, useState} from 'react'
 import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, Check, ChevronDown, House, MapPin, Search, SlidersHorizontal, X} from 'lucide-react'
-import {availabilityLabel, cardAreaOf, cardAttributesOf, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
+import {availabilityLabel, cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
 import {button, eyebrow, heading, homeSectionHeading, wrap} from '../lib/classes'
 import {Frame} from './media'
@@ -14,7 +14,6 @@ export type CatalogItem = Omit<PropertyCard, 'cover'> & {image: Picture; alterna
 const collator = new Intl.Collator('pt-BR', {sensitivity: 'base'})
 const normalize = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR')
 const homeLimit = 5
-const pageSize = 10
 const paginationLink = 'inline-flex min-h-11 items-center gap-2 px-3 text-sm font-semibold text-piramide transition-colors hover:bg-piramide/10'
 const filterField = 'flex min-h-15 items-center gap-3 border-b border-espresso/25 bg-transparent px-1 transition-colors hover:border-espresso/55 focus-within:border-piramide sm:px-2'
 
@@ -166,11 +165,11 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
     const copy = normalize([item.title, item.refCode, item.condominiumName, item.summary, locationOf(item)].filter(Boolean).join(' '))
     return words.every((word) => copy.includes(word))
   })
-  const totalPages = Math.max(1, Math.ceil(results.length / pageSize))
+  const totalPages = Math.max(1, Math.ceil(results.length / catalogPageSize))
   const requestedPage = params.get('pagina') || ''
   const page = full && /^[1-9]\d*$/.test(requestedPage) ? Math.min(Number(requestedPage), totalPages) : 1
-  const start = (page - 1) * pageSize
-  const displayed = full ? results.slice(start, start + pageSize) : results.slice(0, homeLimit)
+  const start = (page - 1) * catalogPageSize
+  const displayed = full ? results.slice(start, start + catalogPageSize) : results.slice(0, homeLimit)
   const hasLeadStack = displayed.length === 3 || displayed.length === homeLimit
   const Title = full ? 'h1' : 'h2'
 
@@ -214,7 +213,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
   return (
     <section id="empreendimentos" className={wrap + ' scroll-mt-4 pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]'}>
       <Reveal className="mb-7 motion-safe:data-[entered=true]:animate-enter">
-        <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Portfólio Pirâmide PRIME</p>
+        <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Portfólio Pirâmide Imóveis Prime</p>
         <Title className={homeSectionHeading}>{full ? 'Todos os empreendimentos' : 'Explore os empreendimentos'}</Title>
       </Reveal>
       {items.length ? <>
@@ -367,7 +366,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
               </Link>
             )
           })}
-        </Reveal> : <div className="border border-rule p-7 text-earth"><p>Nenhum imóvel encontrado com esses filtros.</p><button type="button" className={button + ' mt-4 cursor-pointer border-bronze text-bronze'} onClick={clear}>Limpar filtros</button></div>}
+        </Reveal> : <div className="border border-rule p-7 text-earth"><p>Nenhum imóvel encontrado com esses filtros.</p><button type="button" className={button + ' mt-4 cursor-pointer border-piramide text-piramide hover:bg-piramide/10'} onClick={clear}>Limpar filtros</button></div>}
         {!full && items.length > homeLimit && (
           <div className="mt-6 flex justify-end">
             <Link href="/empreendimentos" className="group/explore inline-flex min-h-11 w-fit items-center gap-2.5 text-right text-sm text-espresso transition-colors hover:text-piramide motion-reduce:transition-none sm:text-base">

@@ -9,6 +9,8 @@ export type Photo = {
 export type MarqueeItem = {_key: string; title: string; description: string}
 export type HomeStat = {_key: string; label: string; value: number; prefix?: string | null; suffix?: string | null}
 export type PropertyQuestion = {_key: string; question: string; answer: string}
+export type Seo = {title?: string | null; description?: string | null; socialImage?: Photo | null}
+export const catalogPageSize = 10
 export type PropertyVideo = {_key: string; title: string; url: string; poster?: Photo | null; opening?: boolean | null}
 
 export type Availability = 'available' | 'reserved' | 'sold'
@@ -66,6 +68,8 @@ export type PropertyAddress = {
 }
 
 export type Property = PropertyCard & {
+  seo?: Seo | null
+  noIndex?: boolean | null
   address?: PropertyAddress | null
   architect?: string | null
   description: string
@@ -141,6 +145,6 @@ export function whatsappLink(phone: string | null, property?: string, refCode?: 
   const code = refCode?.trim() ? ' (Cód. ' + refCode.trim() + ')' : ''
   const message = property
     ? 'Olá! Gostaria de saber mais sobre o imóvel ' + property + code + '.'
-    : 'Olá! Gostaria de conversar sobre os imóveis da Pirâmide PRIME.'
+    : 'Olá! Gostaria de conversar sobre os imóveis da Pirâmide Imóveis Prime.'
   return 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(message)
 }

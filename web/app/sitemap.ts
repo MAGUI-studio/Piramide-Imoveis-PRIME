@@ -8,6 +8,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     {url: siteUrl + '/'},
     {url: siteUrl + '/empreendimentos'},
-    ...properties.map(({slug, updated}) => ({url: siteUrl + '/' + slug, lastModified: updated})),
+    ...properties.map(({slug, updated}) => ({url: siteUrl + '/' + encodeURIComponent(slug), lastModified: updated})),
   ]
 }
