@@ -210,7 +210,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
   return (
     <section id="empreendimentos" className={wrap + ' scroll-mt-4 pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]'}>
       <Reveal className="mb-7 motion-safe:data-[entered=true]:animate-enter">
-        <Title className={full ? heading + ' text-[clamp(2.8rem,5vw,5.6rem)]' : homeSectionHeading}>{full ? 'Todos os empreendimentos' : 'Explore os empreendimentos'}</Title>
+        <Title className={homeSectionHeading}>{full ? 'Todos os empreendimentos' : 'Explore os empreendimentos'}</Title>
       </Reveal>
       {items.length ? <>
         <form role="search" aria-label="Filtrar empreendimentos" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3fr)] xl:grid-cols-[minmax(17rem,1.2fr)_minmax(0,3fr)]" onSubmit={(event) => event.preventDefault()}>
@@ -350,17 +350,49 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
             </Link>
           </div>
         )}
-        {full && totalPages > 1 && (
-          <nav aria-label="Paginação dos empreendimentos" className="mt-7 grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-t border-espresso/10 pt-4">
-            <div className="justify-self-start">
-              {page > 1 && <Link href={pageHref(page - 1)} rel="prev" className={paginationLink}><ArrowLeft aria-hidden="true" size={16} /> Anterior</Link>}
-            </div>
-            <span className="text-center text-xs text-earth" aria-current="page">Página {page} de {totalPages}</span>
-            <div className="justify-self-end">
-              {page < totalPages && <Link href={pageHref(page + 1)} rel="next" className={paginationLink}>Próxima <ArrowRight aria-hidden="true" size={16} /></Link>}
-            </div>
-          </nav>
-        )}
+        {full && totalPages > 1 && (() => {
+          const pages: (number | 'ellipsis')[] = []
+          for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || Math.abs(i - page) <= 1) {
+              pages.push(i)
+            } else if (pages[pages.length - 1] !== 'ellipsis') {
+              pages.push('ellipsis')
+            }
+          }
+          return (
+            <nav aria-label="Paginação dos empreendimentos" className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
+              {page > 1 && (
+                <Link href={pageHref(page - 1)} rel="prev" aria-label="Página anterior" className={paginationLink}>
+                  <ArrowLeft aria-hidden="true" size={16} />
+                </Link>
+              )}
+              {pages.map((entry, idx) =>
+                entry === 'ellipsis' ? (
+                  <span key={'ellipsis-' + idx} className="px-2 text-xs text-earth select-none" aria-hidden="true">…</span>
+                ) : (
+                  <Link
+                    key={entry}
+                    href={pageHref(entry)}
+                    aria-current={entry === page ? 'page' : undefined}
+                    className={
+                      'inline-grid min-h-10 min-w-10 place-items-center px-3 text-sm font-medium transition-colors ' +
+                      (entry === page
+                        ? 'bg-piramide font-semibold text-white'
+                        : 'text-espresso hover:bg-piramide/10 hover:text-piramide')
+                    }
+                  >
+                    {entry}
+                  </Link>
+                ),
+              )}
+              {page < totalPages && (
+                <Link href={pageHref(page + 1)} rel="next" aria-label="Próxima página" className={paginationLink}>
+                  <ArrowRight aria-hidden="true" size={16} />
+                </Link>
+              )}
+            </nav>
+          )
+        })()}
       </> : <div className="border border-rule p-7 text-earth">Nenhum empreendimento disponível no momento.</div>}
     </section>
   )
