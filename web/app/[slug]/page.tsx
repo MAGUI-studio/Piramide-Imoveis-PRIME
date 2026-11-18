@@ -231,8 +231,8 @@ function PhotoHighlights({property, photos}: {property: Property; photos: [Pictu
               className={
                 'relative aspect-[1.42] w-[72%] overflow-hidden bg-zinc-200 shadow-sm sm:w-[76%] md:w-full ' +
                 (reversed
-                  ? 'ms-auto rounded-l-full md:order-last'
-                  : 'me-auto rounded-r-full')
+                  ? 'ms-auto [clip-path:polygon(clamp(3rem,6vw,5.5rem)_0,100%_0,100%_100%,clamp(3rem,6vw,5.5rem)_100%,0_calc(100%-clamp(3rem,6vw,5.5rem)),0_clamp(3rem,6vw,5.5rem))] md:order-last'
+                  : 'me-auto [clip-path:polygon(0_0,calc(100%-clamp(3rem,6vw,5.5rem))_0,100%_clamp(3rem,6vw,5.5rem),100%_calc(100%-clamp(3rem,6vw,5.5rem)),calc(100%-clamp(3rem,6vw,5.5rem))_100%,0_100%)]')
               }
             >
               <Frame className="absolute inset-0 size-full object-cover" photo={photo} sizes="(max-width: 767px) 75vw, 54vw" />
