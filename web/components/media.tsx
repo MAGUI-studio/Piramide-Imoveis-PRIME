@@ -2,24 +2,47 @@
 
 import {useCallback, useEffect, useRef, useState, type ReactNode} from 'react'
 import {ArrowLeft, ArrowRight, Maximize2, Minimize2, Pause, Play, Volume2, VolumeX, X} from 'lucide-react'
-import {iconButton, outlineButton} from '../lib/classes'
+import {glassAction, glassControl, outlineButton, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {LoadingCurtain} from './loadingCurtain'
+import {CinemaIcon} from './cinemaIcon'
+import {ScrollArea} from './scrollArea'
 
-const mediaDialog = 'm-auto max-h-[94dvh] w-[min(92vw,1200px)] max-w-none overflow-visible border-0 bg-transparent p-0 text-white outline-none backdrop:bg-black/0 backdrop:backdrop-blur-none backdrop:transition-all backdrop:duration-400 backdrop:ease-out open:data-[visible=true]:backdrop:bg-black/90 open:data-[visible=true]:backdrop:backdrop-blur-md'
+const mediaDialog = 'm-auto max-h-[94dvh] w-[min(92vw,1200px)] max-w-none overflow-visible border-0 bg-transparent p-0 text-white outline-none backdrop:bg-black/0 backdrop:backdrop-blur-none backdrop:transition-all backdrop:duration-400 backdrop:ease-out open:data-[visible=true]:backdrop:backdrop-blur-md'
+const photoBackdrop = 'open:data-[visible=true]:backdrop:bg-black/90'
 const mediaContents = 'block size-full object-cover'
 const videoContents = 'block max-h-[78dvh] w-full object-contain shadow-2xl'
-const dialogButton = 'inline-grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-white/25 bg-black/55 text-white backdrop-blur-md transition-colors hover:border-piramide hover:bg-piramide'
+const dialogButton = 'inline-grid size-10 shrink-0 cursor-pointer place-items-center rounded-none border border-white/25 bg-black/55 text-white backdrop-blur-md transition-colors hover:border-piramide hover:bg-piramide'
 const dialogClose = dialogButton + ' fixed top-5 right-5 z-20 sm:top-7 sm:right-8'
 const galleryTrack = {
-  story: 'grid grid-cols-[1.25fr_.8fr] gap-4',
+  story: 'grid grid-cols-2 gap-2 sm:gap-3 lg:auto-rows-[clamp(11rem,17vw,17rem)] lg:grid-cols-12',
   mosaic: 'grid aspect-[1.4] grid-cols-[1.72fr_1fr] grid-rows-2 gap-2 min-[801px]:aspect-[2.2]',
-  strip: 'flex snap-x snap-mandatory gap-3 overflow-x-auto [scrollbar-color:var(--color-piramide)_var(--color-zinc-100)]',
+  strip: 'flex w-max gap-3',
 }
 const galleryTile = {
-  story: 'aspect-[1.5] first:col-span-full first:aspect-[2.5] md:[&:nth-child(3)]:mt-[clamp(16px,7vw,90px)]',
+  story: 'min-h-0 focus-visible:-outline-offset-4 lg:aspect-auto',
   mosaic: 'min-h-0 first:row-span-2 only:col-span-full [&:nth-child(2):last-child]:row-span-2 motion-safe:animate-image-in motion-safe:[&:nth-child(2)]:[animation-delay:90ms] motion-safe:[&:nth-child(3)]:[animation-delay:170ms]',
-  strip: 'aspect-[1.5] flex-[0_0_min(76%,940px)] snap-start',
+  strip: 'aspect-[1.55] w-[min(82cqw,53rem)] shrink-0 snap-start bg-[#ede5f0] only:w-[100cqw] focus-visible:-outline-offset-4 min-[53rem]:aspect-[1.8] min-[53rem]:w-[min(62cqw,53rem)] min-[53rem]:only:w-[100cqw]',
+}
+const storyLead = 'col-span-2 aspect-[1.55] lg:col-span-7 lg:row-span-2'
+const storySmall = 'aspect-[1.15]'
+const storyWide = 'col-span-2 aspect-[1.8]'
+const storyPatterns = [
+  [storyWide + ' lg:col-span-12 lg:row-span-2'],
+  [storyLead, storyWide + ' lg:col-span-5 lg:row-span-2'],
+  [storyLead, storySmall + ' lg:col-span-5', storySmall + ' lg:col-span-5'],
+  [storyLead, storySmall + ' lg:col-span-2', storySmall + ' lg:col-span-3', storyWide + ' lg:col-span-5'],
+  [storyLead, storySmall + ' lg:col-span-5', storySmall + ' lg:col-span-5', storySmall + ' lg:col-span-5', storySmall + ' lg:col-span-7'],
+]
+
+function storyGroups(count: number) {
+  const groups = Math.ceil(count / storyPatterns.length)
+  const groupSize = Math.floor(count / groups)
+  const remainder = count % groups
+  return Array.from({length: groups}, (_, group) => ({
+    start: group * groupSize + Math.max(0, group - (groups - remainder)),
+    pattern: storyPatterns[groupSize + Number(group >= groups - remainder) - 1],
+  }))
 }
 
 export function Frame({photo, sizes = '100vw', priority = false, className}: {photo: Picture; sizes?: string; priority?: boolean; className?: string}) {
@@ -27,13 +50,12 @@ export function Frame({photo, sizes = '100vw', priority = false, className}: {ph
 }
 
 export function ImmersiveCover({
-  photo, src, header, children, placeholder = false,
+  photo, src, header, children,
 }: {
   photo: Picture
   src?: string | null
   header: ReactNode
   children: ReactNode
-  placeholder?: boolean
 }) {
   const [stage, setStage] = useState<'cover' | 'intro' | 'player' | 'paused'>('cover')
   const [playing, setPlaying] = useState(false)
@@ -46,7 +68,6 @@ export function ImmersiveCover({
   const video = useRef<HTMLVideoElement>(null)
   const fullscreen = nativeFullscreen || expanded
   const showOverlay = stage !== 'intro' && !playing
-  const videoLabel = placeholder ? 'Clipe demonstrativo' : 'Clipe de abertura'
 
   const startPlayback = useCallback(() => {
     const player = video.current
@@ -124,7 +145,7 @@ export function ImmersiveCover({
         <video
           ref={video}
           src={src}
-          aria-label={videoLabel}
+          aria-label="Clipe de abertura"
           aria-hidden={stage !== 'player'}
           preload="none"
           playsInline
@@ -158,10 +179,11 @@ export function ImmersiveCover({
             <button
               type="button"
               onClick={stage === 'paused' ? startPlayback : startIntro}
-              aria-label={(stage === 'paused' ? 'Continuar ' : 'Reproduzir ') + videoLabel.toLowerCase()}
-              className="pointer-events-auto mb-5 inline-grid size-14 cursor-pointer place-items-center rounded-full border border-white/65 bg-black/45 text-white transition-colors hover:border-white hover:bg-white hover:text-coal focus-visible:bg-white focus-visible:text-coal sm:size-16"
+              aria-label={stage === 'paused' ? 'Continuar clipe de abertura' : 'Reproduzir clipe de abertura'}
+              className={sweepButton + ' ' + sweepOnCover + ' pointer-events-auto mb-5 size-14 sm:size-16'}
             >
-              <Play aria-hidden="true" size={23} className="ml-0.5 fill-current" />
+              <span aria-hidden="true" className={sweepFill} />
+              <Play aria-hidden="true" size={23} className="relative z-10 ml-0.5 fill-current transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none" />
             </button>
           )}
           {children}
@@ -206,7 +228,6 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
   })
   const dialog = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLElement | null>(null)
-  const strip = useRef<HTMLDivElement>(null)
   const stage = useRef<HTMLDivElement>(null)
   const drag = useRef({active: false, startX: 0, deltaX: 0})
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -278,31 +299,51 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
   }
   if (!count) return <>{children}</>
   const displayed = layout === 'mosaic' ? photos.slice(0, 3) : photos
-  function moveStrip(direction: number) {
-    const node = strip.current
-    if (node) node.scrollBy({left: direction * node.clientWidth * 0.65})
+  const cinemaLayout = layout === 'strip'
+  const editorialLayout = layout === 'story'
+  function renderPhoto(photo: Picture, index: number, placement = '') {
+    const sizes = editorialLayout
+      ? placement.includes('lg:col-span-12')
+        ? '100vw'
+        : placement.startsWith('col-span-2')
+        ? '(max-width: 1023px) 100vw, 60vw'
+        : '(max-width: 1023px) 50vw, 42vw'
+      : '(max-width: 800px) 85vw, 60vw'
+    return (
+      <button type="button" tabIndex={cinemaLayout ? -1 : undefined} key={photo.src + index} className={'group relative block cursor-zoom-in overflow-hidden ' + galleryTile[layout] + ' ' + placement + (cinemaLayout ? '' : ' bg-zinc-100')} onClick={(event) => open(index, event.currentTarget)} aria-label={'Ampliar foto ' + (index + 1) + ': ' + photo.alt}>
+        <Frame className={'size-full object-cover motion-safe:transition-transform motion-safe:duration-600 motion-safe:group-hover:scale-105' + (editorialLayout ? ' absolute inset-0' : '')} photo={photo} sizes={sizes} priority={layout === 'mosaic' && index === 0} />
+        <span className={glassControl + ' pointer-events-none absolute right-3 bottom-3 size-11' + (cinemaLayout ? '' : ' opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 motion-safe:transition-opacity')} aria-hidden="true"><CinemaIcon name="expand" /></span>
+      </button>
+    )
   }
+  const track = editorialLayout ? (
+    <div className="grid gap-2 sm:gap-3">
+      {storyGroups(count).map(({start, pattern}, groupIndex) => (
+        <div className={galleryTrack.story + (groupIndex % 2 ? ' lg:[direction:rtl]' : '')} key={start}>
+          {pattern.map((placement, offset) => renderPhoto(photos[start + offset], start + offset, placement))}
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className={galleryTrack[layout]}>
+      {displayed.map((photo, index) => renderPhoto(photo, index))}
+    </div>
+  )
+  const actionLayout = layout === 'mosaic' ? wrap + ' py-4' : 'mt-4'
+  const actions = (
+    <div className={'flex flex-wrap items-center gap-2.5 ' + (cinemaLayout ? '' : actionLayout)}>
+      <button type="button" className={cinemaLayout || editorialLayout ? glassAction : outlineButton + ' cursor-pointer'} onClick={(event) => open(0, event.currentTarget)}>
+        {(cinemaLayout || editorialLayout) && <CinemaIcon name="photos" />} Ver todas as fotos
+      </button>
+      {children}
+    </div>
+  )
 
   return (
     <div data-gallery={layout}>
-      <div className={galleryTrack[layout]} ref={strip}>
-        {displayed.map((photo, index) => (
-          <button key={photo.src + index} className={'group relative block cursor-zoom-in overflow-hidden bg-zinc-100 ' + galleryTile[layout]} onClick={(event) => open(index, event.currentTarget)} aria-label={'Ampliar foto ' + (index + 1) + ': ' + photo.alt}>
-            <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-600 motion-safe:group-hover:scale-105" photo={photo} sizes={layout === 'story' ? '(max-width: 800px) 100vw, 75vw' : '(max-width: 800px) 100vw, 60vw'} priority={layout === 'mosaic' && index === 0} />
-            <span className="absolute right-3 bottom-3 grid size-10 place-items-center rounded-full bg-white text-piramide group-hover:bg-piramide group-hover:text-white group-focus-visible:bg-piramide group-focus-visible:text-white motion-safe:transition-colors" aria-hidden="true"><Maximize2 size={17} strokeWidth={1.5} /></span>
-          </button>
-        ))}
-      </div>
-      <div className="mt-4 flex flex-wrap items-center gap-2.5">
-        <button className={outlineButton + ' cursor-pointer'} onClick={(event) => open(0, event.currentTarget)}>Ver todas as fotos</button>
-        {children}
-        {layout === 'strip' && count > 1 && <div className="ml-auto flex gap-2">
-          <button className={iconButton + ' cursor-pointer'} onClick={() => moveStrip(-1)} aria-label="Rolar galeria para a esquerda"><ArrowLeft size={18} /></button>
-          <button className={iconButton + ' cursor-pointer'} onClick={() => moveStrip(1)} aria-label="Rolar galeria para a direita"><ArrowRight size={18} /></button>
-        </div>}
-      </div>
+      {cinemaLayout ? <ScrollArea actions={actions}>{track}</ScrollArea> : <>{track}{actions}</>}
       <dialog
-        className={mediaDialog}
+        className={mediaDialog + ' ' + photoBackdrop}
         ref={dialog}
         data-visible={visible}
         aria-label="Fotos do imóvel"
@@ -313,7 +354,7 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
         onClose={() => {
           setVisible(false)
           setOpened(false)
-          opener.current?.focus()
+          opener.current?.focus({preventScroll: cinemaLayout})
         }}
         onClick={(event) => {
           if (event.target === dialog.current) requestClose()
@@ -388,10 +429,8 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
                   >
                     <div
                       className={
-                        'h-1.5 rounded-full transition-all duration-300 ' +
-                        (idx === current
-                          ? 'w-10 bg-white'
-                          : 'w-3.5 bg-white/30 group-hover:bg-white/60')
+                        'h-1.5 rounded-none transition-all duration-300 ' +
+                        (idx === current ? 'w-10 bg-white' : 'w-3.5 bg-white/30 group-hover:bg-white/60')
                       }
                     />
                   </button>
@@ -406,16 +445,46 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
   )
 }
 
-export function WatchVideo({src, label, poster}: {src: string; label: string; poster: string}) {
+function parseEmbedVideo(url: string): string | null {
+  try {
+    const parsed = new URL(url)
+    const host = parsed.hostname.replace(/^www\./, '')
+    if (host === 'youtu.be') {
+      const id = parsed.pathname.slice(1).split('/')[0]
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0` : null
+    }
+    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
+      const id = parsed.searchParams.get('v') || parsed.pathname.match(/^\/(?:embed|shorts)\/([^/?#]+)/)?.[1]
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0` : null
+    }
+    if (host === 'vimeo.com' || host === 'player.vimeo.com') {
+      const id = parsed.pathname.match(/\/(?:video\/)?(\d+)/)?.[1]
+      return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : null
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
+export function WatchVideo({src, label, poster, external = false, cinemaLayout = false, glassActions = cinemaLayout}: {src: string; label: string; poster?: string; external?: boolean; cinemaLayout?: boolean; glassActions?: boolean}) {
   const [open, setOpen] = useState(false)
   const [visible, setVisible] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
   const button = useRef<HTMLButtonElement>(null)
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const embedSrc = external ? parseEmbedVideo(src) : null
+  const isDirectVideo = !external || /\.(mp4|webm|mov)(?:[?#]|$)/i.test(src)
+  const actionClass = glassActions ? glassAction : outlineButton
+  const playIcon = glassActions ? <CinemaIcon name="play" /> : <Play size={16} />
 
   useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current)
   }, [])
+
+  if (external && !embedSrc && !isDirectVideo) {
+    return <a className={actionClass} href={src} target="_blank" rel="noopener noreferrer">{playIcon} {label}</a>
+  }
 
   function openModal() {
     if (closeTimer.current) clearTimeout(closeTimer.current)
@@ -434,9 +503,9 @@ export function WatchVideo({src, label, poster}: {src: string; label: string; po
   }
 
   return <>
-    <button ref={button} className={outlineButton + ' cursor-pointer'} onClick={openModal}><Play size={16} /> {label}</button>
+    <button type="button" ref={button} className={actionClass + ' cursor-pointer'} onClick={openModal}>{playIcon} {label}</button>
     <dialog
-      className={mediaDialog}
+      className={mediaDialog + ' ' + (cinemaLayout ? 'open:data-[visible=true]:backdrop:bg-[#f7f0f9]/88' : photoBackdrop)}
       aria-label={label}
       ref={dialog}
       data-visible={visible}
@@ -459,8 +528,12 @@ export function WatchVideo({src, label, poster}: {src: string; label: string; po
           (visible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-3 scale-[0.96] opacity-0')
         }
       >
-        <button type="button" className={dialogClose} aria-label="Fechar vídeo" onClick={requestClose}><X size={18} /></button>
-        {open && <video className={videoContents} controls autoPlay playsInline src={src} poster={poster} />}
+        <button type="button" className={cinemaLayout ? glassControl + ' fixed top-3 right-3 z-20 size-11' : dialogClose} aria-label="Fechar vídeo" onClick={requestClose}>
+          {cinemaLayout ? <CinemaIcon name="close" /> : <X size={18} />}
+        </button>
+        {open && (embedSrc
+          ? <iframe className="aspect-video max-h-[78dvh] w-full bg-black shadow-2xl" src={embedSrc} title={label} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
+          : <video className={videoContents} controls autoPlay playsInline src={src} poster={poster} />)}
       </div>
     </dialog>
   </>
