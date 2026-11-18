@@ -2,15 +2,15 @@
 
 import Link from 'next/link'
 import { ArrowDown, ArrowUpRight } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { eyebrow, heading } from '../lib/classes'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {sweepButton, sweepFill, sweepOnCover, sweepRegular, sweepContent,  eyebrow, heading } from '../lib/classes'
 import type { Picture } from '../lib/image'
 import type { PropertyCard } from '../lib/model'
 import { Frame } from './media'
 
 type HeroItem = Pick<PropertyCard, 'slug' | 'title' | 'summary' | 'specifications'> & { location: string; photo: Picture }
 const slideDuration = 6500
-const transitionDuration = 1400
+const transitionDuration = 1800
 const number = new Intl.NumberFormat('pt-BR')
 
 export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
@@ -20,10 +20,14 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
   const [focused, setFocused] = useState(false)
   const [visible, setVisible] = useState(false)
   const [canAnimate, setCanAnimate] = useState(false)
+  const [transitioning, setTransitioning] = useState(false)
   const hero = useRef<HTMLElement>(null)
   const progress = useRef<SVGSVGElement>(null)
+  const photoLayers = useRef<(HTMLDivElement | null)[]>([])
+  const photoImages = useRef<(HTMLDivElement | null)[]>([])
   const elapsed = useRef(0)
   const selectionRequest = useRef(0)
+  const transitionLock = useRef(false)
   const active = items[slide.current] ?? items[0]
   const leftActive = items[leftIndex] ?? active
   const count = items.length
@@ -47,6 +51,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
   }
 
   async function selectSlide(idx: number) {
+    if (transitionLock.current || idx === slide.current) return
     const request = ++selectionRequest.current
     const image = hero.current?.querySelectorAll('img')[idx]
     if (!image) return
@@ -55,7 +60,9 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
     } catch {
       return
     }
-    if (request !== selectionRequest.current) return
+    if (request !== selectionRequest.current || transitionLock.current) return
+    transitionLock.current = canAnimate
+    setTransitioning(canAnimate)
     elapsed.current = 0
     syncProgress(count < 2 ? 1 : 0)
     setFocused(false)
@@ -79,6 +86,41 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
       motion.removeEventListener('change', updateMotion)
     }
   }, [count])
+
+  // An architectural diagonal sweeps across the new photo while the previous
+  // one stays underneath. Decoded images remain mounted; the lower line keeps
+  // its own continuous progress animation.
+  useLayoutEffect(() => {
+    const incoming = photoLayers.current[slide.current]
+    const outgoing = photoLayers.current[slide.previous]
+    if (!incoming || !outgoing || !canAnimate) {
+      transitionLock.current = false
+      setTransitioning(false)
+      return
+    }
+    const timing = {duration: transitionDuration, easing: 'cubic-bezier(.55,.08,.25,1)', fill: 'both' as const}
+    const enter = incoming.animate([
+      {clipPath: 'polygon(0 0, -24% 0, -48% 100%, 0 100%)'},
+      {clipPath: 'polygon(0 0, 148% 0, 124% 100%, 0 100%)'},
+    ], timing)
+    const settle = photoImages.current[slide.current]?.animate([
+      {transform: 'scale(1.045)'},
+      {transform: 'scale(1)'},
+    ], {...timing, easing: 'cubic-bezier(.2,.6,.25,1)'})
+    const startTime = document.timeline.currentTime
+    enter.startTime = startTime
+    if (settle) settle.startTime = startTime
+    enter.onfinish = () => {
+      transitionLock.current = false
+      setTransitioning(false)
+    }
+    return () => {
+      enter.onfinish = null
+      enter.cancel()
+      settle?.cancel()
+      transitionLock.current = false
+    }
+  }, [slide.current, slide.previous, slide.run, canAnimate])
 
   useEffect(() => {
     elapsed.current = 0
@@ -147,8 +189,10 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
             <div key={slug} className="absolute inset-0 opacity-0 backface-hidden data-[outgoing=true]:z-0 data-[outgoing=true]:opacity-100 data-[current=true]:z-1 data-[current=true]:opacity-100"
               data-current={index === slide.current} data-outgoing={index === slide.previous}
               aria-hidden={index !== slide.current}>
-              <div key={index === slide.current ? slug + '-' + slide.run : slug} className={'size-full ' + (index === slide.current && slide.previous >= 0 ? 'motion-safe:will-change-[clip-path] motion-safe:animate-photo-wipe' : '')}>
-                <Frame photo={photo} className="size-full object-cover" priority sizes="(min-width: 1760px) 1760px, 100vw" />
+              <div ref={(node) => {photoLayers.current[index] = node}} className="size-full overflow-hidden motion-safe:will-change-[clip-path]">
+                <div ref={(node) => {photoImages.current[index] = node}} className="size-full motion-safe:will-change-transform">
+                  <Frame photo={photo} className="size-full object-cover" priority sizes="(min-width: 1760px) 1760px, 100vw" />
+                </div>
               </div>
             </div>
           ))}
@@ -172,9 +216,9 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
             ))}
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3.5">
-            <Link className="group/cta relative inline-flex cursor-pointer select-none items-center justify-center overflow-hidden border border-ivory/65 bg-coal/35 px-4 py-3 text-sm font-medium text-ivory backdrop-blur-xs transition-all duration-300 ease-out hover:border-piramide active:scale-[0.98] will-change-transform sm:px-5 sm:py-3.5 sm:text-base motion-reduce:transition-none" href={'/' + leftActive.slug}>
-              <span aria-hidden="true" className="pointer-events-none absolute inset-0 size-full translate-y-full bg-piramide transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cta:translate-y-0" />
-              <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white">
+            <Link className={sweepButton + sweepRegular + ' ' + sweepOnCover} href={'/' + leftActive.slug}>
+              <span aria-hidden="true" className={sweepFill} />
+              <span className={sweepContent}>
                 Ver empreendimento <ArrowUpRight size={18} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </Link>
@@ -218,6 +262,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
               <button
                 key={item.slug}
                 type="button"
+                disabled={transitioning}
                 onPointerDown={(e) => e.preventDefault()}
                 onClick={() => selectSlide(idx)}
                 aria-label={`Ir para slide ${idx + 1}: ${item.title}`}
