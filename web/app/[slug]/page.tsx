@@ -139,7 +139,7 @@ function TechnicalSheet({property, layout}: {property: Property; layout: 'film' 
 
   if (!items.length) return null
 
-  const factGrid = 'grid grid-cols-2 gap-x-4 gap-y-4 sm:gap-x-7 lg:grid-cols-4'
+  const factGrid = 'grid grid-cols-2 gap-x-4 gap-y-5 sm:gap-x-7 lg:grid-cols-4'
   function renderFacts(facts: typeof items) {
     if (layout === 'film') {
       return (
@@ -148,18 +148,21 @@ function TechnicalSheet({property, layout}: {property: Property; layout: 'film' 
             <li key={label} className="relative isolate flex min-h-14 min-w-0 flex-col justify-center py-2">
               <CinemaIcon name={icon} className="pointer-events-none absolute end-1 top-1/2 -z-10 size-12! -translate-y-1/2 text-piramide opacity-15 sm:end-4 sm:size-14!" />
               <span className={value ? 'text-xs leading-snug text-[#625768] sm:text-sm' : 'text-sm leading-snug font-semibold sm:text-base'}>{label}</span>
-              {value && <span className="mt-1 text-sm leading-snug font-semibold wrap-anywhere sm:text-base">{value}</span>}
+              {value && <span className="mt-1 text-base leading-snug font-semibold wrap-anywhere sm:text-lg">{value}</span>}
             </li>
           ))}
         </ul>
       )
     }
     return (
-      <dl className={factGrid + ' text-sm'}>
+      <dl className={factGrid}>
         {facts.map(({label, value, icon}) => (
-          <div key={label} className={layout === 'essay' ? 'flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-1' : 'min-w-0'}>
-            <dt className="flex items-center gap-2.5 text-zinc-700"><CinemaIcon name={icon} className="text-piramide" />{label}</dt>
-            <dd className={'font-semibold wrap-anywhere ' + (layout === 'standard' ? 'ps-7.5' : '')}>{value ?? 'Incluído'}</dd>
+          <div key={label} className="flex min-w-0 items-center gap-3.5 py-1.5 sm:gap-4">
+            <CinemaIcon name={icon} className="size-8! shrink-0 text-piramide sm:size-9!" />
+            <div className="min-w-0">
+              <dt className="text-xs leading-snug text-zinc-600 sm:text-sm">{label}</dt>
+              <dd className="mt-0.5 text-base leading-snug font-semibold wrap-anywhere text-zinc-900 sm:text-lg">{value ?? 'Incluído'}</dd>
+            </div>
           </div>
         ))}
       </dl>
@@ -246,7 +249,7 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhoto, vid
   return (
     <div className="grid gap-[clamp(3rem,7vw,6.5rem)] pt-[clamp(1.5rem,4vw,3.25rem)]">
       <div className={wrap + ' grid gap-4 sm:gap-5'}>
-        <PropertyPurchase property={property} />
+        <PropertyPurchase property={property} link={link} />
         <TechnicalSheet property={property} layout="essay" />
       </div>
       <section className={wrap + ' min-w-0'} aria-labelledby="editorial-gallery">
@@ -356,7 +359,7 @@ function PropertyLayout({property, link}: {property: Property; link: string | nu
                   <PropertyTitle property={property} compact />
                   <p className="mt-3 max-w-[70ch] leading-relaxed text-zinc-700">{property.summary}</p>
                 </div>
-                <PropertyPurchase property={property} />
+                <PropertyPurchase property={property} link={link} />
                 <TechnicalSheet property={property} layout="standard" />
               </div>
               <nav aria-label="Nesta página" className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-zinc-700 sm:gap-x-7">
