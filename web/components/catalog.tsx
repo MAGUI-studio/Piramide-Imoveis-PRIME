@@ -4,7 +4,7 @@ import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
 import {useEffect, useId, useRef, useState} from 'react'
 import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, Check, ChevronDown, House, MapPin, Search, SlidersHorizontal, X} from 'lucide-react'
-import {availabilityLabel, cardAttributesOf, locationOf, type PropertyCard} from '../lib/model'
+import {availabilityLabel, cardAreaOf, cardAttributesOf, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
 import {button, heading, homeSectionHeading, wrap} from '../lib/classes'
 import {Frame} from './media'
@@ -321,7 +321,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
             const titleStyle = isLead ? heading : 'font-sans font-semibold leading-tight tracking-tight'
             const location = locationOf(item)
             const status = availabilityLabel(item.availability)
-            const cardAttrs = cardAttributesOf(item)
+            const area = cardAreaOf(item) || cardAttributesOf(item).find((value) => /^[\d.,]+\s*m²$/i.test(value.trim()))
 
             return (
               <Link
@@ -351,23 +351,17 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                   </div>
                 )}
                 <div className="w-full text-white">
-                  {item.propertyType && <p className="flex items-center gap-2 text-[10px] font-bold tracking-[.12em] text-white/90 uppercase">
-                    <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />{item.propertyType}
-                  </p>}
-                  <div className="mt-1.5 flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3">
                     <h3 className={titleStyle + ' min-w-0 line-clamp-2 ' + titleSize} title={item.title}>{item.title}</h3>
                     <ArrowUpRight aria-hidden="true" size={19} strokeWidth={1.6} className="mt-0.5 shrink-0 text-white motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-focus-visible:translate-x-0.5 motion-safe:group-focus-visible:-translate-y-0.5" />
                   </div>
                   {location && <p className="mt-2 flex items-start gap-1.5 text-xs font-medium text-white/90"><MapPin aria-hidden="true" size={13} className="mt-0.5 shrink-0" />{location}</p>}
                   {item.summary && <p className="mt-2 line-clamp-2 max-w-[52ch] text-xs leading-relaxed text-white/85 sm:text-sm">{item.summary}</p>}
-                  {!!cardAttrs.length && <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-white/90">
-                    {cardAttrs.map((attribute, index) => (
-                      <li key={attribute} className="flex items-center gap-2">
-                        {index > 0 && <span aria-hidden="true" className="size-1 shrink-0 bg-white/50" />}
-                        {attribute}
-                      </li>
-                    ))}
-                  </ul>}
+                  <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[11px] leading-snug font-semibold text-white/90">
+                    {area && <span className="whitespace-nowrap tabular-nums">{area}</span>}
+                    {item.propertyType && <span className="tracking-[.07em] uppercase">{item.propertyType}</span>}
+                    <span className="font-bold whitespace-nowrap text-white tabular-nums">{propertyPrice(item.price)}</span>
+                  </p>
                 </div>
               </Link>
             )
