@@ -1,7 +1,7 @@
 import {createClient, type QueryParams} from '@sanity/client'
 import {draftMode} from 'next/headers'
 import {cache} from 'react'
-import type {MarqueeItem, Photo, Property, PropertyCard} from './model'
+import type {HomeStat, MarqueeItem, Photo, Property, PropertyCard} from './model'
 
 const projectId = process.env.SANITY_PROJECT_ID
 export const dataset = process.env.SANITY_DATASET || 'production'
@@ -29,7 +29,7 @@ const cardFields = `
 const mediaFields = 'gallery, "clip": clip.asset->url'
 const listing = '_type == "property" && defined(slug.current) && defined(cover.asset)'
 type CatalogProperty = PropertyCard & {alternate?: Photo | null}
-type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; whatsapp: string | null; marquee: MarqueeItem[]}
+type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]}
 const homeQuery = `{
   "hero": *[_id == "primeHome"][0].hero->{
     ${cardFields}
@@ -39,6 +39,7 @@ const homeQuery = `{
     ${cardFields}, "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
   },
   "whatsapp": *[_id == "primeHome"][0].whatsapp,
+  "stats": coalesce(*[_id == "primeHome"][0].stats[defined(label) && defined(value)]{_key, label, value, prefix, suffix}, []),
   "marquee": coalesce(*[_id == "primeMarquee"][0].items[defined(title) && defined(description)]{_key, title, description}, [])
 }`
 const propertyQuery = `{
@@ -50,13 +51,14 @@ const propertyQuery = `{
     faq[defined(question) && defined(answer)]{_key, question, answer},
     videoGallery[defined(file.asset->url)]{_key, title, opening, poster, "url": file.asset->url},
     condoFee, iptu, externalListingUrl, externalVideoUrl, virtualTourUrl, template,
+    address{street, number, complement, state, postalCode, point{lat, lng}, approximate},
     "tour": tour.asset->url
   },
   "whatsapp": *[_id == "primeHome"][0].whatsapp
 }`
 
 export const getHome = cache(async (preview: boolean): Promise<Home> => {
-  return await read<Home>(homeQuery, {}, preview) || {hero: null, featured: [], catalog: [], whatsapp: null, marquee: []}
+  return await read<Home>(homeQuery, {}, preview) || {hero: null, featured: [], catalog: [], whatsapp: null, marquee: [], stats: []}
 })
 
 export const getProperty = cache(async (slug: string, preview: boolean) => {

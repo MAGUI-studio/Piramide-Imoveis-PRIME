@@ -7,6 +7,7 @@ export type Photo = {
 }
 
 export type MarqueeItem = {_key: string; title: string; description: string}
+export type HomeStat = {_key: string; label: string; value: number; prefix?: string | null; suffix?: string | null}
 export type PropertyQuestion = {_key: string; question: string; answer: string}
 export type PropertyVideo = {_key: string; title: string; url: string; poster?: Photo | null; opening?: boolean | null}
 
@@ -54,7 +55,18 @@ export type PropertyCard = {
   createdAt: string
 }
 
+export type PropertyAddress = {
+  street?: string | null
+  number?: string | null
+  complement?: string | null
+  state?: string | null
+  postalCode?: string | null
+  point?: {lat: number; lng: number} | null
+  approximate?: boolean | null
+}
+
 export type Property = PropertyCard & {
+  address?: PropertyAddress | null
   architect?: string | null
   description: string
   gallery: Photo[] | null

@@ -115,6 +115,7 @@ const property = defineType({
   name: 'property', title: 'Empreendimentos', type: 'document',
   groups: [
     {name: 'details', title: 'Informações', default: true},
+    {name: 'location', title: 'Localização'},
     {name: 'commercial', title: 'Comercial'},
     {name: 'media', title: 'Fotos e vídeos'},
     {name: 'design', title: 'Página'},
@@ -154,7 +155,33 @@ const property = defineType({
       }),
     }),
     defineField({name: 'propertyType', title: 'Tipo de imóvel', type: 'string', group: 'details', options: {list: types}, validation: (rule) => rule.required().custom((value) => !value || types.includes(value) || 'Selecione um tipo de imóvel.')}),
-    defineField({name: 'neighborhood', title: 'Bairro', type: 'reference', group: 'details', to: [{type: 'neighborhood'}], validation: (rule) => rule.required()}),
+    defineField({name: 'neighborhood', title: 'Bairro e cidade', type: 'reference', group: ['details', 'location'], to: [{type: 'neighborhood'}], validation: (rule) => rule.required()}),
+    defineField({
+      name: 'address', title: 'Endereço público', type: 'object', group: 'location',
+      description: 'Esses dados aparecem na ficha. A cidade vem do bairro selecionado acima.',
+      options: {columns: 2},
+      fields: [
+        defineField({name: 'street', title: 'Logradouro', type: 'string', validation: (rule) => rule.max(120)}),
+        defineField({name: 'number', title: 'Número', type: 'string', description: 'Aceita letras e s/n.', validation: (rule) => rule.max(24)}),
+        defineField({name: 'complement', title: 'Complemento', type: 'string', validation: (rule) => rule.max(100)}),
+        defineField({name: 'state', title: 'UF', type: 'string', options: {list: 'AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' ')}}),
+        defineField({name: 'postalCode', title: 'CEP', type: 'string', validation: (rule) => rule.regex(/^\d{5}-?\d{3}$/)}),
+        defineField({
+          name: 'point', title: 'Ponto no mapa', type: 'geopoint',
+          description: 'Informe a latitude e a longitude do ponto que deseja mostrar no mapa.',
+          validation: (rule) => rule.custom((point) => {
+            if (!point || (point.lat == null && point.lng == null)) return true
+            return (Number.isFinite(point.lat) && Number.isFinite(point.lng) &&
+              Math.abs(point.lat) <= 85.05112878 && Math.abs(point.lng) <= 180) ||
+              'Informe uma latitude e uma longitude válidas para o mapa.'
+          }),
+        }),
+        defineField({
+          name: 'approximate', title: 'Ponto de referência', type: 'boolean',
+          description: 'Marque se o ponto representa o bairro ou outro local de referência. A ficha vai indicar isso.',
+        }),
+      ],
+    }),
     defineField({
       name: 'condominiumName', title: 'Condomínio ou edifício', type: 'string', group: 'details',
       description: 'Opcional. Ex.: Reserva do Paratehy, Alphaville, Jardim do Golfe.',
@@ -359,6 +386,43 @@ const home = defineType({
       name: 'whatsapp', title: 'WhatsApp comercial', type: 'string',
       description: 'Use código do país, DDD e número, somente dígitos. Exemplo de formato: 5512999999999.',
       validation: (rule) => rule.required().regex(/^[1-9]\d{9,14}$/),
+    }),
+    defineField({
+      name: 'stats', title: 'Números e dados em destaque', type: 'array',
+      description: 'Indicadores animados de 0 até o valor cadastrado exibidos na Home (ex.: "Número de vendas" / 50000).',
+      of: [defineArrayMember({
+        name: 'homeStat', title: 'Indicador', type: 'object',
+        fields: [
+          defineField({
+            name: 'label', title: 'Título do indicador', type: 'string',
+            description: 'Ex.: Número de vendas, Anos de tradição, Imóveis negociados.',
+            validation: (rule) => rule.required().max(60),
+          }),
+          defineField({
+            name: 'value', title: 'Valor numérico', type: 'number',
+            description: 'Valor final da animação (ex.: 50000).',
+            validation: (rule) => rule.required().greaterThan(0),
+          }),
+          defineField({
+            name: 'prefix', title: 'Prefixo (opcional)', type: 'string',
+            description: 'Ex.: +, R$. Aparece antes do número.',
+            validation: (rule) => rule.max(10),
+          }),
+          defineField({
+            name: 'suffix', title: 'Sufixo (opcional)', type: 'string',
+            description: 'Ex.: +, mil, %, m². Aparece depois do número.',
+            validation: (rule) => rule.max(12),
+          }),
+        ],
+        preview: {
+          select: {title: 'label', value: 'value', prefix: 'prefix', suffix: 'suffix'},
+          prepare: ({title, value, prefix, suffix}) => ({
+            title,
+            subtitle: [prefix, value != null ? new Intl.NumberFormat('pt-BR').format(value) : '', suffix].filter(Boolean).join(''),
+          }),
+        },
+      })],
+      validation: (rule) => rule.max(6),
     }),
   ],
   preview: {prepare: () => ({title: 'Home'})},
