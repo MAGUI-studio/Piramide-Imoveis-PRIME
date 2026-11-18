@@ -61,6 +61,7 @@ export type Property = PropertyCard & {
   videoGallery?: PropertyVideo[] | null
   sectionPhoto?: Photo | null
   detailsPhoto?: Photo | null
+  detailsPhotos?: Photo[] | null
   mediaPhoto?: Photo | null
   mediaVideoPhoto?: Photo | null
   videoTourPhoto?: Photo | null
@@ -124,10 +125,10 @@ export function availabilityLabel(availability?: Availability | null) {
 }
 
 export function whatsappLink(phone: string | null, property?: string, refCode?: string | null) {
-  if (!phone || !/^[1-9]\d{9,14}$/.test(phone)) return null
+  const cleanPhone = phone && /^[1-9]\d{9,14}$/.test(phone) ? phone : ''
   const code = refCode?.trim() ? ' (Cód. ' + refCode.trim() + ')' : ''
   const message = property
     ? 'Olá! Gostaria de saber mais sobre o imóvel ' + property + code + '.'
     : 'Olá! Gostaria de conversar sobre os imóveis da Pirâmide PRIME.'
-  return 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message)
+  return 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(message)
 }

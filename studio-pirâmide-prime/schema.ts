@@ -284,9 +284,11 @@ const property = defineType({
       description: 'Define a foto da apresentação do imóvel neste template. Se ficar vazia, usa uma foto da galeria ou a capa.',
     }),
     defineField({
-      name: 'detailsPhoto', title: 'Imagem de Detalhes em foco', type: 'primePhoto', group: 'design',
+      name: 'detailsPhoto', title: 'Imagens de Detalhes em foco', type: 'array', group: 'design',
       hidden: ({document}) => document?.template !== 'editorial',
-      description: 'Foto da seção de diferenciais em Fotos. Escolha uma imagem diferente da apresentação, se quiser.',
+      description: 'Até 2 fotos para a seção Detalhes em foco em Fotos (a primeira fica à esquerda e a segunda à direita).',
+      of: [defineArrayMember({type: 'primePhoto'})],
+      validation: (rule) => rule.max(2),
     }),
     defineField({
       name: 'mediaPhoto', title: 'Imagem do acesso à galeria em Fotos e tour', type: 'primePhoto', group: 'design',
