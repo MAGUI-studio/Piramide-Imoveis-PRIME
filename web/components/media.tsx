@@ -6,9 +6,11 @@ import {iconButton, outlineButton} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {LoadingCurtain} from './loadingCurtain'
 
-const mediaDialog = 'm-auto max-h-[94dvh] w-[min(95vw,1230px)] max-w-none border border-zinc-200 bg-paper p-4 text-zinc-900 backdrop:bg-black/70'
-const mediaContents = 'block max-h-[75dvh] w-full object-contain'
-const dialogClose = iconButton + ' absolute top-2.5 right-2.5 z-1 cursor-pointer'
+const mediaDialog = 'm-auto max-h-[94dvh] w-[min(92vw,1200px)] max-w-none overflow-visible border-0 bg-transparent p-0 text-white outline-none backdrop:bg-black/0 backdrop:backdrop-blur-none backdrop:transition-all backdrop:duration-400 backdrop:ease-out open:data-[visible=true]:backdrop:bg-black/90 open:data-[visible=true]:backdrop:backdrop-blur-md'
+const mediaContents = 'block size-full object-cover'
+const videoContents = 'block max-h-[78dvh] w-full object-contain shadow-2xl'
+const dialogButton = 'inline-grid size-10 shrink-0 cursor-pointer place-items-center rounded-full border border-white/25 bg-black/55 text-white backdrop-blur-md transition-colors hover:border-piramide hover:bg-piramide'
+const dialogClose = dialogButton + ' fixed top-5 right-5 z-20 sm:top-7 sm:right-8'
 const galleryTrack = {
   story: 'grid grid-cols-[1.25fr_.8fr] gap-4',
   mosaic: 'grid aspect-[1.4] grid-cols-[1.72fr_1fr] grid-rows-2 gap-2 min-[801px]:aspect-[2.2]',
@@ -197,20 +199,82 @@ export function ImmersiveCover({
 }
 
 export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 'story' | 'strip' | 'mosaic'; children?: ReactNode}) {
-  const [current, setCurrent] = useState(0)
+  const [slide, setSlide] = useState<{current: number; previous: number; direction: 1 | -1}>({
+    current: 0,
+    previous: -1,
+    direction: 1,
+  })
   const dialog = useRef<HTMLDialogElement>(null)
   const opener = useRef<HTMLElement | null>(null)
   const strip = useRef<HTMLDivElement>(null)
+  const stage = useRef<HTMLDivElement>(null)
+  const drag = useRef({active: false, startX: 0, deltaX: 0})
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [opened, setOpened] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [dragging, setDragging] = useState(false)
   const count = photos.length
-  function step(direction: number) {
-    setCurrent((index) => (index + direction + count) % count)
+  const current = slide.current
+
+  function onStagePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (count < 2 || (event.pointerType === 'mouse' && event.button !== 0)) return
+    drag.current = {active: true, startX: event.clientX, deltaX: 0}
+    setDragging(true)
+    stage.current?.setPointerCapture(event.pointerId)
+  }
+
+  function onStagePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+    if (!drag.current.active || !stage.current) return
+    const delta = event.clientX - drag.current.startX
+    drag.current.deltaX = delta
+    stage.current.style.setProperty('--drag-x', delta + 'px')
+  }
+
+  function onStagePointerEnd(event: React.PointerEvent<HTMLDivElement>) {
+    if (!drag.current.active) return
+    const delta = drag.current.deltaX
+    drag.current.active = false
+    setDragging(false)
+    stage.current?.style.setProperty('--drag-x', '0px')
+    if (stage.current?.hasPointerCapture(event.pointerId)) {
+      stage.current.releasePointerCapture(event.pointerId)
+    }
+    if (Math.abs(delta) > 60 && count > 1) {
+      step(delta < 0 ? 1 : -1)
+    }
+  }
+
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+  }, [])
+
+  function step(direction: 1 | -1) {
+    setSlide((prev) => ({
+      current: (prev.current + direction + count) % count,
+      previous: prev.current,
+      direction,
+    }))
+  }
+  function goTo(index: number) {
+    setSlide((prev) => (index === prev.current
+      ? prev
+      : {current: index, previous: prev.current, direction: index > prev.current ? 1 : -1}))
   }
   function open(index: number, element: HTMLElement) {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
     opener.current = element
-    setCurrent(index)
+    setSlide({current: index, previous: -1, direction: 1})
     setOpened(true)
-    dialog.current?.showModal()
+    if (!dialog.current?.open) dialog.current?.showModal()
+    requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+  }
+  function requestClose() {
+    setVisible(false)
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    closeTimer.current = setTimeout(() => {
+      dialog.current?.close()
+      setOpened(false)
+    }, 320)
   }
   if (!count) return <>{children}</>
   const displayed = layout === 'mosaic' ? photos.slice(0, 3) : photos
@@ -237,18 +301,106 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
           <button className={iconButton + ' cursor-pointer'} onClick={() => moveStrip(1)} aria-label="Rolar galeria para a direita"><ArrowRight size={18} /></button>
         </div>}
       </div>
-      <dialog className={mediaDialog} ref={dialog} aria-label="Fotos do imóvel" onClose={() => {setOpened(false); opener.current?.focus()}}
+      <dialog
+        className={mediaDialog}
+        ref={dialog}
+        data-visible={visible}
+        aria-label="Fotos do imóvel"
+        onCancel={(event) => {
+          event.preventDefault()
+          requestClose()
+        }}
+        onClose={() => {
+          setVisible(false)
+          setOpened(false)
+          opener.current?.focus()
+        }}
+        onClick={(event) => {
+          if (event.target === dialog.current) requestClose()
+        }}
         onKeyDown={(event) => {
           if (event.key === 'ArrowLeft') {event.preventDefault(); step(-1)}
           if (event.key === 'ArrowRight') {event.preventDefault(); step(1)}
-        }}>
-        <button className={dialogClose} aria-label="Fechar galeria" onClick={() => dialog.current?.close()}><X /></button>
-        {opened && <Frame className={mediaContents} photo={photos[current]} priority />}
-        {count > 1 && <div className="mt-3 flex items-center justify-center gap-3">
-          <button className={iconButton + ' cursor-pointer'} aria-label="Foto anterior" onClick={() => step(-1)}><ArrowLeft /></button>
-          <span aria-live="polite">{current + 1} / {count}</span>
-          <button className={iconButton + ' cursor-pointer'} aria-label="Próxima foto" onClick={() => step(1)}><ArrowRight /></button>
-        </div>}
+        }}
+      >
+        <div
+          className={
+            'transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ' +
+            (visible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-3 scale-[0.96] opacity-0')
+          }
+        >
+          <button type="button" className={dialogClose} aria-label="Fechar galeria" onClick={requestClose}><X size={18} /></button>
+          {opened && (
+            <div
+              ref={stage}
+              onPointerDown={onStagePointerDown}
+              onPointerMove={onStagePointerMove}
+              onPointerUp={onStagePointerEnd}
+              onPointerCancel={onStagePointerEnd}
+              onDragStart={(event) => event.preventDefault()}
+              className={
+                'relative h-[75dvh] w-full touch-pan-y overflow-hidden bg-black/40 shadow-2xl select-none ' +
+                (count > 1 ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : '')
+              }
+            >
+              {photos.map((photo, idx) => {
+                const isCurrent = idx === current
+                const isPrevious = idx === slide.previous && slide.previous !== current
+                if (!isCurrent && !isPrevious) return null
+                const animClass = slide.previous < 0
+                  ? ''
+                  : isCurrent
+                    ? slide.direction === 1
+                      ? 'motion-safe:animate-[gallery-in-next_.55s_cubic-bezier(0.16,1,0.3,1)_both]'
+                      : 'motion-safe:animate-[gallery-in-prev_.55s_cubic-bezier(0.16,1,0.3,1)_both]'
+                    : slide.direction === 1
+                      ? 'motion-safe:animate-[gallery-out-next_.55s_cubic-bezier(0.16,1,0.3,1)_both]'
+                      : 'motion-safe:animate-[gallery-out-prev_.55s_cubic-bezier(0.16,1,0.3,1)_both]'
+                return (
+                  <div
+                    key={photo.src + idx}
+                    aria-hidden={!isCurrent}
+                    className={'absolute inset-0 ' + (isCurrent ? 'z-2 ' : 'z-1 pointer-events-none ') + animClass}
+                  >
+                    <div
+                      className={'size-full ' + (!dragging ? 'transition-transform duration-300 ease-out' : '')}
+                      style={isCurrent ? {transform: 'translateX(var(--drag-x, 0px))'} : undefined}
+                    >
+                      <Frame className={mediaContents} photo={photo} priority={isCurrent} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          {count > 1 && (
+            <div className="mt-5 flex items-center justify-center gap-4">
+              <button type="button" className={dialogButton} aria-label="Foto anterior" onClick={() => step(-1)}><ArrowLeft size={17} /></button>
+              <div className="flex items-center gap-2" role="group" aria-label="Selecionar foto">
+                {photos.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => goTo(idx)}
+                    aria-label={`Ir para foto ${idx + 1} de ${count}`}
+                    aria-current={idx === current ? 'true' : undefined}
+                    className="group flex h-4 cursor-pointer items-center"
+                  >
+                    <div
+                      className={
+                        'h-1.5 rounded-full transition-all duration-300 ' +
+                        (idx === current
+                          ? 'w-10 bg-white'
+                          : 'w-3.5 bg-white/30 group-hover:bg-white/60')
+                      }
+                    />
+                  </button>
+                ))}
+              </div>
+              <button type="button" className={dialogButton} aria-label="Próxima foto" onClick={() => step(1)}><ArrowRight size={17} /></button>
+            </div>
+          )}
+        </div>
       </dialog>
     </div>
   )
@@ -256,13 +408,60 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
 
 export function WatchVideo({src, label, poster}: {src: string; label: string; poster: string}) {
   const [open, setOpen] = useState(false)
+  const [visible, setVisible] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
   const button = useRef<HTMLButtonElement>(null)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+  }, [])
+
+  function openModal() {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    setOpen(true)
+    if (!dialog.current?.open) dialog.current?.showModal()
+    requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)))
+  }
+
+  function requestClose() {
+    setVisible(false)
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    closeTimer.current = setTimeout(() => {
+      dialog.current?.close()
+      setOpen(false)
+    }, 320)
+  }
+
   return <>
-    <button ref={button} className={outlineButton + ' cursor-pointer'} onClick={() => {setOpen(true); dialog.current?.showModal()}}><Play size={16} /> {label}</button>
-    <dialog className={mediaDialog} aria-label={label} ref={dialog} onClose={() => {setOpen(false); button.current?.focus()}}>
-      <button className={dialogClose} aria-label="Fechar vídeo" onClick={() => dialog.current?.close()}><X /></button>
-      {open && <video className={mediaContents} controls autoPlay playsInline src={src} poster={poster} />}
+    <button ref={button} className={outlineButton + ' cursor-pointer'} onClick={openModal}><Play size={16} /> {label}</button>
+    <dialog
+      className={mediaDialog}
+      aria-label={label}
+      ref={dialog}
+      data-visible={visible}
+      onCancel={(event) => {
+        event.preventDefault()
+        requestClose()
+      }}
+      onClose={() => {
+        setVisible(false)
+        setOpen(false)
+        button.current?.focus()
+      }}
+      onClick={(event) => {
+        if (event.target === dialog.current) requestClose()
+      }}
+    >
+      <div
+        className={
+          'transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ' +
+          (visible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-3 scale-[0.96] opacity-0')
+        }
+      >
+        <button type="button" className={dialogClose} aria-label="Fechar vídeo" onClick={requestClose}><X size={18} /></button>
+        {open && <video className={videoContents} controls autoPlay playsInline src={src} poster={poster} />}
+      </div>
     </dialog>
   </>
 }

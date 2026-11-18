@@ -47,4 +47,20 @@
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.08); }
   }
+  @keyframes gallery-in-next {
+    from { transform: translateX(100%); opacity: .35; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes gallery-out-next {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(-35%); opacity: 0; }
+  }
+  @keyframes gallery-in-prev {
+    from { transform: translateX(-100%); opacity: .35; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes gallery-out-prev {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(35%); opacity: 0; }
+  }
 }
