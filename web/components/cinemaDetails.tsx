@@ -54,15 +54,21 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
   )
 }
 
-function FeaturePanel({items, title, icon}: {items?: string[] | null; title: string; icon: 'sparkle' | 'building'}) {
+function FeaturePanel({items, title, eyebrowText, icon}: {items?: string[] | null; title: string; eyebrowText: string; icon: 'sparkle' | 'building'}) {
   if (!items?.length) return null
   return (
-    <section className="border-t border-zinc-300/75 pt-6">
-      <h2 className={heading + ' flex items-center gap-3 text-[clamp(1.35rem,2.2vw,1.85rem)]'}>
+    <section className="border-t border-white/15 pt-6">
+      <p className={label}>{eyebrowText}</p>
+      <h2 className={heading + ' mt-2 flex items-center gap-3 text-[clamp(1.35rem,2.2vw,1.85rem)] text-ivory'}>
         <CinemaIcon name={icon} className="size-6! text-piramide" />{title}
       </h2>
-      <ul className="mt-5 grid gap-x-6 gap-y-3 ps-4 text-sm leading-relaxed text-[#514954] sm:grid-cols-2 sm:text-[0.9375rem]">
-        {items.map((item, index) => <li className="relative before:absolute before:top-[.65em] before:-start-4 before:size-1.5 before:bg-piramide/75" key={item + index}>{item}</li>)}
+      <ul className="mt-5 grid gap-x-6 gap-y-3 text-sm leading-relaxed text-ivory/80 sm:grid-cols-2 sm:text-[0.9375rem]">
+        {items.map((item, index) => (
+          <li className="flex items-center gap-3 border-b border-white/10 pb-2.5" key={item + index}>
+            <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />
+            <span>{item}</span>
+          </li>
+        ))}
       </ul>
     </section>
   )
@@ -86,19 +92,25 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
         {technicalSheet}
       </div>
       <VideoTour videos={videos} virtualTour={virtualTour} leadPhoto={videoTourPhoto} />
-      <section className="relative isolate flex min-h-[clamp(23rem,41vw,38rem)] items-center bg-zinc-200" aria-labelledby="cinema-description">
-        <Frame photo={storyPhoto} className="absolute inset-0 -z-10 size-full object-cover" />
-        <div className={wrap + ' py-7 sm:py-12'}>
-          <div className="max-w-[32rem] bg-paper/95 p-[clamp(1.2rem,4vw,2.75rem)] backdrop-blur-md">
-            <h2 id="cinema-description" className={heading + ' text-[clamp(1.65rem,3vw,2.7rem)]'}>Por dentro do imóvel</h2>
-            <p className="mt-4 text-sm leading-[1.8] whitespace-pre-line text-zinc-700 sm:text-base">{property.description}</p>
+      <div className="bg-coal text-ivory">
+        <section className="relative isolate flex min-h-[clamp(23rem,41vw,38rem)] items-center bg-zinc-900" aria-labelledby="cinema-description">
+          <Frame photo={storyPhoto} className="absolute inset-0 -z-10 size-full object-cover" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-linear-to-t from-coal via-coal/65 to-transparent" />
+          <div className={wrap + ' py-7 sm:py-12'}>
+            <div className="max-w-[32rem] border border-white/15 bg-coal/90 p-[clamp(1.2rem,4vw,2.75rem)] text-ivory backdrop-blur-md">
+              <p className={label}>Apresentação</p>
+              <h2 id="cinema-description" className={heading + ' mt-2 text-[clamp(1.65rem,3vw,2.7rem)] text-ivory'}>Por dentro do imóvel</h2>
+              <p className="mt-4 text-sm leading-[1.8] whitespace-pre-line text-ivory/80 sm:text-base">{property.description}</p>
+            </div>
           </div>
-        </div>
-      </section>
-      {featurePanels > 0 && <div className={wrap + ' grid gap-8 ' + (featurePanels > 1 ? 'lg:grid-cols-2 lg:gap-14' : '')}>
-        <FeaturePanel title="Diferenciais do imóvel" items={property.features} icon="sparkle" />
-        <FeaturePanel title="Infraestrutura do condomínio" items={property.condoFeatures} icon="building" />
-      </div>}
+        </section>
+        {featurePanels > 0 && (
+          <div className={wrap + ' grid gap-8 py-[clamp(2.5rem,5vw,4.5rem)] ' + (featurePanels > 1 ? 'lg:grid-cols-2 lg:gap-14' : '')}>
+            <FeaturePanel eyebrowText="Detalhes do imóvel" title="Diferenciais do imóvel" items={property.features} icon="sparkle" />
+            <FeaturePanel eyebrowText="Condomínio e lazer" title="Infraestrutura do condomínio" items={property.condoFeatures} icon="building" />
+          </div>
+        )}
+      </div>
       <section className={wrap} aria-labelledby="cinema-gallery">
         <div className="mb-5 flex items-end justify-between gap-4">
           <h2 id="cinema-gallery" className={heading + ' text-[clamp(1.75rem,3vw,2.75rem)]'}>Fotos do imóvel</h2>

@@ -346,16 +346,16 @@ function StandardMedia({photo, photoCount, videos, videoPhoto, virtualTour}: {ph
 
 function StandardOverview({property, photo}: {property: Property; photo: Picture}) {
   return (
-    <section id="sobre" className={contentGutter + ' grid scroll-mt-6 items-center gap-8 overflow-x-clip md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:gap-14'} aria-labelledby="standard-about">
-      <div className="px-(--content-gutter) md:ps-(--content-gutter) md:pe-0">
+    <section id="sobre" className={contentGutter + ' grid scroll-mt-6 items-center gap-8 overflow-x-clip bg-coal text-ivory md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:gap-14'} aria-labelledby="standard-about">
+      <div className="px-(--content-gutter) py-10 sm:py-14 md:ps-(--content-gutter) md:pe-0">
         <p className={eyebrow + ' text-[.68rem] text-piramide'}>Apresentação</p>
-        <h2 id="standard-about" className={editorialTitle + ' mt-2'}>Sobre o imóvel</h2>
-        <p className="mt-5 max-w-[58ch] text-base leading-[1.85] whitespace-pre-line text-zinc-700 sm:text-[1.0625rem]">{property.description}</p>
+        <h2 id="standard-about" className={editorialTitle + ' mt-2 text-ivory'}>Sobre o imóvel</h2>
+        <p className="mt-5 max-w-[58ch] text-base leading-[1.85] whitespace-pre-line text-ivory/80 sm:text-[1.0625rem]">{property.description}</p>
       </div>
-      <figure className="relative aspect-[1.35] w-full overflow-hidden bg-zinc-200 shadow-xs">
+      <figure className="relative aspect-[1.35] h-full min-h-[clamp(18rem,36vw,34rem)] w-full overflow-hidden bg-zinc-900">
         <Frame photo={photo} className="absolute inset-0 size-full object-cover" sizes="(max-width: 767px) 100vw, 55vw" />
         {photo.caption && (
-          <figcaption className="absolute bottom-4 start-4 max-w-[calc(100%-2rem)] bg-paper/95 px-3 py-2 text-xs text-zinc-800 backdrop-blur-md">
+          <figcaption className="absolute bottom-4 start-4 max-w-[calc(100%-2rem)] border border-white/15 bg-coal/85 px-3 py-2 text-xs text-ivory backdrop-blur-md">
             {photo.caption}
           </figcaption>
         )}
