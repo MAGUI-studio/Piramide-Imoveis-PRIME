@@ -9,10 +9,12 @@ import {Frame, Gallery, ImmersiveCover, WatchVideo} from '../../components/media
 import {PropertyLocation, propertyLocationOf} from '../../components/propertyLocation'
 import {PropertyContact, PropertyFAQ, propertyVideos, StoryBackdrop, VideoFrame, type StoryVideo} from '../../components/propertyStory'
 import {WhatsAppWidget} from '../../components/whatsappWidget'
+import {JsonLd} from '../../components/jsonLd'
 import {contentGutter, eyebrow, glassAction, heading, previewBanner, sweepButton, sweepFill, wrap} from '../../lib/classes'
 import {picture, type Picture} from '../../lib/image'
 import {availabilityLabel, cardAttributesOf, locationOf, whatsappLink, type Property} from '../../lib/model'
 import {getProperty, isPreview} from '../../lib/sanity'
+import {breadcrumbs, catalogPath, pageMetadata, propertySearchCopy} from '../../lib/seo'
 
 type Props = {params: Promise<{slug: string}>}
 const number = new Intl.NumberFormat('pt-BR')
@@ -21,20 +23,15 @@ const editorialTitle = heading + ' text-[clamp(1.8rem,3vw,2.8rem)]'
 
 export async function generateMetadata({params}: Props): Promise<Metadata> {
   const {slug} = await params
-  const data = await getProperty(slug, false)
+  const preview = await isPreview()
+  const data = await getProperty(slug, preview)
   const property = data?.property
-  if (!property) return {robots: {index: false}}
-  return {
-    title: property.title,
-    description: property.summary,
-    alternates: {canonical: '/' + slug},
-    openGraph: {
-      title: property.title,
-      description: property.summary,
-      url: '/' + slug,
-      images: [picture(property.cover, 1200 / 630, 1200).src],
-    },
-  }
+  if (!property) return {title: {absolute: 'Página não encontrada | Pirâmide Imóveis Prime'}, robots: {index: false, follow: true}}
+  return pageMetadata({
+    path: '/' + encodeURIComponent(property.slug),
+    ...propertySearchCopy(property),
+    seo: property.seo, photo: property.cover, noIndex: preview || property.noIndex === true,
+  })
 }
 
 function StatusBadges({property, onCover = false}: {property: Property; onCover?: boolean}) {
@@ -281,6 +278,8 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhotos, vi
         <PropertyPurchase property={property} link={link} />
         <TechnicalSheet property={property} layout="essay" />
       </div>
+      <StoryBackdrop photo={storyPhoto} property={property} />
+      <PhotoHighlights property={property} photos={detailsPhotos} />
       <section className={wrap + ' min-w-0'} aria-labelledby="editorial-gallery">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2 sm:mb-6">
           <h2 id="editorial-gallery" className={editorialTitle}>Galeria</h2>
@@ -288,8 +287,6 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhotos, vi
         </div>
         <Gallery photos={photos} layout="story" />
       </section>
-      <StoryBackdrop photo={storyPhoto} property={property} />
-      <PhotoHighlights property={property} photos={detailsPhotos} />
       <div className={wrap + ' grid gap-[clamp(2.5rem,6vw,5.5rem)]'}>
         {(videos.length > 0 || virtualTour) && (
           <section className="grid gap-5 border-y border-zinc-300/75 py-8 sm:py-10 lg:grid-cols-[minmax(0,.42fr)_minmax(0,1fr)] lg:items-center lg:gap-14" aria-labelledby="editorial-video">
@@ -303,8 +300,7 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhotos, vi
             </div>
           </section>
         )}
-        <PropertyFAQ property={property} layout="essay" />
-        <PropertyContact link={link} listing={property.externalListingUrl} layout="essay" />
+        <PropertyFAQ property={property} />
       </div>
     </div>
   )
@@ -347,16 +343,26 @@ function StandardMedia({photo, photoCount, videos, videoPhoto, virtualTour}: {ph
 
 function StandardOverview({property, photo}: {property: Property; photo: Picture}) {
   return (
-    <section id="sobre" className={contentGutter + ' grid scroll-mt-6 items-center gap-8 overflow-x-clip bg-coal text-ivory md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:gap-14'} aria-labelledby="standard-about">
-      <div className="px-(--content-gutter) py-10 sm:py-14 md:ps-(--content-gutter) md:pe-0">
+    <section
+      id="sobre"
+      className={contentGutter + ' relative isolate grid scroll-mt-6 items-stretch overflow-hidden bg-coal text-ivory md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]'}
+      aria-labelledby="standard-about"
+    >
+      <div className="relative isolate flex flex-col justify-center px-(--content-gutter) py-14 sm:py-20 md:pe-12 lg:pe-16">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[repeating-linear-gradient(-45deg,#ffffff04_0px,#ffffff04_1px,transparent_1px,transparent_14px)]"
+        />
         <p className={eyebrow + ' text-[.68rem] text-piramide'}>Apresentação</p>
-        <h2 id="standard-about" className={editorialTitle + ' mt-2 text-ivory'}>Sobre o imóvel</h2>
-        <p className="mt-5 max-w-[58ch] text-base leading-[1.85] whitespace-pre-line text-ivory/80 sm:text-[1.0625rem]">{property.description}</p>
+        <h2 id="standard-about" className={editorialTitle + ' mt-3 text-ivory'}>Sobre o imóvel</h2>
+        <p className="mt-6 max-w-[54ch] border-s border-white/20 ps-5 text-base leading-[1.9] whitespace-pre-line text-ivory/80 sm:ps-6 sm:text-[1.0625rem]">
+          {property.description}
+        </p>
       </div>
-      <figure className="relative aspect-[1.35] h-full min-h-[clamp(18rem,36vw,34rem)] w-full overflow-hidden bg-zinc-900">
+      <figure className="relative aspect-[1.35] min-h-[clamp(20rem,38vw,36rem)] w-full overflow-hidden bg-zinc-900 md:aspect-auto">
         <Frame photo={photo} className="absolute inset-0 size-full object-cover" sizes="(max-width: 767px) 100vw, 55vw" />
         {photo.caption && (
-          <figcaption className="absolute bottom-4 start-4 max-w-[calc(100%-2rem)] border border-white/15 bg-coal/85 px-3 py-2 text-xs text-ivory backdrop-blur-md">
+          <figcaption className="absolute bottom-4 start-4 z-1 max-w-[calc(100%-2rem)] border border-white/15 bg-coal/85 px-3 py-2 text-xs text-ivory backdrop-blur-md">
             {photo.caption}
           </figcaption>
         )}
@@ -423,20 +429,20 @@ function PropertyLayout({property, link, hasLocation}: {property: Property; link
                 <TechnicalSheet property={property} layout="standard" />
               </div>
               <nav aria-label="Nesta página" className="flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-zinc-300/75 py-3.5 text-xs font-semibold tracking-wider text-zinc-600 uppercase sm:gap-x-8">
+                <a className="transition-colors hover:text-piramide" href="#mosaic-photos">Fotos</a>
                 <a className="transition-colors hover:text-piramide" href="#ficha">Ficha e valores</a>
-                <a className="transition-colors hover:text-piramide" href={videos.length || virtualTour ? '#midia' : '#mosaic-photos'}>Fotos e mídias</a>
                 <a className="transition-colors hover:text-piramide" href="#sobre">Sobre o imóvel</a>
                 {!!(property.features?.length || property.condoFeatures?.length) && <a className="transition-colors hover:text-piramide" href="#diferenciais">Diferenciais</a>}
-                {hasLocation && <a className="transition-colors hover:text-piramide" href="#localizacao">Localização</a>}
+                {(videos.length > 0 || virtualTour) && <a className="transition-colors hover:text-piramide" href="#midia">Vídeos e tour</a>}
                 {property.faq?.some(({question, answer}) => question.trim() && answer.trim()) && <a className="transition-colors hover:text-piramide" href="#duvidas">Dúvidas</a>}
+                {hasLocation && <a className="transition-colors hover:text-piramide" href="#localizacao">Localização</a>}
               </nav>
             </header>
-            <StandardMedia photo={property.mediaPhoto?.asset ? picture(property.mediaPhoto, 16 / 9) : photos[0] ?? cover} photoCount={photos.length + 1} videos={videos} videoPhoto={property.mediaVideoPhoto?.asset ? picture(property.mediaVideoPhoto, 16 / 9) : undefined} virtualTour={virtualTour} />
             <StandardOverview photo={storyPhoto} property={property} />
             <StandardHighlights property={property} />
-            <div className={wrap + ' grid gap-[clamp(2.75rem,6vw,5.5rem)]'}>
-              <PropertyFAQ property={property} layout="standard" />
-              <PropertyContact link={link} listing={property.externalListingUrl} layout="standard" />
+            <StandardMedia photo={property.mediaPhoto?.asset ? picture(property.mediaPhoto, 16 / 9) : photos[0] ?? cover} photoCount={photos.length + 1} videos={videos} videoPhoto={property.mediaVideoPhoto?.asset ? picture(property.mediaVideoPhoto, 16 / 9) : undefined} virtualTour={virtualTour} />
+            <div className={wrap + ' empty:hidden'}>
+              <PropertyFAQ property={property} />
             </div>
           </div>
         </article>
@@ -473,12 +479,19 @@ export default async function PropertyPage({params}: Props) {
   const location = propertyLocationOf(data.property)
   return (
     <div className="bg-paper text-zinc-900 [color-scheme:light]">
+      {!preview && !data.property.noIndex && <JsonLd data={breadcrumbs([
+        {name: 'Início', path: '/'},
+        {name: 'Empreendimentos', path: catalogPath},
+        {name: data.property.title, path: '/' + encodeURIComponent(data.property.slug)},
+      ])} />}
       {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
       <main id="conteudo" className={data.property.template === 'immersive' ? 'rounded-none **:rounded-none!' : undefined}>
         <PropertyLayout property={data.property} link={contact} hasLocation={!!location} />
-        {location && <PropertyLocation title={data.property.title} location={location} />}
       </main>
-      <Footer contact={whatsappLink(data.whatsapp)} />
+      <Footer contact={contact} integrated>
+        {location && <PropertyLocation title={data.property.title} location={location} />}
+        <PropertyContact link={contact} listing={data.property.externalListingUrl} />
+      </Footer>
       <WhatsAppWidget phone={data.whatsapp} />
     </div>
   )

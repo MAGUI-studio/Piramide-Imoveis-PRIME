@@ -5,7 +5,7 @@ import type {Picture} from '../lib/image'
 import {propertyPrice, type Property} from '../lib/model'
 import {CinemaIcon} from './cinemaIcon'
 import {Frame, Gallery} from './media'
-import {PropertyContact, PropertyFAQ, VideoTour, type StoryVideo} from './propertyStory'
+import {PropertyFAQ, VideoTour, type StoryVideo} from './propertyStory'
 
 const currency = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'})
 const label = eyebrow + ' text-[.68rem] text-piramide'
@@ -92,6 +92,13 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
         {technicalSheet}
       </div>
       <VideoTour videos={videos} virtualTour={virtualTour} leadPhoto={videoTourPhoto} />
+      <section className={wrap} aria-labelledby="cinema-gallery">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <h2 id="cinema-gallery" className={heading + ' text-[clamp(1.75rem,3vw,2.75rem)]'}>Fotos do imóvel</h2>
+          <p className="shrink-0 text-xs text-[#625768] tabular-nums">{photos.length} {photos.length === 1 ? 'foto' : 'fotos'}</p>
+        </div>
+        <Gallery photos={photos} layout="strip" />
+      </section>
       <div className="bg-coal text-ivory">
         <section className="relative isolate flex min-h-[clamp(23rem,41vw,38rem)] items-center bg-zinc-900" aria-labelledby="cinema-description">
           <Frame photo={storyPhoto} className="absolute inset-0 -z-10 size-full object-cover" />
@@ -111,16 +118,8 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
           </div>
         )}
       </div>
-      <section className={wrap} aria-labelledby="cinema-gallery">
-        <div className="mb-5 flex items-end justify-between gap-4">
-          <h2 id="cinema-gallery" className={heading + ' text-[clamp(1.75rem,3vw,2.75rem)]'}>Fotos do imóvel</h2>
-          <p className="shrink-0 text-xs text-[#625768] tabular-nums">{photos.length} {photos.length === 1 ? 'foto' : 'fotos'}</p>
-        </div>
-        <Gallery photos={photos} layout="strip" />
-      </section>
-      <div className={wrap + ' grid gap-9'}>
-        <PropertyFAQ property={property} layout="film" />
-        <PropertyContact link={link} listing={property.externalListingUrl} layout="film" />
+      <div className={wrap + ' empty:hidden'}>
+        <PropertyFAQ property={property} />
       </div>
     </div>
   )
