@@ -7,7 +7,7 @@ import {whatsappLink} from '../lib/model'
 export function WhatsAppWidget({phone}: {phone: string | null}) {
   const href = whatsappLink(phone) ||
     'https://wa.me/?text=' +
-      encodeURIComponent('Olá! Gostaria de conversar sobre os empreendimentos da Pirâmide PRIME.')
+      encodeURIComponent('Olá! Gostaria de conversar sobre os empreendimentos da Pirâmide Imóveis Prime.')
 
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)

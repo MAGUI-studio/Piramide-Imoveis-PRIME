@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type {ReactNode} from 'react'
-import {ArrowUpRight, ChevronUp, Clock, MapPin, Menu, Search} from 'lucide-react'
+import {ArrowUpRight, ChevronUp, Clock, MapPin} from 'lucide-react'
 import {sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
 import {socialIconPaths} from './socialIconPaths'
 import {PrivacyLink} from './siteUtilities'
@@ -19,7 +19,7 @@ const branches = [
   {label: 'Unidade Urbanova', href: 'https://www.google.com/search?q=Pir%C3%A2mide+im%C3%B3veis+unidade+Urbanova+SJC'},
   {label: 'Unidade Litoral', href: 'https://www.google.com/search?q=Pir%C3%A2mide+im%C3%B3veis+unidade+caraguatatuba'},
 ]
-const defaultWhatsapp = 'https://wa.me/?text=' + encodeURIComponent('Olá! Gostaria de conversar sobre os empreendimentos da Pirâmide PRIME.')
+const defaultWhatsapp = 'https://wa.me/?text=' + encodeURIComponent('Olá! Gostaria de conversar sobre os empreendimentos da Pirâmide Imóveis Prime.')
 
 export function Header({overlay = false, light = false, splitOverlay = false, contact = null}: {home?: boolean; overlay?: boolean; light?: boolean; splitOverlay?: boolean; contact?: string | null}) {
   return (
@@ -35,38 +35,30 @@ export function Header({overlay = false, light = false, splitOverlay = false, co
             <img className="h-auto w-[clamp(60px,5.5vw,92px)]" src={light ? '/logos/piramide/logo_black.svg' : '/logos/piramide/logo_white.svg'} alt="" width={1000} height={512} />
           )}
         </Link>
-        <div className={'flex items-center gap-3 sm:gap-4 ' + (light ? 'text-zinc-900' : 'text-ivory')}>
-          <button type="button" className="inline-grid size-9 cursor-pointer place-items-center transition-colors hover:text-piramide sm:size-10" aria-label="Pesquisar">
-            <Search size={20} strokeWidth={1.7} />
-          </button>
-          <button type="button" className="inline-grid size-9 cursor-pointer place-items-center transition-colors hover:text-piramide sm:size-10" aria-label="Abrir menu">
-            <Menu size={22} strokeWidth={1.7} />
-          </button>
-          <span aria-hidden="true" className={'select-none text-lg font-extralight sm:text-xl ' + (light ? 'text-zinc-300' : 'text-ivory/55')}>|</span>
-          <a
-            href={contact || defaultWhatsapp}
-            target="_blank"
-            rel="noreferrer"
-            className={sweepButton + ' px-3.5 py-2 text-xs font-medium sm:px-4 sm:py-2.5 sm:text-sm ' + (light ? 'border-zinc-900/30 text-zinc-900' : sweepOnCover)}
-          >
-            <span aria-hidden="true" className={sweepFill} />
-            <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
-              Falar com especialista <ArrowUpRight size={16} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
-            </span>
-          </a>
-        </div>
+        <a
+          href={contact || defaultWhatsapp}
+          target="_blank"
+          rel="noreferrer"
+          className={sweepButton + ' px-3.5 py-2 text-xs font-medium sm:px-4 sm:py-2.5 sm:text-sm ' + (light ? 'border-zinc-900/30 text-zinc-900' : sweepOnCover)}
+        >
+          <span aria-hidden="true" className={sweepFill} />
+          <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
+            Falar com especialista <ArrowUpRight size={16} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+          </span>
+        </a>
       </div>
     </header>
   )
 }
 
-export function Footer({contact, children, light = false}: {contact: string | null; children?: ReactNode; light?: boolean}) {
+export function Footer({contact, children, light = false, integrated = false}: {contact: string | null; children?: ReactNode; light?: boolean; integrated?: boolean}) {
   const strongText = light ? 'text-zinc-900' : 'text-white'
+  const overlap = children && !integrated
   return (
-    <footer className={'relative w-full overflow-hidden ' + (light ? 'border-t border-zinc-200 bg-paper text-zinc-600' : (children ? 'bg-paper' : 'bg-coal') + ' text-zinc-300')}>
+    <footer className={'relative w-full overflow-hidden ' + (light ? 'border-t border-zinc-200 bg-paper text-zinc-600' : (overlap ? 'bg-paper' : 'bg-coal') + ' text-zinc-300')}>
       {children}
-      <div className={'relative z-1 isolate overflow-hidden ' + (children ? '-mt-8 sm:-mt-14' : 'pt-10 sm:pt-14')}>
-        {children && <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-1 top-8 bg-coal sm:top-14" />}
+      <div className={'relative z-1 isolate overflow-hidden ' + (overlap ? '-mt-8 sm:-mt-14' : integrated ? '' : 'pt-10 sm:pt-14')}>
+        {overlap && <div aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-1 top-8 bg-coal sm:top-14" />}
         {!light && (
           <img
             src="/logos/piramide/icon.png"

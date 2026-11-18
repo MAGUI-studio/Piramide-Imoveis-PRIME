@@ -1,5 +1,6 @@
 import {ArrowUp, ArrowUpRight} from 'lucide-react'
 import {heading, wrap} from '../lib/classes'
+import {footerPhoto} from '../lib/image'
 import type {MarqueeItem} from '../lib/model'
 import {Frame} from './media'
 import {Reveal} from './motion'
@@ -34,7 +35,7 @@ export function FinalCta({contact, marquee}: {contact: string | null; marquee: M
       {!!marquee.length && <PropertyMarquee items={marquee} />}
       <div className="relative isolate overflow-hidden bg-coal text-white">
         <div className="absolute inset-0 -z-2 opacity-[.28] md:opacity-100">
-          <Frame photo={{src: '/brand/home/residencia-ao-anoitecer.webp', alt: ''}} className="size-full object-cover object-[65%_center] md:object-center" />
+          <Frame photo={footerPhoto} className="size-full object-cover object-[65%_center] md:object-center" />
         </div>
         <div aria-hidden="true" className="absolute inset-0 -z-1 md:bg-[linear-gradient(90deg,#101010d9_0%,#101010a6_44%,#10101052_75%,#10101038_100%)]" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 -z-1 h-[clamp(10rem,20vw,21rem)] bg-linear-to-t from-coal from-25% via-coal/85 via-50% to-transparent" />

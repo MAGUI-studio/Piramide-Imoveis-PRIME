@@ -3,7 +3,7 @@ import {ArrowUpRight} from 'lucide-react'
 import {CinemaIcon} from './cinemaIcon'
 import {FaqAccordion, Frame, InlineVideoTour, WatchVideo, type StoryVideo} from './media'
 import {eyebrow, heading, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
-import {picture, type Picture} from '../lib/image'
+import {footerPhoto, picture, type Picture} from '../lib/image'
 import type {Property} from '../lib/model'
 
 const title = heading + ' text-[clamp(1.75rem,3.2vw,3rem)]'
@@ -67,7 +67,7 @@ export function VideoTour({videos, virtualTour, leadPhoto}: {videos: StoryVideo[
   )
 }
 
-export function PropertyFAQ({property}: {property: Property; layout: 'film' | 'essay' | 'standard'}) {
+export function PropertyFAQ({property}: {property: Property}) {
   const entries = property.faq?.filter(({question, answer}) => question.trim() && answer.trim()) ?? []
   if (!entries.length) return null
 
@@ -75,12 +75,9 @@ export function PropertyFAQ({property}: {property: Property; layout: 'film' | 'e
     <section
       id="duvidas"
       aria-labelledby="property-faq"
-      className="grid scroll-mt-6 gap-6 lg:grid-cols-[minmax(0,.42fr)_minmax(0,1fr)] lg:items-start lg:gap-14"
+      className="w-full scroll-mt-6"
     >
-      <div>
-        <p className={eyebrow + ' text-[.68rem] text-piramide'}>Tire suas dúvidas</p>
-        <h2 id="property-faq" className={heading + ' mt-2 text-[clamp(1.75rem,3vw,2.75rem)]'}>Perguntas frequentes</h2>
-      </div>
+      <h2 id="property-faq" className={heading + ' mb-6 text-center text-[clamp(1.85rem,4vw,3.25rem)] text-espresso sm:mb-9'}>Perguntas frequentes</h2>
       <FaqAccordion entries={entries} />
     </section>
   )
@@ -105,58 +102,53 @@ export function StoryBackdrop({photo, property}: {photo: Picture; property: Prop
   )
 }
 
-export function PropertyContact({link, listing}: {link: string | null; listing?: string | null; layout: 'film' | 'essay' | 'standard'}) {
+export function PropertyContact({link, listing}: {link: string | null; listing?: string | null}) {
   if (!link && !listing) return null
   return (
     <section
-      className="relative isolate overflow-hidden border-t-2 border-piramide bg-coal px-[clamp(1.5rem,4vw,3.5rem)] py-[clamp(2.5rem,5.5vw,4.5rem)] text-ivory"
+      className="relative isolate overflow-hidden bg-coal text-ivory"
       aria-labelledby="property-contact"
     >
-      <img
-        src="/logos/piramide/icon.png"
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-4 bottom-0 -z-10 w-[clamp(18rem,38vw,34rem)] max-w-none select-none opacity-12 brightness-150 grayscale"
-      />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,.42fr)_minmax(0,1fr)] lg:items-center lg:gap-14">
-        <div>
-          <p className={eyebrow + ' text-[.68rem] text-piramide'}>Atendimento exclusivo</p>
-          <h2 id="property-contact" className={heading + ' mt-2 text-[clamp(1.75rem,3vw,2.75rem)] text-ivory'}>
-            Fale com um especialista
-          </h2>
-        </div>
-        <div className="max-w-[58ch]">
-          <p className="text-base leading-[1.8] text-ivory/80 sm:text-[1.0625rem]">
-            Entre em contato com a equipe da Pirâmide PRIME para tirar dúvidas, solicitar mais informações ou conversar sobre as condições deste imóvel.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3.5">
-            {link && (
-              <a
-                className={sweepButton + ' border-white/65 bg-white px-5 py-3 text-sm font-medium text-espresso'}
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span aria-hidden="true" className={sweepFill} />
-                <span className="pointer-events-none relative z-10 inline-flex items-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
-                  Falar pelo WhatsApp <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
-                </span>
-              </a>
-            )}
-            {listing && (
-              <a
-                className={sweepButton + ' ' + sweepOnCover + ' px-5 py-3 text-sm font-medium'}
-                href={listing}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <span aria-hidden="true" className={sweepFill} />
-                <span className="pointer-events-none relative z-10 inline-flex items-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
-                  Ver no site da Pirâmide <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
-                </span>
-              </a>
-            )}
-          </div>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        <Frame photo={footerPhoto} className="size-full object-cover object-[65%_center] opacity-30 md:opacity-65" />
+        <div className="absolute inset-0 bg-linear-to-b from-coal via-transparent to-coal" />
+        <div className="absolute inset-0 hidden bg-linear-to-r from-coal via-coal/65 to-transparent md:block" />
+      </div>
+      <div className={wrap + ' flex min-h-[24rem] flex-col items-start justify-center py-16 md:min-h-[29rem]'}>
+        <p className={eyebrow + ' text-ivory/75'}>Atendimento exclusivo</p>
+        <h2 id="property-contact" className={heading + ' mt-4 max-w-[16ch] text-[clamp(2.4rem,5.6vw,5.5rem)]'}>
+          Fale com um especialista
+        </h2>
+        <p className="mt-5 max-w-[48ch] text-base leading-relaxed text-ivory/90 sm:text-lg">
+          Entre em contato com a equipe da Pirâmide Imóveis Prime para tirar dúvidas, solicitar mais informações ou conversar sobre as condições deste imóvel.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center gap-3.5">
+          {link && (
+            <a
+              className={sweepButton + ' border-white/65 bg-white px-5 py-3 text-sm font-medium text-espresso'}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span aria-hidden="true" className={sweepFill} />
+              <span className="pointer-events-none relative z-10 inline-flex items-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
+                Falar pelo WhatsApp <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+              </span>
+            </a>
+          )}
+          {listing && (
+            <a
+              className={sweepButton + ' ' + sweepOnCover + ' px-5 py-3 text-sm font-medium'}
+              href={listing}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span aria-hidden="true" className={sweepFill} />
+              <span className="pointer-events-none relative z-10 inline-flex items-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
+                Ver no site da Pirâmide <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+              </span>
+            </a>
+          )}
         </div>
       </div>
     </section>
