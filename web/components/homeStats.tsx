@@ -1,6 +1,6 @@
-import {eyebrow, homeSectionHeading, wrap} from '../lib/classes'
+import {eyebrow, homeSectionHeading, riseIn, wrap} from '../lib/classes'
 import type {HomeStat} from '../lib/model'
-import {CountUp, Reveal, Words, riseIn} from './motion'
+import {CountUp, Reveal, Words} from './motion'
 
 const fallbackStats: HomeStat[] = [
   {_key: 'years', label: 'Anos de tradição no mercado', value: 45, prefix: '+'},

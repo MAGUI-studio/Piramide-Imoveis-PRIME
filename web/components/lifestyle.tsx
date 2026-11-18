@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import {ArrowUpRight} from 'lucide-react'
-import {eyebrow, homeSectionHeading, wrap} from '../lib/classes'
+import {eyebrow, homeSectionHeading, riseIn, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {DragCarousel} from './dragCarousel'
 import {Frame} from './media'
-import {Reveal, Words, riseIn} from './motion'
+import {Reveal, Words} from './motion'
 
 export type LifestyleItem = {type: string; count: number; image: Picture}
 
@@ -21,7 +21,7 @@ export function Lifestyle({items}: {items: LifestyleItem[]}) {
           Selecione um tipo de imóvel para ver os empreendimentos disponíveis.
         </p>
       </div>
-      <DragCarousel className="ml-[1.125rem] flex gap-4 overflow-x-auto [scrollbar-width:none] after:block after:w-[0.125rem] after:shrink-0 md:ml-[2.25rem] md:after:w-[1.25rem] xl:ml-[max(3.5rem,calc((100%_-_96rem)/2))] xl:after:w-[max(2.5rem,calc((100%_-_96rem)/2_-_1rem))] [&::-webkit-scrollbar]:hidden">
+      <DragCarousel className="ml-4 flex gap-4 overflow-x-auto [scrollbar-width:none] after:block after:w-0 after:shrink-0 md:ml-7 md:after:w-3 xl:ml-[max(2.5rem,calc((100%_-_102rem)/2))] xl:after:w-[max(1.5rem,calc((100%_-_102rem)/2_-_1rem))] [&::-webkit-scrollbar]:hidden">
         {items.map((item, i) => (
           <Link
             key={item.type}

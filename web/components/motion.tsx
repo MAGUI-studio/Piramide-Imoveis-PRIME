@@ -1,9 +1,9 @@
 'use client'
 
 import {useEffect, type ReactNode, useRef, useState} from 'react'
+import {riseIn} from '../lib/classes'
 
 const numberFormatter = new Intl.NumberFormat('pt-BR')
-export const riseIn = 'opacity-0 motion-reduce:opacity-100 group-data-[entered=true]:animate-rise motion-reduce:animate-none'
 
 export function Words({text, className = '', start = 0, step = 70}: {text: string; className?: string; start?: number; step?: number}) {
   return (

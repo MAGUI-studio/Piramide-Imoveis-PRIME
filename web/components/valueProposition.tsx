@@ -1,5 +1,5 @@
-import {eyebrow, homeSectionHeading, wrap} from '../lib/classes'
-import {Reveal, Words, riseIn} from './motion'
+import {eyebrow, homeSectionHeading, riseIn, wrap} from '../lib/classes'
+import {Reveal, Words} from './motion'
 
 const pillars = [
   {title: 'Curadoria', text: 'Cada imóvel é visitado e avaliado antes de chegar até você.'},
@@ -13,7 +13,7 @@ export function ValueProposition() {
       <Reveal className={'group ' + wrap + ' py-[clamp(56px,8vw,116px)]'}>
         <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
           <div>
-            <p className={eyebrow + ' mb-3 text-[.68rem] text-piramide'}>Diferenciais Pirâmide PRIME</p>
+            <p className={eyebrow + ' mb-3 text-[.68rem] text-piramide'}>Diferenciais Pirâmide Imóveis Prime</p>
             <h2 className={homeSectionHeading + ' max-w-[24ch] text-ivory'}>
               <Words text="O endereço certo começa com quem entende de alto padrão." start={120} />
             </h2>
