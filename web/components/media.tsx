@@ -2,7 +2,7 @@
 
 import {useCallback, useEffect, useId, useRef, useState, type ReactNode, type RefObject} from 'react'
 import {ArrowLeft, ArrowRight, Maximize2, Minimize2, Pause, Play, Volume2, VolumeX, X} from 'lucide-react'
-import {glassAction, glassControl, heading, outlineButton, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
+import {contentGutter, glassAction, glassControl, heading, outlineButton, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {CinemaIcon} from './cinemaIcon'
 import {ScrollArea} from './scrollArea'
@@ -290,6 +290,7 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
   const displayed = layout === 'mosaic' ? photos.slice(0, 3) : photos
   const cinemaLayout = layout === 'strip'
   const editorialLayout = layout === 'story'
+  const mosaicLayout = layout === 'mosaic'
   function renderPhoto(photo: Picture, index: number, placement = '') {
     const captionId = editorialLayout && photo.caption ? captionPrefix + '-caption-' + index : undefined
     const sizes = editorialLayout
@@ -320,18 +321,17 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
       {displayed.map((photo, index) => renderPhoto(photo, index))}
     </div>
   )
-  const actionLayout = layout === 'mosaic' ? wrap + ' py-4' : 'mt-4'
   const actions = (
-    <div className={'flex flex-wrap items-center gap-2.5 ' + (cinemaLayout ? '' : actionLayout)}>
-      <button type="button" className={cinemaLayout || editorialLayout ? glassAction : outlineButton + ' cursor-pointer'} onClick={(event) => open(0, event.currentTarget)}>
-        {(cinemaLayout || editorialLayout) && <CinemaIcon name="photos" />} Ver todas as fotos
+    <div className={'flex flex-wrap items-center gap-2.5 ' + (cinemaLayout ? '' : mosaicLayout ? contentGutter + ' pointer-events-none absolute inset-x-0 bottom-4 z-3 mx-auto flex w-[calc(100%-2*var(--content-gutter))] justify-end' : 'mt-4')}>
+      <button type="button" className={glassAction + ' pointer-events-auto cursor-pointer'} onClick={(event) => open(0, event.currentTarget)}>
+        <CinemaIcon name="photos" /> Ver todas as fotos ({count})
       </button>
       {children}
     </div>
   )
 
   return (
-    <div data-gallery={layout}>
+    <div data-gallery={layout} className={mosaicLayout ? 'relative' : undefined}>
       {cinemaLayout ? <ScrollArea actions={actions}>{track}</ScrollArea> : <>{track}{actions}</>}
       <dialog
         className={mediaDialog + ' ' + photoBackdrop}
@@ -507,9 +507,80 @@ function PropertyVideoPlayer({src, label, poster, autoplay = false, playerRef, c
     ? 'text-zinc-800 hover:bg-zinc-200 focus-visible:outline-piramide'
     : 'text-white hover:bg-white/15 focus-visible:outline-white')
 
+  if (!inline) {
+    return (
+      <div ref={frame} className={'isolate ' + className} onContextMenu={(event) => event.preventDefault()}>
+        <div className="relative h-[75dvh] w-full overflow-hidden bg-black/40 shadow-2xl">
+          <video
+            ref={video}
+            className={mediaContents + ' cursor-pointer [&:fullscreen]:object-contain'}
+            aria-label={label}
+            src={src}
+            poster={poster}
+            autoPlay={autoplay}
+            playsInline
+            preload="metadata"
+            controlsList="nodownload noremoteplayback"
+            disablePictureInPicture
+            disableRemotePlayback
+            onClick={togglePlayback}
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            onEnded={() => setPlaying(false)}
+            onVolumeChange={(event) => setMuted(event.currentTarget.muted)}
+            onTimeUpdate={(event) => setTime(event.currentTarget.currentTime)}
+            onDurationChange={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}
+          />
+          {!playing && (
+            <button
+              type="button"
+              className={dialogButton + ' absolute top-1/2 left-1/2 size-14 -translate-1/2 sm:size-16'}
+              aria-label="Reproduzir vídeo"
+              onClick={togglePlayback}
+            >
+              <Play aria-hidden="true" size={22} className="ms-0.5 fill-current" />
+            </button>
+          )}
+        </div>
+        <div className="mt-5 flex items-center justify-center gap-3 sm:gap-4" role="group" aria-label="Controles do vídeo">
+          <button type="button" className={dialogButton} aria-label={playing ? 'Pausar vídeo' : 'Reproduzir'} onClick={togglePlayback}>
+            {playing ? <Pause aria-hidden="true" size={16} className="fill-current" /> : <Play aria-hidden="true" size={16} className="ms-0.5 fill-current" />}
+          </button>
+          <div className="flex h-10 w-[min(56vw,24rem)] items-center gap-3 border border-white/25 bg-black/55 px-3.5 text-white backdrop-blur-md">
+            <input
+              type="range"
+              aria-label="Posição do vídeo"
+              aria-valuetext={videoTime(time) + ' de ' + videoTime(duration)}
+              className="h-1.5 min-w-0 flex-1 cursor-pointer accent-white disabled:cursor-default"
+              min={0}
+              max={duration || 1}
+              step={0.1}
+              value={Math.min(time, duration)}
+              disabled={!duration}
+              onChange={(event) => {
+                if (!video.current) return
+                video.current.currentTime = Number(event.currentTarget.value)
+                setTime(video.current.currentTime)
+              }}
+            />
+            <span className="hidden text-[11px] whitespace-nowrap text-white/85 tabular-nums sm:inline">
+              {videoTime(time)} / {videoTime(duration)}
+            </span>
+          </div>
+          <button type="button" className={dialogButton} aria-label={muted ? 'Ativar som' : 'Silenciar'} onClick={() => {if (video.current) video.current.muted = !video.current.muted}}>
+            {muted ? <VolumeX aria-hidden="true" size={17} /> : <Volume2 aria-hidden="true" size={17} />}
+          </button>
+          <button type="button" className={dialogButton} aria-label={fullscreen ? 'Sair da tela cheia' : 'Tela cheia'} onClick={toggleFullscreen}>
+            {fullscreen ? <Minimize2 aria-hidden="true" size={16} /> : <Maximize2 aria-hidden="true" size={16} />}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div ref={frame} className={'isolate overflow-hidden ' + (inline ? 'flex flex-col bg-zinc-100 ' : 'bg-black ') + className} onContextMenu={(event) => event.preventDefault()}>
-      <div className={inline ? 'relative aspect-video bg-black ' + (fullscreen ? 'min-h-0 flex-1' : '') : 'absolute inset-0'}>
+    <div ref={frame} className={'isolate flex flex-col overflow-hidden bg-zinc-100 ' + className} onContextMenu={(event) => event.preventDefault()}>
+      <div className={'relative aspect-video bg-black ' + (fullscreen ? 'min-h-0 flex-1' : '')}>
       <video
         ref={video}
         className="absolute inset-0 size-full object-contain"
@@ -531,16 +602,16 @@ function PropertyVideoPlayer({src, label, poster, autoplay = false, playerRef, c
         onDurationChange={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}
       />
       {!playing && (
-        <button type="button" className={'absolute top-1/2 left-1/2 grid size-13 -translate-1/2 cursor-pointer place-items-center border backdrop-blur-md sm:size-16 ' + (inline ? 'border-white/75 bg-white/80 text-zinc-900 hover:bg-white' : 'border-white/55 bg-black/45 text-white hover:bg-black/65')} aria-label="Reproduzir vídeo" onClick={togglePlayback}>
+        <button type="button" className="absolute top-1/2 left-1/2 grid size-13 -translate-1/2 cursor-pointer place-items-center border border-white/75 bg-white/80 text-zinc-900 backdrop-blur-md hover:bg-white sm:size-16" aria-label="Reproduzir vídeo" onClick={togglePlayback}>
           <Play aria-hidden="true" size={22} className="ms-0.5 fill-current" />
         </button>
       )}
       </div>
-      <div className={'flex items-center gap-1 px-1.5 py-1 text-sm sm:gap-2 sm:px-2.5 ' + (inline ? 'min-h-12 border-b border-zinc-300/65 bg-zinc-100 text-zinc-700' : 'absolute inset-x-0 bottom-0 bg-black/70 text-white backdrop-blur-md')} role="group" aria-label="Controles do vídeo">
+      <div className="flex min-h-12 items-center gap-1 border-b border-zinc-300/65 bg-zinc-100 px-1.5 py-1 text-sm text-zinc-700 sm:gap-2 sm:px-2.5" role="group" aria-label="Controles do vídeo">
         <button type="button" className={playerControl} aria-label={playing ? 'Pausar vídeo' : 'Reproduzir'} onClick={togglePlayback}>
           {playing ? <Pause aria-hidden="true" size={16} className="fill-current" /> : <Play aria-hidden="true" size={16} className="fill-current" />}
         </button>
-        <input type="range" aria-label="Posição do vídeo" aria-valuetext={videoTime(time) + ' de ' + videoTime(duration)} className={'min-w-0 flex-1 cursor-pointer disabled:cursor-default ' + (inline ? 'accent-piramide' : 'accent-white')} min={0} max={duration || 1} step={0.1} value={Math.min(time, duration)} disabled={!duration} onChange={(event) => {
+        <input type="range" aria-label="Posição do vídeo" aria-valuetext={videoTime(time) + ' de ' + videoTime(duration)} className="min-w-0 flex-1 cursor-pointer accent-piramide disabled:cursor-default" min={0} max={duration || 1} step={0.1} value={Math.min(time, duration)} disabled={!duration} onChange={(event) => {
           if (!video.current) return
           video.current.currentTime = Number(event.currentTarget.value)
           setTime(video.current.currentTime)
@@ -625,15 +696,29 @@ export function WatchVideo({src, label, poster, external = false, cinemaLayout =
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const embedSrc = external ? parseEmbedVideo(src) : null
   const isDirectVideo = !external || directVideoPattern.test(src)
-  const actionClass = glassActions ? glassAction : outlineButton
-  const playIcon = glassActions ? <CinemaIcon name="play" /> : <Play size={16} />
+  const actionClass = glassActions
+    ? glassAction
+    : sweepButton + ' border-zinc-900/25 bg-white/80 px-5 py-3 text-sm font-semibold text-zinc-900 shadow-2xs'
+  const buttonContent = glassActions ? (
+    <><CinemaIcon name="play" /> {label}</>
+  ) : (
+    <>
+      <span aria-hidden="true" className={sweepFill} />
+      <span className="pointer-events-none relative z-10 inline-flex items-center gap-3 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
+        <span className="grid size-7 place-items-center bg-piramide/12 text-piramide transition-colors duration-300 group-hover/cta:bg-white/20 group-hover/cta:text-white">
+          <Play size={13} className="ms-0.5 fill-current" />
+        </span>
+        <span>{label}</span>
+      </span>
+    </>
+  )
 
   useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current)
   }, [])
 
   if (external && !embedSrc && !isDirectVideo) {
-    return <a className={actionClass} href={src} target="_blank" rel="noopener noreferrer">{playIcon} {label}</a>
+    return <a className={actionClass} href={src} target="_blank" rel="noopener noreferrer">{buttonContent}</a>
   }
 
   function openModal() {
@@ -653,9 +738,9 @@ export function WatchVideo({src, label, poster, external = false, cinemaLayout =
   }
 
   return <>
-    <button type="button" ref={button} className={actionClass + ' cursor-pointer'} onClick={openModal}>{playIcon} {label}</button>
+    <button type="button" ref={button} className={actionClass + ' cursor-pointer'} onClick={openModal}>{buttonContent}</button>
     <dialog
-      className={mediaDialog + ' ' + (cinemaLayout ? 'open:data-[visible=true]:backdrop:bg-[#f7f0f9]/88' : photoBackdrop)}
+      className={mediaDialog + ' ' + photoBackdrop}
       aria-label={label}
       ref={dialog}
       data-visible={visible}
@@ -678,12 +763,12 @@ export function WatchVideo({src, label, poster, external = false, cinemaLayout =
           (visible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-3 scale-[0.96] opacity-0')
         }
       >
-        <button type="button" className={cinemaLayout ? glassControl + ' fixed top-3 right-3 z-20 size-11' : dialogClose} aria-label="Fechar vídeo" onClick={requestClose}>
-          {cinemaLayout ? <CinemaIcon name="close" /> : <X size={18} />}
+        <button type="button" className={dialogClose} aria-label="Fechar vídeo" onClick={requestClose}>
+          <X size={18} />
         </button>
         {open && (embedSrc
-          ? <iframe className="aspect-video max-h-[78dvh] w-full bg-black shadow-2xl" src={embedSrc} title={label} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
-          : <PropertyVideoPlayer className="relative aspect-video max-h-[78dvh] w-full shadow-2xl" autoplay src={src} poster={poster} label={label} />)}
+          ? <iframe className="relative h-[75dvh] w-full bg-black/40 shadow-2xl" src={embedSrc} title={label} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
+          : <PropertyVideoPlayer className="w-full" autoplay src={src} poster={poster} label={label} />)}
       </div>
     </dialog>
   </>
