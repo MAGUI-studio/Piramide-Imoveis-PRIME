@@ -4,7 +4,6 @@ import {useCallback, useEffect, useId, useRef, useState, type ReactNode, type Re
 import {ArrowLeft, ArrowRight, Maximize2, Minimize2, Pause, Play, Volume2, VolumeX, X} from 'lucide-react'
 import {glassAction, glassControl, heading, outlineButton, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
-import {LoadingCurtain} from './loadingCurtain'
 import {CinemaIcon} from './cinemaIcon'
 import {ScrollArea} from './scrollArea'
 
@@ -56,7 +55,7 @@ export function ImmersiveCover({
   header: ReactNode
   children: ReactNode
 }) {
-  const [stage, setStage] = useState<'cover' | 'intro' | 'player' | 'paused'>('cover')
+  const [stage, setStage] = useState<'cover' | 'player' | 'paused'>('cover')
   const [playing, setPlaying] = useState(false)
   const [failed, setFailed] = useState(false)
   const [volume, setVolume] = useState(1)
@@ -66,7 +65,7 @@ export function ImmersiveCover({
   const container = useRef<HTMLDivElement>(null)
   const video = useRef<HTMLVideoElement>(null)
   const fullscreen = nativeFullscreen || expanded
-  const showOverlay = stage !== 'intro' && !playing
+  const showOverlay = !playing
 
   const startPlayback = useCallback(() => {
     const player = video.current
@@ -125,17 +124,6 @@ export function ImmersiveCover({
     }
   }
 
-  function startIntro() {
-    const player = video.current
-    if (!player) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      startPlayback()
-      return
-    }
-    player.load()
-    setStage('intro')
-  }
-
   return (
     <div className="relative aspect-[5/6] min-[801px]:aspect-[2/1]">
       <div ref={container} className={'isolate grid place-items-center overflow-hidden [&:fullscreen]:bg-black ' + (expanded ? 'fixed inset-0 z-[100000] bg-black' : 'absolute inset-0 bg-paper ' + (stage === 'player' ? 'z-50' : ''))}>
@@ -180,7 +168,7 @@ export function ImmersiveCover({
           {src && !failed && !fullscreen && (stage === 'cover' || stage === 'paused') && (
             <button
               type="button"
-              onClick={stage === 'paused' ? startPlayback : startIntro}
+              onClick={startPlayback}
               aria-label={stage === 'paused' ? 'Continuar clipe de abertura' : 'Reproduzir clipe de abertura'}
               className={sweepButton + ' ' + sweepOnCover + ' pointer-events-auto mb-5 size-14 sm:size-16'}
             >
@@ -191,12 +179,10 @@ export function ImmersiveCover({
           {children}
         </div>
       </>}
-      {stage === 'intro' && <LoadingCurtain embedded onComplete={startPlayback} />}
-      {(stage === 'player' || (fullscreen && stage !== 'intro')) && (
+      {(stage === 'player' || fullscreen) && (
         <div role="group" aria-label="Controles do vídeo" className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/15 bg-coal/90 p-1.5 text-white shadow-lg sm:bottom-6 sm:gap-3">
           <button type="button" aria-label={playing ? 'Pausar vídeo' : 'Reproduzir vídeo'} onClick={() => {
             if (playing) video.current?.pause()
-            else if (stage === 'cover') startIntro()
             else startPlayback()
           }} className="grid size-10 cursor-pointer place-items-center rounded-full bg-piramide transition-colors hover:bg-piramide/85">
             {playing ? <Pause aria-hidden="true" size={17} className="fill-current" /> : <Play aria-hidden="true" size={17} className="ml-0.5 fill-current" />}
