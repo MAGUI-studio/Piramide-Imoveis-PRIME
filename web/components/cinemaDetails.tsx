@@ -1,14 +1,15 @@
 import type {ReactNode} from 'react'
-import {cinemaAction, eyebrow, heading, wrap} from '../lib/classes'
+import {eyebrow, heading, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
-import type {Property} from '../lib/model'
+import {propertyPrice, type Property} from '../lib/model'
 import {CinemaIcon} from './cinemaIcon'
-import {Gallery} from './media'
+import {Frame, Gallery} from './media'
+import {PropertyContact, PropertyFAQ, VideoTour, type StoryVideo} from './propertyStory'
 
 const currency = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'})
 const label = eyebrow + ' text-[.68rem] text-piramide'
 
-export function PropertyPurchase({property, link}: {property: Property; link: string | null}) {
+export function PropertyPurchase({property}: {property: Property}) {
   const fees = [
     {label: 'Condomínio mensal', value: property.condoFee},
     {label: 'IPTU anual', value: property.iptu},
@@ -20,21 +21,17 @@ export function PropertyPurchase({property, link}: {property: Property; link: st
   ].filter(Boolean)
 
   return (
-    <aside className="min-w-0" aria-labelledby="cinema-purchase">
-      <h2 id="cinema-purchase" className={label}>Valor de venda</h2>
-      <p className="mt-2 mb-3 text-[clamp(1.45rem,2.55vw,2.35rem)] leading-tight font-semibold tracking-tight tabular-nums">{property.price ? currency.format(property.price) : 'Sob consulta'}</p>
-      {!!fees.length && (
-        <dl className="flex flex-wrap gap-x-6 gap-y-3 text-xs text-[#625768]">
-          {fees.map(({label, value}) => <div key={label}><dt>{label}</dt><dd className="mt-0.5 font-medium text-[#251d29] tabular-nums">{value ? currency.format(value) : 'Isento'}</dd></div>)}
-        </dl>
-      )}
-      {!!conditions.length && <ul className="mt-3.5 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-piramide">{conditions.map((condition) => <li key={String(condition)}>{condition}</li>)}</ul>}
-      {(link || property.externalListingUrl) && (
-        <div className="mt-5 flex flex-wrap items-center gap-2.5">
-          {link && <a className={cinemaAction + ' border-transparent bg-piramide text-white hover:bg-[#794074]'} href={link} target="_blank" rel="noopener noreferrer"><CinemaIcon name="chat" /> Falar pelo WhatsApp <CinemaIcon name="external" /></a>}
-          {property.externalListingUrl && <a className={cinemaAction + ' border-piramide/20 bg-white/70 text-piramide backdrop-blur-sm hover:border-piramide hover:bg-white'} href={property.externalListingUrl} target="_blank" rel="noopener noreferrer">Ver no site da Pirâmide <CinemaIcon name="external" /></a>}
-        </div>
-      )}
+    <aside className="flex min-w-0 flex-wrap items-end gap-x-10 gap-y-4 pb-2 lg:gap-x-14" aria-labelledby="property-purchase">
+      <div>
+        <h2 id="property-purchase" className={label}>Valor de venda</h2>
+        <p className="mt-1.5 text-[clamp(1.45rem,2.55vw,2.35rem)] leading-tight font-semibold tracking-tight tabular-nums">{propertyPrice(property.price)}</p>
+      </div>
+        {!!fees.length && (
+          <dl className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-[#625768] lg:gap-x-10">
+            {fees.map(({label, value}) => <div key={label}><dt>{label}</dt><dd className="mt-1 text-sm font-semibold text-[#251d29] tabular-nums">{value ? currency.format(value) : 'Isento'}</dd></div>)}
+          </dl>
+        )}
+        {!!conditions.length && <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium text-piramide lg:ms-auto">{conditions.map((condition) => <li key={String(condition)}>{condition}</li>)}</ul>}
     </aside>
   )
 }
@@ -53,42 +50,48 @@ function FeaturePanel({items, title, icon}: {items?: string[] | null; title: str
   )
 }
 
-export function CinemaDetails({property, link, photos, mediaActions, technicalSheet}: {
+export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhoto, videos, virtualTour, technicalSheet}: {
   property: Property
   link: string | null
   photos: Picture[]
-  mediaActions: ReactNode
+  storyPhoto: Picture
+  videoTourPhoto?: Picture
+  videos: StoryVideo[]
+  virtualTour?: ReactNode
   technicalSheet: ReactNode
 }) {
   const featurePanels = property.features?.length || property.condoFeatures?.length
   return (
-    <div className="bg-paper pb-[clamp(3rem,7vw,7rem)] text-[#251d29]">
-      <section className={wrap + ' grid gap-[clamp(1.75rem,5vw,5rem)] pt-[clamp(2rem,4.5vw,4.5rem)] pb-2 min-[53rem]:grid-cols-[minmax(0,1.6fr)_minmax(17.5rem,1fr)]'} aria-labelledby="cinema-overview">
-        <div>
-          <h2 id="cinema-overview" className={label}>{property.propertyType}</h2>
-          <p className="mt-2.5 max-w-[52ch] text-[clamp(1rem,1.3vw,1.125rem)] leading-relaxed text-[#625768]">{property.summary}</p>
-        </div>
-        <PropertyPurchase property={property} link={link} />
-      </section>
-      <section className="pt-[clamp(1.75rem,4vw,3.5rem)] pb-[clamp(2.5rem,6vw,5rem)]" aria-labelledby="cinema-gallery">
-        <div className={wrap}>
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <h2 id="cinema-gallery" className={heading + ' text-[clamp(2rem,4vw,3.65rem)]'}>Galeria</h2>
-            <p className="shrink-0 text-xs text-[#625768] tabular-nums">{photos.length} {photos.length === 1 ? 'foto' : 'fotos'}</p>
-          </div>
-          <Gallery photos={photos} layout="strip">{mediaActions}</Gallery>
-        </div>
-      </section>
-      <div className={wrap + ' grid gap-[clamp(2.75rem,6vw,5rem)] pt-3 sm:pt-6'}>
-        <section className="grid gap-4 lg:grid-cols-4 lg:gap-8" aria-labelledby="cinema-description">
-          <h2 id="cinema-description" className={heading + ' text-[clamp(1.65rem,3vw,2.7rem)]'}>Sobre o imóvel</h2>
-          <p className="max-w-[68ch] text-base leading-[1.8] whitespace-pre-line text-[#514954] lg:col-span-3">{property.description}</p>
-        </section>
+    <div className="grid gap-[clamp(3rem,6vw,6rem)] bg-paper pb-[clamp(3rem,7vw,7rem)] text-[#251d29]">
+      <div className={wrap + ' grid gap-4 pt-[clamp(1rem,3vw,2.5rem)] sm:gap-5'}>
+        <PropertyPurchase property={property} />
         {technicalSheet}
-        {!!featurePanels && <div className="grid gap-9 sm:grid-cols-2 sm:gap-8">
-          <FeaturePanel title="Diferenciais do imóvel" items={property.features} icon="sparkle" />
-          <FeaturePanel title="Infraestrutura do condomínio" items={property.condoFeatures} icon="building" />
-        </div>}
+      </div>
+      <VideoTour videos={videos} virtualTour={virtualTour} leadPhoto={videoTourPhoto} />
+      <section className="relative isolate flex min-h-[clamp(23rem,41vw,38rem)] items-center bg-zinc-200" aria-labelledby="cinema-description">
+        <Frame photo={storyPhoto} className="absolute inset-0 -z-10 size-full object-cover" />
+        <div className={wrap + ' py-7 sm:py-12'}>
+          <div className="max-w-[32rem] bg-paper/95 p-[clamp(1.2rem,4vw,2.75rem)] backdrop-blur-md">
+            <h2 id="cinema-description" className={heading + ' text-[clamp(1.65rem,3vw,2.7rem)]'}>Por dentro do imóvel</h2>
+            <p className="mt-4 text-sm leading-[1.8] whitespace-pre-line text-zinc-700 sm:text-base">{property.description}</p>
+          </div>
+        </div>
+      </section>
+      {!!featurePanels && <section className={wrap + ' grid gap-7 lg:grid-cols-[minmax(0,.7fr)_minmax(0,1fr)_minmax(0,1fr)] lg:gap-12'} aria-labelledby="cinema-highlights">
+        <h2 id="cinema-highlights" className={heading + ' text-[clamp(1.6rem,3vw,2.65rem)]'}>Destaques da visita</h2>
+        <FeaturePanel title="Diferenciais do imóvel" items={property.features} icon="sparkle" />
+        <FeaturePanel title="Infraestrutura do condomínio" items={property.condoFeatures} icon="building" />
+      </section>}
+      <section className={wrap} aria-labelledby="cinema-gallery">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <h2 id="cinema-gallery" className={heading + ' text-[clamp(1.75rem,3vw,2.75rem)]'}>Fotos do imóvel</h2>
+          <p className="shrink-0 text-xs text-[#625768] tabular-nums">{photos.length} {photos.length === 1 ? 'foto' : 'fotos'}</p>
+        </div>
+        <Gallery photos={photos} layout="strip" />
+      </section>
+      <div className={wrap + ' grid gap-9'}>
+        <PropertyFAQ property={property} layout="film" />
+        <PropertyContact link={link} listing={property.externalListingUrl} layout="film" />
       </div>
     </div>
   )
