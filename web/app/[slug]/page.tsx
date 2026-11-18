@@ -229,10 +229,10 @@ function PhotoHighlights({property, photos}: {property: Property; photos: [Pictu
           >
             <figure
               className={
-                'relative aspect-[1.42] w-[72%] overflow-hidden bg-zinc-200 shadow-sm sm:w-[76%] md:w-full ' +
+                'relative aspect-[1.42] w-[72%] overflow-hidden rounded-none bg-zinc-200 shadow-sm sm:w-[76%] md:w-full ' +
                 (reversed
-                  ? 'ms-auto [clip-path:polygon(clamp(3rem,6vw,5.5rem)_0,100%_0,100%_100%,clamp(3rem,6vw,5.5rem)_100%,0_calc(100%-clamp(3rem,6vw,5.5rem)),0_clamp(3rem,6vw,5.5rem))] md:order-last'
-                  : 'me-auto [clip-path:polygon(0_0,calc(100%-clamp(3rem,6vw,5.5rem))_0,100%_clamp(3rem,6vw,5.5rem),100%_calc(100%-clamp(3rem,6vw,5.5rem)),calc(100%-clamp(3rem,6vw,5.5rem))_100%,0_100%)]')
+                  ? 'ms-auto md:order-last'
+                  : 'me-auto')
               }
             >
               <Frame className="absolute inset-0 size-full object-cover" photo={photo} sizes="(max-width: 767px) 75vw, 54vw" />
@@ -458,7 +458,7 @@ function PropertyLayout({property, link, hasLocation}: {property: Property; link
                 <p className="mt-4 leading-relaxed text-zinc-600">{property.summary}</p>
                 <Attributes property={property} />
               </div>
-              <figure className="relative order-first aspect-[1.04] w-full min-w-0 overflow-hidden bg-zinc-200 after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(180deg,#100e0c7a_0%,transparent_28%)] min-[801px]:order-none min-[801px]:aspect-[1.08] min-[801px]:[clip-path:polygon(0_0,100%_0,100%_100%,clamp(3.5rem,7vw,6.5rem)_100%,0_calc(100%-clamp(3.5rem,7vw,6.5rem)))]">
+              <figure className="relative order-first aspect-[1.04] w-full min-w-0 overflow-hidden rounded-none bg-zinc-200 after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(180deg,#100e0c7a_0%,transparent_28%)] min-[801px]:order-none min-[801px]:aspect-[1.08]">
                 <Frame className="size-full object-cover" photo={picture(property.cover, 1.12)} priority sizes="(max-width: 800px) 100vw, 58vw" />
               </figure>
             </div>
