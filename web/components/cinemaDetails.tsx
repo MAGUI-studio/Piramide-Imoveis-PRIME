@@ -9,7 +9,7 @@ import {PropertyContact, PropertyFAQ, VideoTour, type StoryVideo} from './proper
 const currency = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'})
 const label = eyebrow + ' text-[.68rem] text-piramide'
 
-export function PropertyPurchase({property}: {property: Property}) {
+export function PropertyPurchase({property, link}: {property: Property; link?: string | null}) {
   const fees = [
     {label: 'Condomínio mensal', value: property.condoFee},
     {label: 'IPTU anual', value: property.iptu},
@@ -26,12 +26,26 @@ export function PropertyPurchase({property}: {property: Property}) {
         <h2 id="property-purchase" className={label}>Valor de venda</h2>
         <p className="mt-1.5 text-[clamp(1.45rem,2.55vw,2.35rem)] leading-tight font-semibold tracking-tight tabular-nums">{propertyPrice(property.price)}</p>
       </div>
-        {!!fees.length && (
-          <dl className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-[#625768] lg:gap-x-10">
-            {fees.map(({label, value}) => <div key={label}><dt>{label}</dt><dd className="mt-1 text-sm font-semibold text-[#251d29] tabular-nums">{value ? currency.format(value) : 'Isento'}</dd></div>)}
-          </dl>
-        )}
-        {!!conditions.length && <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium text-piramide lg:ms-auto">{conditions.map((condition) => <li key={String(condition)}>{condition}</li>)}</ul>}
+      {!!fees.length && (
+        <dl className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-[#625768] lg:gap-x-10">
+          {fees.map(({label, value}) => <div key={label}><dt>{label}</dt><dd className="mt-1 text-sm font-semibold text-[#251d29] tabular-nums">{value ? currency.format(value) : 'Isento'}</dd></div>)}
+        </dl>
+      )}
+      {(!!conditions.length || link) && (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 lg:ms-auto">
+          {!!conditions.length && <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium text-piramide">{conditions.map((condition) => <li key={String(condition)}>{condition}</li>)}</ul>}
+          {link && (
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center gap-2.5 bg-piramide px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-piramide/90"
+            >
+              Falar pelo WhatsApp <CinemaIcon name="external" />
+            </a>
+          )}
+        </div>
+      )}
     </aside>
   )
 }
@@ -64,7 +78,7 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
   return (
     <div className="grid gap-[clamp(3rem,6vw,6rem)] bg-paper pb-[clamp(3rem,7vw,7rem)] text-[#251d29]">
       <div className={wrap + ' grid gap-4 pt-[clamp(1rem,3vw,2.5rem)] sm:gap-5'}>
-        <PropertyPurchase property={property} />
+        <PropertyPurchase property={property} link={link} />
         {technicalSheet}
       </div>
       <VideoTour videos={videos} virtualTour={virtualTour} leadPhoto={videoTourPhoto} />
