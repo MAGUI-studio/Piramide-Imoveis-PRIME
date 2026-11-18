@@ -20,7 +20,8 @@ async function read<T>(query: string, params: QueryParams = {}, preview = false)
 }
 
 const cardFields = `
-  "id": _id, title, "slug": slug.current, propertyType, summary, attributes, cover, specifications,
+  "id": _id, title, refCode, "slug": slug.current, propertyType, condominiumName,
+  availability, price, conditions, summary, attributes, cover, specifications,
   "createdAt": _createdAt,
   "city": neighborhood->city->{"id": _id, name},
   "neighborhood": neighborhood->{"id": _id, name}
@@ -34,7 +35,7 @@ const homeQuery = `{
     ${cardFields}
   },
   "featured": *[_id == "primeHome"][0].featured[]->{${cardFields}},
-  "catalog": *[${listing}] | order(coalesce(firstPublishedAt, _createdAt) desc, title asc, _id asc) {
+  "catalog": *[${listing}] | order(select(availability == "sold" => 1, 0) asc, coalesce(firstPublishedAt, _createdAt) desc, title asc, _id asc) {
     ${cardFields}, "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
   },
   "whatsapp": *[_id == "primeHome"][0].whatsapp,
@@ -42,10 +43,9 @@ const homeQuery = `{
 }`
 const propertyQuery = `{
   "property": *[${listing} && slug.current == $slug][0]{
-    ${cardFields}, ${mediaFields}, description, features, price, template,
-    "tour": tour.asset->url,
-    "clipIsPlaceholder": clip.asset->originalFilename == "prime-placeholder-abertura.mp4",
-    "tourIsPlaceholder": tour.asset->originalFilename == "prime-placeholder-tour.mp4"
+    ${cardFields}, ${mediaFields}, architect, description, features, condoFeatures,
+    condoFee, iptu, externalListingUrl, externalVideoUrl, virtualTourUrl, template,
+    "tour": tour.asset->url
   },
   "whatsapp": *[_id == "primeHome"][0].whatsapp
 }`
@@ -60,9 +60,16 @@ export const getProperty = cache(async (slug: string, preview: boolean) => {
 
 export function getOpeningProperties(data: Home) {
   const unique = new Map<string, PropertyCard>()
-  for (const entry of [data.hero, ...(data.featured || []), ...data.catalog]) {
-    if (entry?.slug && entry.cover && !unique.has(entry.slug)) unique.set(entry.slug, entry)
+  const pool = [data.hero, ...(data.featured || []), ...data.catalog]
+  for (const entry of pool) {
+    if (entry?.slug && entry.cover && entry.availability !== 'sold' && !unique.has(entry.slug)) unique.set(entry.slug, entry)
     if (unique.size === 3) break
+  }
+  if (unique.size < 3) {
+    for (const entry of pool) {
+      if (entry?.slug && entry.cover && !unique.has(entry.slug)) unique.set(entry.slug, entry)
+      if (unique.size === 3) break
+    }
   }
   return [...unique.values()]
 }

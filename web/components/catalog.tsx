@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
 import {useEffect, useId, useRef, useState} from 'react'
-import {ArrowLeft, ArrowRight, ArrowUpRight, Building2, Check, ChevronDown, House, MapPin, Search, SlidersHorizontal, X} from 'lucide-react'
-import {locationOf, type PropertyCard} from '../lib/model'
+import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, Check, ChevronDown, House, MapPin, Search, SlidersHorizontal, X} from 'lucide-react'
+import {availabilityLabel, cardAttributesOf, locationOf, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
 import {button, heading, homeSectionHeading, wrap} from '../lib/classes'
 import {Frame} from './media'
@@ -154,12 +154,16 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
   const selectedNeighborhoods = params.getAll('bairro').filter((value) => neighborhoods.some(({id}) => id === value))
   const types = Array.from(new Set(items.map(({propertyType}) => propertyType))).filter(Boolean).sort(collator.compare)
   const selectedTypes = params.getAll('tipo').filter((value) => types.includes(value))
+  const suiteCounts = Array.from(new Set(items.map(({specifications}) => specifications?.suites).filter((n): n is number => typeof n === 'number' && n > 0))).sort((a, b) => a - b)
+  const suiteValues = suiteCounts.map(String)
+  const selectedSuites = params.getAll('suites').filter((value) => suiteValues.includes(value))
   const words = normalize(query).trim().split(/\s+/).filter(Boolean)
   const results = items.filter((item) => {
     if (selectedCities.length && !selectedCities.includes(item.city?.id || '')) return false
     if (selectedNeighborhoods.length && !selectedNeighborhoods.includes(item.neighborhood?.id || '')) return false
     if (selectedTypes.length && !selectedTypes.includes(item.propertyType)) return false
-    const copy = normalize([item.title, item.summary, locationOf(item)].join(' '))
+    if (selectedSuites.length && !selectedSuites.includes(String(item.specifications?.suites || ''))) return false
+    const copy = normalize([item.title, item.refCode, item.condominiumName, item.summary, locationOf(item)].filter(Boolean).join(' '))
     return words.every((word) => copy.includes(word))
   })
   const totalPages = Math.max(1, Math.ceil(results.length / pageSize))
@@ -186,7 +190,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
     window.history.replaceState(null, '', url)
   }
 
-  function updateFilter(key: 'cidade' | 'bairro' | 'tipo', values: string[]) {
+  function updateFilter(key: 'cidade' | 'bairro' | 'tipo' | 'suites', values: string[]) {
     const url = new URL(window.location.href)
     url.searchParams.delete('pagina')
     url.searchParams.delete(key)
@@ -203,7 +207,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
 
   function clear() {
     const url = new URL(window.location.href)
-    for (const key of ['busca', 'cidade', 'bairro', 'tipo', 'pagina']) url.searchParams.delete(key)
+    for (const key of ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'pagina']) url.searchParams.delete(key)
     window.history.pushState(null, '', url)
   }
 
@@ -213,7 +217,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
         <Title className={homeSectionHeading}>{full ? 'Todos os empreendimentos' : 'Explore os empreendimentos'}</Title>
       </Reveal>
       {items.length ? <>
-        <form role="search" aria-label="Filtrar empreendimentos" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3fr)] xl:grid-cols-[minmax(17rem,1.2fr)_minmax(0,3fr)]" onSubmit={(event) => event.preventDefault()}>
+        <form role="search" aria-label="Filtrar empreendimentos" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3.4fr)] xl:grid-cols-[minmax(16rem,1.1fr)_minmax(0,3.4fr)]" onSubmit={(event) => event.preventDefault()}>
           <div className={filterField}>
             <label className="flex min-w-0 flex-1 items-center gap-3">
               <Search aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
@@ -222,7 +226,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                 <input
                   className="mt-0.5 block w-full min-w-0 bg-transparent text-sm font-medium text-espresso placeholder:font-normal placeholder:text-earth focus:outline-none"
                   type="text"
-                  placeholder="Nome ou localização"
+                  placeholder="Nome, condomínio ou código"
                   value={query}
                   onChange={(event) => updateSearch(event.target.value)}
                 />
@@ -241,7 +245,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
           </div>
           <details className="min-[801px]:[&:not([open])::details-content]:[content-visibility:visible]" open>
             <summary className="flex h-11 cursor-pointer items-center gap-2 text-sm font-medium text-espresso min-[801px]:hidden"><SlidersHorizontal size={16} /> Filtros</summary>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+            <div className={'grid grid-cols-1 gap-2 sm:gap-3 ' + (suiteCounts.length ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3')}>
               <MultiSelect
                 label="Cidade"
                 placeholder="Todas as cidades"
@@ -266,12 +270,22 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                 options={types.map((type) => ({value: type, label: type}))}
                 onChange={(values) => updateFilter('tipo', values)}
               />
+              {!!suiteCounts.length && (
+                <MultiSelect
+                  label="Suítes"
+                  placeholder="Qualquer quantidade"
+                  icon={BedDouble}
+                  values={selectedSuites}
+                  options={suiteCounts.map((count) => ({value: String(count), label: count + (count === 1 ? ' suíte' : ' suítes')}))}
+                  onChange={(values) => updateFilter('suites', values)}
+                />
+              )}
             </div>
           </details>
         </form>
         <div id={full ? 'resultados' : undefined} className="flex min-h-12 scroll-mt-4 items-center justify-between text-xs text-earth">
           <span aria-live="polite">{results.length} {results.length === 1 ? 'imóvel' : 'imóveis'}</span>
-          {(query || selectedCities.length > 0 || selectedNeighborhoods.length > 0 || selectedTypes.length > 0) && <button type="button" className="cursor-pointer py-2 font-medium text-piramide transition-opacity hover:opacity-80" onClick={clear}>Limpar filtros</button>}
+          {(query || selectedCities.length > 0 || selectedNeighborhoods.length > 0 || selectedTypes.length > 0 || selectedSuites.length > 0) && <button type="button" className="cursor-pointer py-2 font-medium text-piramide transition-opacity hover:opacity-80" onClick={clear}>Limpar filtros</button>}
         </div>
         {displayed.length ? <Reveal className={'grid gap-3 motion-safe:data-[entered=true]:animate-enter sm:gap-4 xl:gap-5 ' + (full ? 'sm:grid-cols-2' : 'min-[801px]:grid-cols-12')}>
           {displayed.map((item, index) => {
@@ -306,6 +320,8 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
               : 'text-[clamp(1.2rem,1.65vw,1.95rem)]'
             const titleStyle = isLead ? heading : 'font-sans font-semibold leading-tight tracking-tight'
             const location = locationOf(item)
+            const status = availabilityLabel(item.availability)
+            const cardAttrs = cardAttributesOf(item)
 
             return (
               <Link
@@ -320,6 +336,20 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                   </div>}
                   <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#080808_0%,#080808f2_28%,#080808b8_52%,#08080873_75%,#08080833_100%)]" />
                 </div>
+                {(status || item.conditions?.exclusive) && (
+                  <div className="absolute top-4 left-5 flex flex-wrap gap-1.5 sm:top-5 sm:left-6">
+                    {status && (
+                      <span className={'px-2 py-0.5 text-[10px] font-bold tracking-[.12em] text-white uppercase ' + (item.availability === 'sold' ? 'bg-zinc-900/90' : 'bg-amber-600/95')}>
+                        {status}
+                      </span>
+                    )}
+                    {item.conditions?.exclusive && (
+                      <span className="bg-piramide/95 px-2 py-0.5 text-[10px] font-bold tracking-[.12em] text-white uppercase">
+                        Exclusivo
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="w-full text-white">
                   {item.propertyType && <p className="flex items-center gap-2 text-[10px] font-bold tracking-[.12em] text-white/90 uppercase">
                     <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />{item.propertyType}
@@ -330,8 +360,8 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                   </div>
                   {location && <p className="mt-2 flex items-start gap-1.5 text-xs font-medium text-white/90"><MapPin aria-hidden="true" size={13} className="mt-0.5 shrink-0" />{location}</p>}
                   {item.summary && <p className="mt-2 line-clamp-2 max-w-[52ch] text-xs leading-relaxed text-white/85 sm:text-sm">{item.summary}</p>}
-                  {!!item.attributes?.length && <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-white/90">
-                    {item.attributes.map((attribute, index) => (
+                  {!!cardAttrs.length && <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-white/90">
+                    {cardAttrs.map((attribute, index) => (
                       <li key={attribute} className="flex items-center gap-2">
                         {index > 0 && <span aria-hidden="true" className="size-1 shrink-0 bg-white/50" />}
                         {attribute}

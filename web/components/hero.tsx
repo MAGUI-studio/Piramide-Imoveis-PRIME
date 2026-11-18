@@ -30,13 +30,13 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
   function factsOf(item: HeroItem) {
     const specs = item.specifications
     const list: [string, number | undefined, string][] = [
-      ['Área', specs?.area, 'metragem'],
+      ['Área', specs?.area || specs?.landArea, 'metragem'],
       ['Dormitórios', specs?.bedrooms, 'quarto-solteiro'],
       ['Banheiros', specs?.bathrooms, 'banheiro'],
       ['Suítes', specs?.suites, 'quarto-casal'],
       ['Vagas', specs?.parking, 'garagem'],
     ]
-    return list.filter(([, value]) => value != null)
+    return list.filter(([, value]) => value != null && value > 0)
   }
 
   function syncProgress(ratio: number) {
@@ -217,11 +217,11 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
                 className="group flex h-4 cursor-pointer items-center"
               >
                 {idx === slide.current ? (
-                  <div className="relative h-1.5 w-14 overflow-hidden rounded-full bg-white/20">
-                    <div className="h-full w-(--slide-progress,0%) rounded-full bg-white" />
+                  <div className="relative h-1.5 w-14 overflow-hidden rounded-none bg-white/20">
+                    <div className="h-full w-(--slide-progress,0%) rounded-none bg-white" />
                   </div>
                 ) : (
-                  <div className="h-1.5 w-3.5 rounded-full bg-white/30 transition-all duration-300 group-hover:bg-white/60" />
+                  <div className="h-1.5 w-3.5 rounded-none bg-white/30 transition-all duration-300 group-hover:bg-white/60" />
                 )}
               </button>
             ))}
