@@ -33,29 +33,43 @@ const pillars = [
 ]
 
 export function ValueProposition() {
-  return <Reveal id="diferenciais" className={'group ' + wrap + ' py-[clamp(48px,7vw,104px)]'}>
-    <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
-      <h2 className={homeSectionHeading + ' max-w-[24ch] text-espresso'}>
-        <Words text="O endereço certo começa com quem entende de alto padrão." start={120} />
-      </h2>
-      <p className={'max-w-[56ch] text-sm font-light leading-relaxed text-earth sm:text-base lg:justify-self-end ' + hidden} style={{animationDelay: '600ms'}}>
-        Selecionamos os imóveis mais desejados da região e conduzimos cada negociação com discrição, técnica e cuidado.
-      </p>
-    </div>
-    <div className="mt-12 grid gap-10 sm:mt-14 md:grid-cols-3 md:gap-12">
-      {pillars.map((pillar, i) => (
-        <div key={pillar.title} className="relative isolate py-4">
-          <span aria-hidden="true" className="pointer-events-none absolute -top-2 right-0 -z-1 select-none text-[clamp(5.5rem,8vw,8rem)] leading-none font-bold tracking-tighter text-espresso/[0.045]">
-            0{i + 1}
-          </span>
-          <div className={hidden} style={{animationDelay: 800 + i * 150 + 'ms'}}>
-            <h3 className="text-lg font-medium tracking-tight text-espresso sm:text-xl">{pillar.title}</h3>
-            <p className="mt-2.5 max-w-[32ch] text-sm font-light leading-relaxed text-earth">{pillar.text}</p>
+  return (
+    <section className="relative isolate overflow-hidden border-t-2 border-piramide bg-coal text-ivory">
+      <img
+        src="/logos/piramide/icon.png"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-6 bottom-0 -z-10 w-[clamp(20rem,42vw,38rem)] max-w-none select-none opacity-10 brightness-150 grayscale"
+      />
+      <Reveal id="diferenciais" className={'group ' + wrap + ' py-[clamp(56px,8vw,116px)]'}>
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
+          <div>
+            <p className={eyebrow + ' mb-3 text-[.68rem] text-piramide'}>Diferenciais Pirâmide PRIME</p>
+            <h2 className={homeSectionHeading + ' max-w-[24ch] text-ivory'}>
+              <Words text="O endereço certo começa com quem entende de alto padrão." start={120} />
+            </h2>
           </div>
+          <p className={'max-w-[56ch] text-sm font-light leading-relaxed text-ivory/75 sm:text-base lg:justify-self-end ' + hidden} style={{animationDelay: '600ms'}}>
+            Selecionamos os imóveis mais desejados da região e conduzimos cada negociação com discrição, técnica e cuidado.
+          </p>
         </div>
-      ))}
-    </div>
-  </Reveal>
+        <div className="mt-12 grid gap-10 sm:mt-14 md:grid-cols-3 md:gap-12">
+          {pillars.map((pillar, i) => (
+            <div key={pillar.title} className="relative isolate border-t border-white/15 pt-6 pb-4">
+              <span aria-hidden="true" className="pointer-events-none absolute top-2 right-0 -z-1 select-none text-[clamp(5.5rem,8vw,8rem)] leading-none font-bold tracking-tighter text-white/[0.045]">
+                0{i + 1}
+              </span>
+              <div className={hidden} style={{animationDelay: 800 + i * 150 + 'ms'}}>
+                <span aria-hidden="true" className="mb-3 block h-0.5 w-8 bg-piramide" />
+                <h3 className="text-lg font-medium tracking-tight text-ivory sm:text-xl">{pillar.title}</h3>
+                <p className="mt-2.5 max-w-[32ch] text-sm font-light leading-relaxed text-ivory/70">{pillar.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Reveal>
+    </section>
+  )
 }
 
 /* 4. Busca por estilo de vida */
@@ -65,7 +79,10 @@ export function Lifestyle({items}: {items: LifestyleItem[]}) {
   if (!items.length) return null
   return <Reveal id="estilos-de-vida" className="group py-[clamp(56px,8vw,120px)]">
     <div className={wrap + ' mb-10 flex flex-wrap items-end justify-between gap-4'}>
-      <h2 className={homeSectionHeading + ' text-espresso'}><Words text="Qual imóvel você procura?" start={100} /></h2>
+      <div>
+        <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Curadoria por perfil</p>
+        <h2 className={homeSectionHeading + ' text-espresso'}><Words text="Qual imóvel você procura?" start={100} /></h2>
+      </div>
       <p className={'max-w-[38ch] text-sm font-light text-earth sm:text-base ' + hidden} style={{animationDelay: '400ms'}}>Selecione um tipo de imóvel para ver os empreendimentos disponíveis.</p>
     </div>
     <DragCarousel className="ml-[1.125rem] flex gap-4 overflow-x-auto [scrollbar-width:none] after:block after:w-[0.125rem] after:shrink-0 md:ml-[2.25rem] md:after:w-[1.25rem] xl:ml-[max(3.5rem,calc((100%_-_96rem)/2))] xl:after:w-[max(2.5rem,calc((100%_-_96rem)/2_-_1rem))] [&::-webkit-scrollbar]:hidden">

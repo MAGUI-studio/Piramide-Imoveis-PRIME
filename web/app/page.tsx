@@ -60,8 +60,11 @@ export default async function Home() {
       {hero && <ValueProposition />}
       {!!featured.length && <section id="destaques" className={wrap + ' pt-[clamp(44px,6vw,88px)] pb-[clamp(48px,8vw,124px)]'} aria-labelledby="titulo-destaques">
         <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-t border-rule pt-6 md:mb-12">
-          <h2 className={heading + ' text-[clamp(2.8rem,5vw,5.6rem)]'} id="titulo-destaques">Em destaque</h2>
-          <a className={textLink + ' border-bronze text-bronze'} href="#empreendimentos">Ver o catálogo <ArrowUpRight size={16} /></a>
+          <div>
+            <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Seleção exclusiva</p>
+            <h2 className={heading + ' text-[clamp(2.8rem,5vw,5.6rem)]'} id="titulo-destaques">Em destaque</h2>
+          </div>
+          <a className={textLink + ' border-piramide text-piramide hover:opacity-80'} href="#empreendimentos">Ver o catálogo <ArrowUpRight size={16} /></a>
         </div>
         <div className="space-y-[clamp(38px,7vw,105px)]">
           {featured.map((item, index) => <Reveal className={'group grid items-center gap-[clamp(24px,6vw,104px)] ' + (index % 2 ? 'min-[801px]:grid-cols-[.8fr_1.65fr]' : 'min-[801px]:grid-cols-[1.65fr_.8fr]')} key={item.id}>
@@ -69,10 +72,10 @@ export default async function Home() {
               <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover/photo:scale-105" photo={picture(item.cover, 1.45, 1600)} sizes="(max-width: 800px) 100vw, 65vw" />
             </Link>
             <div className={'motion-safe:group-data-[entered=true]:animate-enter ' + (index % 2 ? 'min-[801px]:col-start-1 min-[801px]:row-start-1' : '')}>
-              <p className={eyebrow + ' text-bronze'}>{locationOf(item)}</p>
+              <p className={eyebrow + ' text-piramide'}>{locationOf(item)}</p>
               <h3 className={heading + ' my-3 text-[clamp(2.75rem,5vw,6rem)]'}>{item.title}</h3>
               <p className="max-w-[42ch] leading-relaxed text-earth">{item.summary}</p>
-              <Link className={textLink + ' mt-6 border-bronze text-bronze'} href={'/' + item.slug}>Ver empreendimento <ArrowUpRight size={17} /></Link>
+              <Link className={textLink + ' mt-6 border-piramide text-piramide hover:opacity-80'} href={'/' + item.slug}>Ver empreendimento <ArrowUpRight size={17} /></Link>
             </div>
           </Reveal>)}
         </div>

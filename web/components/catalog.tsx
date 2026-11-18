@@ -6,7 +6,7 @@ import {useEffect, useId, useRef, useState} from 'react'
 import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, Check, ChevronDown, House, MapPin, Search, SlidersHorizontal, X} from 'lucide-react'
 import {availabilityLabel, cardAreaOf, cardAttributesOf, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
-import {button, heading, homeSectionHeading, wrap} from '../lib/classes'
+import {button, eyebrow, heading, homeSectionHeading, wrap} from '../lib/classes'
 import {Frame} from './media'
 import {Reveal} from './motion'
 
@@ -214,6 +214,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
   return (
     <section id="empreendimentos" className={wrap + ' scroll-mt-4 pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]'}>
       <Reveal className="mb-7 motion-safe:data-[entered=true]:animate-enter">
+        <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Portfólio Pirâmide PRIME</p>
         <Title className={homeSectionHeading}>{full ? 'Todos os empreendimentos' : 'Explore os empreendimentos'}</Title>
       </Reveal>
       {items.length ? <>
