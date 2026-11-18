@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react'
-import {eyebrow, heading, wrap} from '../lib/classes'
+import {ArrowUpRight} from 'lucide-react'
+import {eyebrow, heading, sweepButton, sweepFill, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {propertyPrice, type Property} from '../lib/model'
 import {CinemaIcon} from './cinemaIcon'
@@ -39,9 +40,12 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-2.5 bg-piramide px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-piramide/90"
+              className={sweepButton + ' border-zinc-900/30 px-3.5 py-2 text-xs font-medium text-zinc-900 sm:px-4 sm:py-2.5 sm:text-sm'}
             >
-              Falar pelo WhatsApp <CinemaIcon name="external" />
+              <span aria-hidden="true" className={sweepFill} />
+              <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
+                Falar pelo WhatsApp <ArrowUpRight size={16} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+              </span>
             </a>
           )}
         </div>
@@ -53,12 +57,12 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
 function FeaturePanel({items, title, icon}: {items?: string[] | null; title: string; icon: 'sparkle' | 'building'}) {
   if (!items?.length) return null
   return (
-    <section>
-      <h2 className={heading + ' flex items-start gap-2.5 text-xl sm:text-2xl'}>
-        <CinemaIcon name={icon} className="mt-0.5 text-piramide" />{title}
+    <section className="border-t border-zinc-300/75 pt-6">
+      <h2 className={heading + ' flex items-center gap-3 text-[clamp(1.35rem,2.2vw,1.85rem)]'}>
+        <CinemaIcon name={icon} className="size-6! text-piramide" />{title}
       </h2>
-      <ul className="mt-4 grid gap-2.5 ps-8 text-sm leading-relaxed text-[#514954]">
-        {items.map((item, index) => <li className="relative before:absolute before:top-[.65em] before:-start-4 before:size-1 before:bg-piramide/75" key={item + index}>{item}</li>)}
+      <ul className="mt-5 grid gap-x-6 gap-y-3 ps-4 text-sm leading-relaxed text-[#514954] sm:grid-cols-2 sm:text-[0.9375rem]">
+        {items.map((item, index) => <li className="relative before:absolute before:top-[.65em] before:-start-4 before:size-1.5 before:bg-piramide/75" key={item + index}>{item}</li>)}
       </ul>
     </section>
   )
@@ -74,7 +78,7 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
   virtualTour?: ReactNode
   technicalSheet: ReactNode
 }) {
-  const featurePanels = property.features?.length || property.condoFeatures?.length
+  const featurePanels = (property.features?.length ? 1 : 0) + (property.condoFeatures?.length ? 1 : 0)
   return (
     <div className="grid gap-[clamp(3rem,6vw,6rem)] bg-paper pb-[clamp(3rem,7vw,7rem)] text-[#251d29]">
       <div className={wrap + ' grid gap-4 pt-[clamp(1rem,3vw,2.5rem)] sm:gap-5'}>
@@ -91,11 +95,10 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
           </div>
         </div>
       </section>
-      {!!featurePanels && <section className={wrap + ' grid gap-7 lg:grid-cols-[minmax(0,.7fr)_minmax(0,1fr)_minmax(0,1fr)] lg:gap-12'} aria-labelledby="cinema-highlights">
-        <h2 id="cinema-highlights" className={heading + ' text-[clamp(1.6rem,3vw,2.65rem)]'}>Destaques da visita</h2>
+      {featurePanels > 0 && <div className={wrap + ' grid gap-8 ' + (featurePanels > 1 ? 'lg:grid-cols-2 lg:gap-14' : '')}>
         <FeaturePanel title="Diferenciais do imóvel" items={property.features} icon="sparkle" />
         <FeaturePanel title="Infraestrutura do condomínio" items={property.condoFeatures} icon="building" />
-      </section>}
+      </div>}
       <section className={wrap} aria-labelledby="cinema-gallery">
         <div className="mb-5 flex items-end justify-between gap-4">
           <h2 id="cinema-gallery" className={heading + ' text-[clamp(1.75rem,3vw,2.75rem)]'}>Fotos do imóvel</h2>

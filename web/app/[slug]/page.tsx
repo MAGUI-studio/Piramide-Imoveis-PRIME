@@ -8,7 +8,7 @@ import {CinemaIcon} from '../../components/cinemaIcon'
 import {Frame, Gallery, ImmersiveCover, WatchVideo} from '../../components/media'
 import {PropertyContact, PropertyFAQ, propertyVideos, StoryBackdrop, VideoFrame, type StoryVideo} from '../../components/propertyStory'
 import {WhatsAppWidget} from '../../components/whatsappWidget'
-import {button, contentGutter, eyebrow, glassAction, heading, outlineButton, previewBanner, wrap} from '../../lib/classes'
+import {contentGutter, eyebrow, glassAction, heading, previewBanner, sweepButton, sweepFill, wrap} from '../../lib/classes'
 import {picture, type Picture} from '../../lib/image'
 import {availabilityLabel, cardAttributesOf, locationOf, whatsappLink, type Property} from '../../lib/model'
 import {getProperty, isPreview} from '../../lib/sanity'
@@ -86,24 +86,6 @@ function Attributes({property}: {property: Property}) {
         </li>
       ))}
     </ul>
-  )
-}
-
-function Actions({link, listingUrl}: {link: string | null; listingUrl?: string | null}) {
-  if (!link && !listingUrl) return null
-  return (
-    <div className="flex flex-wrap items-center gap-3">
-      {link && (
-        <a className={button + ' border-transparent bg-piramide px-5 text-white hover:bg-piramide/90'} href={link} target="_blank" rel="noopener noreferrer">
-          Falar pelo WhatsApp <ArrowUpRight size={18} />
-        </a>
-      )}
-      {listingUrl && (
-        <a className={outlineButton} href={listingUrl} target="_blank" rel="noopener noreferrer">
-          Ver no site da Pirâmide <ArrowUpRight size={18} />
-        </a>
-      )}
-    </div>
   )
 }
 
@@ -189,47 +171,28 @@ function TechnicalSheet({property, layout}: {property: Property; layout: 'film' 
 
 function StandardHighlights({property}: {property: Property}) {
   const groups = [
-    {title: 'Diferenciais do imóvel', items: property.features, icon: 'sparkle' as const},
-    {title: 'Infraestrutura do condomínio', items: property.condoFeatures, icon: 'building' as const},
+    {eyebrow: 'Detalhes do imóvel', title: 'Diferenciais do imóvel', items: property.features, icon: 'sparkle' as const},
+    {eyebrow: 'Condomínio e lazer', title: 'Infraestrutura do condomínio', items: property.condoFeatures, icon: 'building' as const},
   ].filter(({items}) => items?.length)
   if (!groups.length) return null
   return (
-    <section id="diferenciais" aria-labelledby="standard-highlights" className="scroll-mt-6 bg-white/55 py-[clamp(2rem,5vw,4rem)]">
-      <div className={wrap}>
-        <h2 id="standard-highlights" className={editorialTitle + ' mb-6'}>Diferenciais e infraestrutura</h2>
-        <div className={'grid gap-6 ' + (groups.length > 1 ? 'lg:grid-cols-2' : '')}>
-          {groups.map(({title, items, icon}) => (
-            <section className="bg-paper px-4 py-5 sm:px-6" key={title}>
-              <h3 className={heading + ' mb-4 flex items-center gap-2.5 text-lg'}><CinemaIcon name={icon} className="text-piramide" />{title}</h3>
-              <ul className="grid gap-2.5 text-sm text-zinc-700 sm:grid-cols-2">
-                {items?.map((item, index) => <li key={item + index}>{item}</li>)}
-              </ul>
-            </section>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function PhotoHighlights({property, photo}: {property: Property; photo: Picture}) {
-  const groups = [
-    {title: 'Diferenciais do imóvel', items: property.features},
-    {title: 'Infraestrutura do condomínio', items: property.condoFeatures},
-  ].filter(({items}) => items?.length)
-  if (!groups.length) return null
-  return (
-    <section className="grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:items-center lg:gap-14" aria-labelledby="photo-notes">
-      <figure className="relative aspect-[1.25] overflow-hidden bg-zinc-200">
-        <Frame className="absolute inset-0 size-full object-cover" photo={photo} sizes="(max-width: 767px) 100vw, 52vw" />
-        {photo.caption && <figcaption className="absolute bottom-3 start-3 max-w-[calc(100%-1.5rem)] bg-paper/95 px-3 py-2 text-xs">{photo.caption}</figcaption>}
-      </figure>
-      <div>
-        <h2 id="photo-notes" className={editorialTitle}>Detalhes em foco</h2>
-        {groups.map(({title, items}) => (
-          <section key={title} className="mt-5 border-s border-piramide/45 ps-4">
-            <h3 className="mb-2 text-sm font-semibold">{title}</h3>
-            <p className="text-sm leading-relaxed text-zinc-700">{items?.join(' · ')}</p>
+    <section id="diferenciais" aria-labelledby="standard-highlights" className={wrap + ' scroll-mt-6'}>
+      <span id="standard-highlights" className="sr-only">Diferenciais e infraestrutura</span>
+      <div className={'grid gap-8 ' + (groups.length > 1 ? 'lg:grid-cols-2 lg:gap-14' : '')}>
+        {groups.map(({eyebrow: groupEyebrow, title, items, icon}) => (
+          <section className="border-t border-zinc-300/75 pt-6" key={title}>
+            <p className={eyebrow + ' text-[.68rem] text-piramide'}>{groupEyebrow}</p>
+            <h3 className={heading + ' mt-2 flex items-center gap-3 text-[clamp(1.35rem,2.2vw,1.85rem)]'}>
+              <CinemaIcon name={icon} className="size-6! text-piramide" />{title}
+            </h3>
+            <ul className="mt-5 grid gap-x-6 gap-y-3 text-sm leading-relaxed text-zinc-700 sm:grid-cols-2 sm:text-[0.9375rem]">
+              {items?.map((item, index) => (
+                <li className="flex items-center gap-3 border-b border-zinc-300/60 pb-2.5" key={item + index}>
+                  <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
           </section>
         ))}
       </div>
@@ -237,12 +200,77 @@ function PhotoHighlights({property, photo}: {property: Property; photo: Picture}
   )
 }
 
-function EditorialDetails({property, link, photos, storyPhoto, detailsPhoto, videos, virtualTour}: {
+function PhotoHighlights({property, photos}: {property: Property; photos: [Picture, Picture]}) {
+  const rawGroups = [
+    {eyebrow: 'Detalhes em foco', title: 'Diferenciais do imóvel', items: property.features ?? []},
+    {eyebrow: 'Condomínio e lazer', title: 'Infraestrutura do condomínio', items: property.condoFeatures ?? []},
+  ].filter(({items}) => items.length > 0)
+  if (!rawGroups.length) return null
+
+  const groups = rawGroups.length === 1 && rawGroups[0].items.length > 2
+    ? [
+        {...rawGroups[0], items: rawGroups[0].items.slice(0, Math.ceil(rawGroups[0].items.length / 2))},
+        {eyebrow: 'Acabamentos e lazer', title: 'Mais diferenciais', items: rawGroups[0].items.slice(Math.ceil(rawGroups[0].items.length / 2))},
+      ]
+    : rawGroups
+
+  return (
+    <section className={contentGutter + ' grid gap-[clamp(3rem,6vw,5.5rem)] overflow-x-clip'} aria-labelledby="photo-notes">
+      {groups.map((group, index) => {
+        const photo = photos[index] ?? photos[0]
+        const reversed = index % 2 === 1
+        return (
+          <div
+            key={group.title + index}
+            className={
+              'grid items-center gap-8 lg:gap-16 ' +
+              (reversed
+                ? 'md:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]'
+                : 'md:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)]')
+            }
+          >
+            <figure
+              className={
+                'relative aspect-[1.42] w-[calc(100%-var(--content-gutter))] overflow-hidden bg-zinc-200 shadow-sm md:w-full ' +
+                (reversed
+                  ? 'ms-auto rounded-l-full md:order-last'
+                  : 'me-auto rounded-r-full')
+              }
+            >
+              <Frame className="absolute inset-0 size-full object-cover" photo={photo} sizes="(max-width: 767px) 92vw, 54vw" />
+              {photo.caption && (
+                <figcaption className={'absolute bottom-4 max-w-[calc(100%-5rem)] bg-paper/95 px-3 py-2 text-xs text-zinc-800 backdrop-blur-md ' + (reversed ? 'end-4' : 'start-4')}>
+                  {photo.caption}
+                </figcaption>
+              )}
+            </figure>
+            <div className={reversed ? 'px-(--content-gutter) md:ps-(--content-gutter) md:pe-0' : 'px-(--content-gutter) md:ps-0 md:pe-(--content-gutter)'}>
+              <p className={eyebrow + ' text-[.68rem] text-piramide'}>{group.eyebrow}</p>
+              <h2 id={index === 0 ? 'photo-notes' : undefined} className={editorialTitle + ' mt-2'}>
+                {group.title}
+              </h2>
+              <ul className="mt-6 grid gap-x-6 gap-y-3.5 sm:grid-cols-2">
+                {group.items.map((item, itemIdx) => (
+                  <li key={item + itemIdx} className="flex items-center gap-3 border-b border-zinc-300/70 pb-3 text-sm font-medium text-zinc-800 sm:text-[0.9375rem]">
+                    <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )
+      })}
+    </section>
+  )
+}
+
+function EditorialDetails({property, link, photos, storyPhoto, detailsPhotos, videos, virtualTour}: {
   property: Property
   link: string | null
   photos: Picture[]
   storyPhoto: Picture
-  detailsPhoto: Picture
+  detailsPhotos: [Picture, Picture]
   videos: StoryVideo[]
   virtualTour: ReactNode
 }) {
@@ -260,15 +288,20 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhoto, vid
         <Gallery photos={photos} layout="story" />
       </section>
       <StoryBackdrop photo={storyPhoto} property={property} />
+      <PhotoHighlights property={property} photos={detailsPhotos} />
       <div className={wrap + ' grid gap-[clamp(2.5rem,6vw,5.5rem)]'}>
-        <PhotoHighlights property={property} photo={detailsPhoto} />
-        {(videos.length > 0 || virtualTour) && <section aria-labelledby="editorial-video">
-          <h2 className={heading + ' text-xl sm:text-2xl'} id="editorial-video">Vídeos e tour</h2>
-          <div className="mt-4 flex flex-wrap gap-2.5">
-            {videos.map((video) => <WatchVideo key={video.url} src={video.url} label={video.title} poster={video.poster.src} external={video.external} glassActions />)}
-            {virtualTour}
-          </div>
-        </section>}
+        {(videos.length > 0 || virtualTour) && (
+          <section className="grid gap-5 border-y border-zinc-300/75 py-8 sm:py-10 lg:grid-cols-[minmax(0,.42fr)_minmax(0,1fr)] lg:items-center lg:gap-14" aria-labelledby="editorial-video">
+            <div>
+              <p className={eyebrow + ' text-[.68rem] text-piramide'}>Tour audiovisual</p>
+              <h2 className={editorialTitle + ' mt-2'} id="editorial-video">Vídeos e tour</h2>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {videos.map((video) => <WatchVideo key={video.url} src={video.url} label={video.title} poster={video.poster.src} external={video.external} />)}
+              {virtualTour}
+            </div>
+          </section>
+        )}
         <PropertyFAQ property={property} layout="essay" />
         <PropertyContact link={link} listing={property.externalListingUrl} layout="essay" />
       </div>
@@ -276,39 +309,57 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhoto, vid
   )
 }
 
-function StandardMedia({photo, videos, videoPhoto, virtualTour}: {photo: Picture; videos: StoryVideo[]; videoPhoto?: Picture; virtualTour: ReactNode}) {
+function StandardMedia({photo, photoCount, videos, videoPhoto, virtualTour}: {photo: Picture; photoCount: number; videos: StoryVideo[]; videoPhoto?: Picture; virtualTour: ReactNode}) {
   const [lead, ...more] = videos
   if (!lead && !virtualTour) return null
   return (
-    <section id="midia" className={wrap + ' grid scroll-mt-6 gap-4'} aria-labelledby="standard-media">
-      <h2 className={editorialTitle} id="standard-media">Fotos e tour</h2>
-      <div className="grid gap-3 md:grid-cols-2">
-        <a className="group relative isolate flex aspect-video items-end overflow-hidden bg-zinc-200 p-3 sm:p-5" href="#mosaic-photos">
-          <Frame className="absolute inset-0 -z-10 size-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105" photo={photo} sizes="(max-width: 767px) 100vw, 50vw" />
-          <span className={glassAction}><CinemaIcon name="photos" /> Ver galeria de fotos</span>
+    <section id="midia" className={wrap + ' grid scroll-mt-6 gap-5'} aria-labelledby="standard-media">
+      <div>
+        <p className={eyebrow + ' text-[.68rem] text-piramide'}>Galeria multimídia</p>
+        <h2 className={editorialTitle + ' mt-2'} id="standard-media">Fotos e tour</h2>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
+        <a className="group relative isolate flex aspect-video items-end overflow-hidden bg-zinc-200 p-4 sm:p-6" href="#mosaic-photos">
+          <Frame className="absolute inset-0 -z-20 size-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105" photo={photo} sizes="(max-width: 767px) 100vw, 50vw" />
+          <div aria-hidden="true" className="absolute inset-0 -z-10 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="flex w-full flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className={eyebrow + ' text-[.65rem] text-white/75'}>Ensaio fotográfico</p>
+              <p className={heading + ' mt-1 text-lg text-white sm:text-xl'}>{photoCount} {photoCount === 1 ? 'foto do imóvel' : 'fotos do imóvel'}</p>
+            </div>
+            <span className={glassAction}><CinemaIcon name="photos" /> Ver galeria</span>
+          </div>
         </a>
         {lead
           ? <VideoFrame video={videoPhoto ? {...lead, poster: videoPhoto} : lead} />
           : <div className="grid min-h-40 place-items-center bg-zinc-200/55 p-5">{virtualTour}</div>}
       </div>
-      {!!lead && (more.length > 0 || virtualTour) && <div className="flex flex-wrap gap-2.5">
-        {more.map((video) => <WatchVideo key={video.url} src={video.url} label={video.title} poster={video.poster.src} external={video.external} glassActions />)}
-        {virtualTour}
-      </div>}
+      {!!lead && (more.length > 0 || virtualTour) && (
+        <div className="flex flex-wrap items-center gap-3 pt-1">
+          {more.map((video) => <WatchVideo key={video.url} src={video.url} label={video.title} poster={video.poster.src} external={video.external} />)}
+          {virtualTour}
+        </div>
+      )}
     </section>
   )
 }
 
 function StandardOverview({property, photo}: {property: Property; photo: Picture}) {
   return (
-    <section id="sobre" className={wrap + ' grid scroll-mt-6 bg-zinc-100 md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]'} aria-labelledby="standard-about">
-      <div className="self-center p-[clamp(1.25rem,4.5vw,4.5rem)]">
-        <h2 id="standard-about" className={editorialTitle}>Sobre o imóvel</h2>
-        <p className="mt-4 max-w-[55ch] text-sm leading-[1.85] whitespace-pre-line text-zinc-700 sm:text-base">{property.description}</p>
+    <section id="sobre" className={contentGutter + ' grid scroll-mt-6 items-center gap-8 overflow-x-clip md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:gap-14'} aria-labelledby="standard-about">
+      <div className="px-(--content-gutter) md:ps-(--content-gutter) md:pe-0">
+        <p className={eyebrow + ' text-[.68rem] text-piramide'}>Apresentação</p>
+        <h2 id="standard-about" className={editorialTitle + ' mt-2'}>Sobre o imóvel</h2>
+        <p className="mt-5 max-w-[58ch] text-base leading-[1.85] whitespace-pre-line text-zinc-700 sm:text-[1.0625rem]">{property.description}</p>
       </div>
-      <div className="relative min-h-[clamp(14rem,34vw,32rem)] overflow-hidden bg-zinc-200">
+      <figure className="relative aspect-[1.35] w-full overflow-hidden bg-zinc-200 shadow-xs">
         <Frame photo={photo} className="absolute inset-0 size-full object-cover" sizes="(max-width: 767px) 100vw, 55vw" />
-      </div>
+        {photo.caption && (
+          <figcaption className="absolute bottom-4 start-4 max-w-[calc(100%-2rem)] bg-paper/95 px-3 py-2 text-xs text-zinc-800 backdrop-blur-md">
+            {photo.caption}
+          </figcaption>
+        )}
+      </figure>
     </section>
   )
 }
@@ -318,10 +369,18 @@ function PropertyLayout({property, link}: {property: Property; link: string | nu
   const gallery = property.gallery ?? []
   const photos = gallery.map((photo) => picture(photo, 1.5))
   const storyPhoto = picture(property.sectionPhoto?.asset ? property.sectionPhoto : gallery.at(-1) ?? property.cover, 16 / 9, 2400)
+  const detailSources = property.detailsPhotos?.filter((item) => item?.asset) ?? (property.detailsPhoto?.asset ? [property.detailsPhoto] : [])
+  const detailsPhotos: [Picture, Picture] = [
+    picture(detailSources[0] ?? gallery[0] ?? property.cover, 1.42, 1600),
+    picture(detailSources[1] ?? gallery[1] ?? gallery[0] ?? property.cover, 1.42, 1600),
+  ]
   const {openingUrl, videos} = propertyVideos(property, cover)
   const virtualTour = property.virtualTourUrl && (
-    <a className={glassAction} href={property.virtualTourUrl} target="_blank" rel="noopener noreferrer">
-      <CinemaIcon name="compass" /> Tour Virtual 360° <CinemaIcon name="external" />
+    <a className={sweepButton + ' border-zinc-900/25 bg-white/80 px-5 py-3 text-sm font-semibold text-zinc-900 shadow-2xs'} href={property.virtualTourUrl} target="_blank" rel="noopener noreferrer">
+      <span aria-hidden="true" className={sweepFill} />
+      <span className="pointer-events-none relative z-10 inline-flex items-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
+        <CinemaIcon name="compass" /> Tour Virtual 360° <CinemaIcon name="external" />
+      </span>
     </a>
   )
 
@@ -362,15 +421,15 @@ function PropertyLayout({property, link}: {property: Property; link: string | nu
                 <PropertyPurchase property={property} link={link} />
                 <TechnicalSheet property={property} layout="standard" />
               </div>
-              <nav aria-label="Nesta página" className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-zinc-700 sm:gap-x-7">
-                <a className="hover:text-piramide" href="#ficha">Ficha e valores</a>
-                <a className="hover:text-piramide" href={videos.length || virtualTour ? '#midia' : '#mosaic-photos'}>Fotos e mídias</a>
-                <a className="hover:text-piramide" href="#sobre">Sobre o imóvel</a>
-                {!!(property.features?.length || property.condoFeatures?.length) && <a className="hover:text-piramide" href="#diferenciais">Diferenciais</a>}
-                {property.faq?.some(({question, answer}) => question.trim() && answer.trim()) && <a className="hover:text-piramide" href="#duvidas">Dúvidas</a>}
+              <nav aria-label="Nesta página" className="flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-zinc-300/75 py-3.5 text-xs font-semibold tracking-wider text-zinc-600 uppercase sm:gap-x-8">
+                <a className="transition-colors hover:text-piramide" href="#ficha">Ficha e valores</a>
+                <a className="transition-colors hover:text-piramide" href={videos.length || virtualTour ? '#midia' : '#mosaic-photos'}>Fotos e mídias</a>
+                <a className="transition-colors hover:text-piramide" href="#sobre">Sobre o imóvel</a>
+                {!!(property.features?.length || property.condoFeatures?.length) && <a className="transition-colors hover:text-piramide" href="#diferenciais">Diferenciais</a>}
+                {property.faq?.some(({question, answer}) => question.trim() && answer.trim()) && <a className="transition-colors hover:text-piramide" href="#duvidas">Dúvidas</a>}
               </nav>
             </header>
-            <StandardMedia photo={property.mediaPhoto?.asset ? picture(property.mediaPhoto, 16 / 9) : photos[0] ?? cover} videos={videos} videoPhoto={property.mediaVideoPhoto?.asset ? picture(property.mediaVideoPhoto, 16 / 9) : undefined} virtualTour={virtualTour} />
+            <StandardMedia photo={property.mediaPhoto?.asset ? picture(property.mediaPhoto, 16 / 9) : photos[0] ?? cover} photoCount={photos.length + 1} videos={videos} videoPhoto={property.mediaVideoPhoto?.asset ? picture(property.mediaVideoPhoto, 16 / 9) : undefined} virtualTour={virtualTour} />
             <StandardOverview photo={storyPhoto} property={property} />
             <StandardHighlights property={property} />
             <div className={wrap + ' grid gap-[clamp(2.75rem,6vw,5.5rem)]'}>
@@ -390,14 +449,13 @@ function PropertyLayout({property, link}: {property: Property; link: string | nu
                 <PropertyTitle property={property} />
                 <p className="mt-4 leading-relaxed text-zinc-600">{property.summary}</p>
                 <Attributes property={property} />
-                <div className="mt-5"><Actions link={link} listingUrl={property.externalListingUrl} /></div>
               </div>
-              <figure className="relative order-first aspect-[1.04] w-full min-w-0 overflow-hidden bg-coal [clip-path:polygon(0_0,100%_0,100%_90%,90%_100%,0_100%)] after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(180deg,#100e0c7a_0%,transparent_28%)] motion-safe:animate-image-in min-[801px]:order-none min-[801px]:aspect-[1.08] min-[801px]:[clip-path:polygon(7%_0,100%_0,100%_100%,0_100%,0_86%)]">
+              <figure className="relative order-first aspect-[1.04] w-full min-w-0 overflow-hidden bg-zinc-200 after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(180deg,#100e0c7a_0%,transparent_28%)] min-[801px]:order-none min-[801px]:aspect-[1.08] min-[801px]:[clip-path:polygon(0_0,100%_0,100%_100%,clamp(3.5rem,7vw,6.5rem)_100%,0_calc(100%-clamp(3.5rem,7vw,6.5rem)))]">
                 <Frame className="size-full object-cover" photo={picture(property.cover, 1.12)} priority sizes="(max-width: 800px) 100vw, 58vw" />
               </figure>
             </div>
           </div>
-          <EditorialDetails property={property} link={link} photos={[cover, ...photos]} storyPhoto={storyPhoto} detailsPhoto={property.detailsPhoto?.asset ? picture(property.detailsPhoto, 1.25) : photos[0] ?? cover} videos={videos} virtualTour={virtualTour} />
+          <EditorialDetails property={property} link={link} photos={[cover, ...photos]} storyPhoto={storyPhoto} detailsPhotos={detailsPhotos} videos={videos} virtualTour={virtualTour} />
         </article>
       )
   }
