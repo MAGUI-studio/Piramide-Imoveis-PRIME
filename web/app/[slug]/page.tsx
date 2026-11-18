@@ -221,7 +221,7 @@ function PhotoHighlights({property, photos}: {property: Property; photos: [Pictu
           <div
             key={group.title + index}
             className={
-              'grid items-center gap-8 lg:gap-16 ' +
+              'grid items-center gap-6 md:gap-8 lg:gap-16 ' +
               (reversed
                 ? 'md:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]'
                 : 'md:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)]')
@@ -229,27 +229,27 @@ function PhotoHighlights({property, photos}: {property: Property; photos: [Pictu
           >
             <figure
               className={
-                'relative aspect-[1.42] w-[calc(100%-var(--content-gutter))] overflow-hidden bg-zinc-200 shadow-sm md:w-full ' +
+                'relative aspect-[1.42] w-[72%] overflow-hidden bg-zinc-200 shadow-sm sm:w-[76%] md:w-full ' +
                 (reversed
                   ? 'ms-auto rounded-l-full md:order-last'
                   : 'me-auto rounded-r-full')
               }
             >
-              <Frame className="absolute inset-0 size-full object-cover" photo={photo} sizes="(max-width: 767px) 92vw, 54vw" />
+              <Frame className="absolute inset-0 size-full object-cover" photo={photo} sizes="(max-width: 767px) 75vw, 54vw" />
               {photo.caption && (
-                <figcaption className={'absolute bottom-4 max-w-[calc(100%-5rem)] bg-paper/95 px-3 py-2 text-xs text-zinc-800 backdrop-blur-md ' + (reversed ? 'end-4' : 'start-4')}>
+                <figcaption className={'absolute bottom-3 max-w-[calc(100%-4rem)] bg-paper/95 px-2.5 py-1.5 text-xs text-zinc-800 backdrop-blur-md sm:bottom-4 sm:px-3 sm:py-2 ' + (reversed ? 'end-3 sm:end-4' : 'start-3 sm:start-4')}>
                   {photo.caption}
                 </figcaption>
               )}
             </figure>
-            <div className={reversed ? 'px-(--content-gutter) md:ps-(--content-gutter) md:pe-0' : 'px-(--content-gutter) md:ps-0 md:pe-(--content-gutter)'}>
+            <div className={reversed ? 'px-(--content-gutter) text-end md:ps-(--content-gutter) md:pe-0 md:text-start' : 'px-(--content-gutter) md:ps-0 md:pe-(--content-gutter)'}>
               <p className={eyebrow + ' text-[.68rem] text-piramide'}>{group.eyebrow}</p>
-              <h2 id={index === 0 ? 'photo-notes' : undefined} className={editorialTitle + ' mt-2'}>
+              <h2 id={index === 0 ? 'photo-notes' : undefined} className={editorialTitle + ' mt-1.5'}>
                 {group.title}
               </h2>
-              <ul className="mt-6 grid gap-x-6 gap-y-3.5 sm:grid-cols-2">
+              <ul className={'mt-5 grid max-w-[19rem] gap-x-6 gap-y-3 sm:mt-6 sm:max-w-none sm:grid-cols-2 ' + (reversed ? 'ms-auto md:ms-0' : '')}>
                 {group.items.map((item, itemIdx) => (
-                  <li key={item + itemIdx} className="flex items-center gap-3 border-b border-zinc-300/70 pb-3 text-sm font-medium text-zinc-800 sm:text-[0.9375rem]">
+                  <li key={item + itemIdx} className={'flex items-center gap-3 border-b border-zinc-300/70 pb-2.5 text-sm font-medium text-zinc-800 sm:pb-3 sm:text-[0.9375rem] ' + (reversed ? 'flex-row-reverse sm:flex-row' : '')}>
                     <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />
                     <span>{item}</span>
                   </li>

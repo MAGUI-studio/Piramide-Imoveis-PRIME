@@ -1,7 +1,7 @@
 'use client'
 
 import {useCallback, useEffect, useId, useRef, useState, type ReactNode, type RefObject} from 'react'
-import {ArrowLeft, ArrowRight, ChevronDown, Maximize2, Minimize2, Pause, Play, Volume2, VolumeX, X} from 'lucide-react'
+import {ArrowLeft, ArrowRight, Check, ChevronDown, Link2, Mail, Maximize2, Minimize2, MessageCircle, Pause, Play, Share2, Volume2, VolumeX, X} from 'lucide-react'
 import {glassAction, glassControl, heading, outlineButton, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {CinemaIcon} from './cinemaIcon'
@@ -829,4 +829,112 @@ export function FaqAccordion({entries}: {entries: {_key: string; question: strin
     </div>
   )
 }
+
+export function SharePropertyButton({title}: {title: string}) {
+  const [open, setOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    function onPointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  function shareWhatsApp() {
+    const url = window.location.href
+    window.open('https://wa.me/?text=' + encodeURIComponent(title + ' — ' + url), '_blank', 'noopener,noreferrer')
+    setOpen(false)
+  }
+
+  function shareEmail() {
+    const url = window.location.href
+    window.location.href =
+      'mailto:?subject=' +
+      encodeURIComponent(title + ' | Pirâmide PRIME') +
+      '&body=' +
+      encodeURIComponent('Confira este imóvel na Pirâmide PRIME:\n\n' + title + '\n' + url)
+    setOpen(false)
+  }
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => {
+        setCopied(false)
+        setOpen(false)
+      }, 1200)
+    } catch {
+      setOpen(false)
+    }
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-label="Compartilhar imóvel"
+        aria-expanded={open}
+        title="Compartilhar imóvel"
+        className="inline-grid size-9 shrink-0 cursor-pointer place-items-center text-zinc-900"
+      >
+        <Share2 size={17} />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          aria-label="Opções de compartilhamento"
+          className="absolute end-0 top-full z-30 mt-2 w-48 border border-zinc-900/15 bg-paper p-1.5 text-zinc-900 shadow-lg motion-safe:animate-enter"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={shareWhatsApp}
+            className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-start text-xs font-medium transition-colors hover:bg-piramide/10 hover:text-piramide"
+          >
+            <MessageCircle size={15} className="shrink-0 text-piramide" />
+            <span>WhatsApp</span>
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={shareEmail}
+            className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-start text-xs font-medium transition-colors hover:bg-piramide/10 hover:text-piramide"
+          >
+            <Mail size={15} className="shrink-0 text-piramide" />
+            <span>E-mail</span>
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={copyLink}
+            className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-start text-xs font-medium transition-colors hover:bg-piramide/10 hover:text-piramide"
+          >
+            {copied ? <Check size={15} className="shrink-0 text-piramide" /> : <Link2 size={15} className="shrink-0 text-piramide" />}
+            <span>{copied ? 'Link copiado!' : 'Copiar link'}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 

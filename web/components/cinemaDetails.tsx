@@ -4,7 +4,7 @@ import {eyebrow, heading, sweepButton, sweepFill, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {propertyPrice, type Property} from '../lib/model'
 import {CinemaIcon} from './cinemaIcon'
-import {Frame, Gallery} from './media'
+import {Frame, Gallery, SharePropertyButton} from './media'
 import {PropertyFAQ, VideoTour, type StoryVideo} from './propertyStory'
 
 const currency = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'})
@@ -32,9 +32,9 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
           {fees.map(({label, value}) => <div key={label}><dt>{label}</dt><dd className="mt-1 text-sm font-semibold text-[#251d29] tabular-nums">{value ? currency.format(value) : 'Isento'}</dd></div>)}
         </dl>
       )}
-      {(!!conditions.length || link) && (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 lg:ms-auto">
-          {!!conditions.length && <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium text-piramide">{conditions.map((condition) => <li key={String(condition)}>{condition}</li>)}</ul>}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 lg:ms-auto">
+        {!!conditions.length && <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium text-piramide">{conditions.map((condition) => <li key={String(condition)}>{condition}</li>)}</ul>}
+        <div className="flex items-center gap-2">
           {link && (
             <a
               href={link}
@@ -48,8 +48,9 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
               </span>
             </a>
           )}
+          <SharePropertyButton title={property.title} />
         </div>
-      )}
+      </div>
     </aside>
   )
 }
