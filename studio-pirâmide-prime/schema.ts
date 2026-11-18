@@ -6,7 +6,14 @@ const templates = [
   {title: 'Imersivo · cinema', value: 'immersive'},
   {title: 'Mosaico · galeria', value: 'mosaic'},
 ]
+const availabilities = [
+  {title: 'Disponível', value: 'available'},
+  {title: 'Reservado', value: 'reserved'},
+  {title: 'Vendido', value: 'sold'},
+]
 const types = ['Casa/Mansão', 'Apartamento/Cobertura', 'Condomínio', 'Loteamento', 'Terreno', 'Comercial']
+const floorProfiles = ['Térrea', 'Sobrado', 'Triplex', 'Andar alto', '1 por andar', 'Duplex', 'Cobertura']
+const sunOrientations = ['Sol da manhã', 'Sol da tarde', 'Face norte', 'Sol o dia todo']
 const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon', 'empreendimentos'])
 
 type AssetValue = {asset?: {_ref?: string}}
@@ -103,6 +110,7 @@ const property = defineType({
   name: 'property', title: 'Empreendimentos', type: 'document',
   groups: [
     {name: 'details', title: 'Informações', default: true},
+    {name: 'commercial', title: 'Comercial'},
     {name: 'media', title: 'Fotos e vídeos'},
     {name: 'design', title: 'Página'},
   ],
@@ -110,6 +118,19 @@ const property = defineType({
     defineField({name: 'firstPublishedSlug', type: 'string', hidden: true, readOnly: true}),
     defineField({name: 'firstPublishedAt', type: 'datetime', hidden: true, readOnly: true}),
     defineField({name: 'title', title: 'Nome', type: 'string', group: 'details', validation: (rule) => rule.required().max(100)}),
+    defineField({
+      name: 'refCode', title: 'Código de referência', type: 'string', group: 'details',
+      description: 'Opcional. Código interno do imóvel no CRM da Pirâmide (ex.: PR-1042).',
+      validation: (rule) => rule.max(30).custom(async (value, {document, getClient}) => {
+        if (!value) return true
+        if (value !== value.trim()) return 'Remova os espaços nas extremidades.'
+        const duplicate = await getClient({apiVersion}).withConfig({perspective: 'raw'}).fetch(
+          '*[_type == "property" && !(_id in $ids) && lower(refCode) == $code][0]._id',
+          {ids: ids(document?._id), code: value.trim().toLowerCase()},
+        )
+        return !duplicate || 'Já existe outro imóvel cadastrado com este código.'
+      }),
+    }),
     defineField({
       name: 'slug', title: 'Endereço da ficha', type: 'slug', group: 'design',
       readOnly: ({document}) => !!document?.firstPublishedSlug,
@@ -128,39 +149,111 @@ const property = defineType({
       }),
     }),
     defineField({name: 'propertyType', title: 'Tipo de imóvel', type: 'string', group: 'details', options: {list: types}, validation: (rule) => rule.required().custom((value) => !value || types.includes(value) || 'Selecione um tipo de imóvel.')}),
+    defineField({name: 'neighborhood', title: 'Bairro', type: 'reference', group: 'details', to: [{type: 'neighborhood'}], validation: (rule) => rule.required()}),
     defineField({
-      name: 'specifications', title: 'Dados do imóvel', type: 'object', group: 'details',
+      name: 'condominiumName', title: 'Condomínio ou edifício', type: 'string', group: 'details',
+      description: 'Opcional. Ex.: Reserva do Paratehy, Alphaville, Jardim do Golfe.',
+      validation: (rule) => rule.max(100),
+    }),
+    defineField({
+      name: 'architect', title: 'Projeto arquitetônico', type: 'string', group: 'details',
+      description: 'Opcional. Arquiteto ou escritório responsável pelo projeto.',
+      validation: (rule) => rule.max(100),
+    }),
+    defineField({
+      name: 'specifications', title: 'Ficha técnica e metragens', type: 'object', group: 'details',
+      options: {columns: 2},
       fields: [
+        defineField({name: 'area', title: 'Área construída / privativa (m²)', type: 'number', validation: (rule) => rule.greaterThan(0)}),
+        defineField({name: 'landArea', title: 'Área do terreno / lote (m²)', type: 'number', validation: (rule) => rule.greaterThan(0)}),
         defineField({name: 'bedrooms', title: 'Dormitórios', type: 'number', validation: (rule) => rule.integer().min(0)}),
-        defineField({name: 'bathrooms', title: 'Banheiros', type: 'number', validation: (rule) => rule.integer().min(0)}),
         defineField({name: 'suites', title: 'Suítes', type: 'number', validation: (rule) => rule.integer().min(0)}),
-        defineField({name: 'parking', title: 'Vagas', type: 'number', validation: (rule) => rule.integer().min(0)}),
-        defineField({name: 'area', title: 'Área (m²)', type: 'number', validation: (rule) => rule.greaterThan(0)}),
+        defineField({name: 'bathrooms', title: 'Banheiros', type: 'number', validation: (rule) => rule.integer().min(0)}),
+        defineField({name: 'lavabos', title: 'Lavabos', type: 'number', validation: (rule) => rule.integer().min(0)}),
+        defineField({name: 'parking', title: 'Vagas de garagem', type: 'number', validation: (rule) => rule.integer().min(0)}),
+        defineField({
+          name: 'coveredParking', title: 'Vagas cobertas', type: 'number',
+          validation: (rule) => rule.integer().min(0).custom((covered, {parent}) => {
+            const total = (parent as {parking?: number} | undefined)?.parking
+            return covered == null || total == null || covered <= total || 'Não pode exceder o total de vagas.'
+          }),
+        }),
+        defineField({name: 'floorProfile', title: 'Perfil / pavimento', type: 'string', options: {list: floorProfiles}, validation: (rule) => rule.custom((value) => !value || floorProfiles.includes(value) || 'Selecione uma opção válida.')}),
+        defineField({name: 'sunOrientation', title: 'Posição solar', type: 'string', options: {list: sunOrientations}, validation: (rule) => rule.custom((value) => !value || sunOrientations.includes(value) || 'Selecione uma opção válida.')}),
+        defineField({name: 'hasOffice', title: 'Escritório / Home office', type: 'boolean', initialValue: false}),
+        defineField({name: 'hasHobbyBox', title: 'Hobby box / Depósito privativo', type: 'boolean', initialValue: false}),
+        defineField({name: 'hasEvCharger', title: 'Ponto para carro elétrico', type: 'boolean', initialValue: false}),
       ],
     }),
-    defineField({name: 'neighborhood', title: 'Bairro', type: 'reference', group: 'details', to: [{type: 'neighborhood'}], validation: (rule) => rule.required()}),
     defineField({name: 'summary', title: 'Resumo do card', type: 'text', rows: 2, group: 'details', validation: (rule) => rule.required().max(175)}),
     defineField({name: 'description', title: 'Descrição da ficha', type: 'text', rows: 8, group: 'details', validation: (rule) => rule.required()}),
     defineField({
-      name: 'attributes', title: 'Atributos do card', type: 'array', group: 'details',
-      description: 'Exemplos: 420 m², 4 suítes, vista para a serra.',
+      name: 'attributes', title: 'Atributos do card (opcional)', type: 'array', group: 'details',
+      description: 'Até 3 destaques curtos. Se ficar vazio, o card exibe automaticamente metragem, suítes e vagas.',
       of: [defineArrayMember({type: 'string', validation: (rule) => rule.required().max(45)})],
       validation: (rule) => rule.max(3).unique(),
     }),
     defineField({
-      name: 'features', title: 'Diferenciais', type: 'array', group: 'details',
+      name: 'features', title: 'Diferenciais do imóvel', type: 'array', group: 'details',
+      description: 'Exemplos: Piscina aquecida, espaço gourmet, automação, marcenaria planejada, energia solar.',
       of: [defineArrayMember({type: 'string', validation: (rule) => rule.required().max(100)})],
     }),
-    defineField({name: 'price', title: 'Preço em reais', type: 'number', group: 'details', validation: (rule) => rule.greaterThan(0).precision(2)}),
+    defineField({
+      name: 'condoFeatures', title: 'Infraestrutura e lazer do condomínio', type: 'array', group: 'details',
+      description: 'Opcional. Exemplos: Portaria 24h, quadra de tênis, academia, piscina coberta, salão de festas.',
+      of: [defineArrayMember({type: 'string', validation: (rule) => rule.required().max(100)})],
+    }),
+    defineField({
+      name: 'availability', title: 'Disponibilidade', type: 'string', group: 'commercial',
+      initialValue: 'available',
+      options: {list: availabilities, layout: 'radio'},
+      validation: (rule) => rule.custom((value) => !value || availabilities.some((item) => item.value === value) || 'Selecione a disponibilidade.'),
+    }),
+    defineField({
+      name: 'externalListingUrl', title: 'Link do imóvel no site da Pirâmide', type: 'url', group: 'commercial',
+      description: 'Link direto para a página oficial de venda deste imóvel no site principal da Pirâmide Imóveis.',
+      validation: (rule) => rule.uri({scheme: ['http', 'https']}),
+    }),
+    defineField({
+      name: 'price', title: 'Preço de venda (R$)', type: 'number', group: 'commercial',
+      description: 'Deixe em branco para exibir "Valor sob consulta".',
+      validation: (rule) => rule.greaterThan(0).precision(2),
+    }),
+    defineField({name: 'condoFee', title: 'Condomínio mensal (R$)', type: 'number', group: 'commercial', validation: (rule) => rule.min(0).precision(2)}),
+    defineField({name: 'iptu', title: 'IPTU anual (R$)', type: 'number', group: 'commercial', validation: (rule) => rule.min(0).precision(2)}),
+    defineField({
+      name: 'conditions', title: 'Condições e destaques de negociação', type: 'object', group: 'commercial',
+      options: {columns: 2},
+      fields: [
+        defineField({name: 'exclusive', title: 'Exclusividade Pirâmide PRIME', type: 'boolean', initialValue: false}),
+        defineField({name: 'furnished', title: 'Mobiliado / Porteira fechada', type: 'boolean', initialValue: false}),
+        defineField({name: 'acceptsTrade', title: 'Analisa permuta', type: 'boolean', initialValue: false}),
+        defineField({name: 'acceptsFinancing', title: 'Aceita financiamento', type: 'boolean', initialValue: false}),
+      ],
+    }),
     defineField({name: 'cover', title: 'Foto de capa', type: 'primePhoto', group: 'media', validation: (rule) => rule.required()}),
     defineField({name: 'gallery', title: 'Galeria', type: 'array', group: 'media', of: [defineArrayMember({type: 'primePhoto'})], validation: (rule) => rule.required().min(1)}),
-    {...video('clip', 'Clipe de abertura', 12), group: 'media'},
-    {...video('tour', 'Vídeo do tour', 40), group: 'media'},
+    {...video('clip', 'Clipe de abertura (upload MP4)', 12), group: 'media'},
+    {...video('tour', 'Vídeo do tour (upload MP4)', 40), group: 'media'},
+    defineField({
+      name: 'externalVideoUrl', title: 'Vídeo externo (YouTube ou Vimeo)', type: 'url', group: 'media',
+      description: 'Opcional. Use quando o vídeo completo estiver no YouTube ou Vimeo (sem limite de tamanho).',
+      validation: (rule) => rule.uri({scheme: ['http', 'https']}),
+    }),
+    defineField({
+      name: 'virtualTourUrl', title: 'Tour Virtual 360°', type: 'url', group: 'media',
+      description: 'Opcional. Link externo para Matterport ou tour virtual 360°.',
+      validation: (rule) => rule.uri({scheme: ['http', 'https']}),
+    }),
     defineField({name: 'template', title: 'Design da ficha', type: 'string', group: 'design', options: {list: templates, layout: 'radio'}, validation: (rule) => rule.required().custom((value) => !value || templates.some((template) => template.value === value) || 'Selecione um dos três designs.')}),
   ],
   preview: {
-    select: {title: 'title', template: 'template', media: 'cover'},
-    prepare: ({title, template, media}) => ({title, media, subtitle: templates.find(({value}) => value === template)?.title || 'Escolha um design'}),
+    select: {title: 'title', refCode: 'refCode', availability: 'availability', template: 'template', media: 'cover'},
+    prepare: ({title, refCode, availability, template, media}) => {
+      const status = availability === 'sold' ? 'Vendido' : availability === 'reserved' ? 'Reservado' : null
+      const design = templates.find(({value}) => value === template)?.title || 'Escolha um design'
+      return {title, media, subtitle: [refCode, status, design].filter(Boolean).join(' · ')}
+    },
   },
 })
 
