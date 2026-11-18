@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type {ReactNode} from 'react'
 import {ArrowUpRight, ChevronUp, Clock, MapPin, Menu, Search} from 'lucide-react'
-import {wrap} from '../lib/classes'
+import {sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
 import {socialIconPaths} from './socialIconPaths'
 import {PrivacyLink} from './siteUtilities'
 
@@ -47,10 +47,10 @@ export function Header({overlay = false, light = false, splitOverlay = false, co
             href={contact || defaultWhatsapp}
             target="_blank"
             rel="noreferrer"
-            className={'group/cta relative inline-flex cursor-pointer select-none items-center justify-center overflow-hidden border px-3.5 py-2 text-xs font-medium transition-all duration-300 ease-out hover:border-piramide active:scale-[0.98] will-change-transform sm:px-4 sm:py-2.5 sm:text-sm ' + (light ? 'border-zinc-900/30 text-zinc-900' : 'border-ivory/65 bg-coal/35 text-ivory backdrop-blur-xs')}
+            className={sweepButton + ' px-3.5 py-2 text-xs font-medium sm:px-4 sm:py-2.5 sm:text-sm ' + (light ? 'border-zinc-900/30 text-zinc-900' : sweepOnCover)}
           >
-            <span aria-hidden="true" className="pointer-events-none absolute inset-0 size-full translate-y-full bg-piramide transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cta:translate-y-0" />
-            <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2 transition-colors duration-300 group-hover/cta:text-white">
+            <span aria-hidden="true" className={sweepFill} />
+            <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
               Falar com especialista <ArrowUpRight size={16} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
             </span>
           </a>
