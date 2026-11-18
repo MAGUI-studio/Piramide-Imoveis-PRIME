@@ -191,7 +191,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
               aria-hidden={index !== slide.current}>
               <div ref={(node) => {photoLayers.current[index] = node}} className="size-full overflow-hidden motion-safe:will-change-[clip-path]">
                 <div ref={(node) => {photoImages.current[index] = node}} className="size-full motion-safe:will-change-transform">
-                  <Frame photo={photo} className="size-full object-cover" priority sizes="(min-width: 1760px) 1760px, 100vw" />
+                  <Frame photo={photo} className="size-full object-cover" priority={index === 0} sizes="(min-width: 1760px) 1760px, 100vw" />
                 </div>
               </div>
             </div>
