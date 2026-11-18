@@ -42,6 +42,11 @@ const photo = defineType({
       name: 'alt', title: 'Descrição da imagem', type: 'string',
       validation: (rule) => rule.required().min(3).max(160),
     }),
+    defineField({
+      name: 'caption', title: 'Legenda para o ensaio', type: 'string',
+      description: 'Opcional. Aparece junto da foto no template Fotos.',
+      validation: (rule) => rule.max(120),
+    }),
   ],
   validation: (rule) => rule.custom((value, context) => value ? validateAsset(2, imageFormats)(value, context) : true),
 })
@@ -232,7 +237,36 @@ const property = defineType({
       ],
     }),
     defineField({name: 'cover', title: 'Foto de capa', type: 'primePhoto', group: 'media', validation: (rule) => rule.required()}),
-    defineField({name: 'gallery', title: 'Galeria', type: 'array', group: 'media', of: [defineArrayMember({type: 'primePhoto'})], validation: (rule) => rule.required().min(1)}),
+    defineField({
+      name: 'gallery', title: 'Galeria de fotos', type: 'array', group: 'media',
+      description: 'No template Fotos, organize o ensaio na ordem em que deve ser visto.',
+      of: [defineArrayMember({type: 'primePhoto'})],
+      validation: (rule) => rule.custom((value, {document}) =>
+        document?.template === 'immersive' || (value as AssetValue[] | undefined)?.some((image) => image.asset?._ref) || 'Adicione pelo menos uma foto à galeria.',
+      ),
+    }),
+    defineField({
+      name: 'videoGallery', title: 'Galeria de vídeos', type: 'array', group: 'media',
+      description: 'Organize os vídeos na ordem da visita. Em Videos, marque o vídeo de abertura ou deixe o primeiro da lista abrir a página.',
+      of: [defineArrayMember({
+        name: 'propertyVideo', title: 'Vídeo', type: 'object',
+        fields: [
+          defineField({name: 'title', title: 'Título', type: 'string', validation: (rule) => rule.required().max(80)}),
+          {...video('file', 'Arquivo MP4', 40), validation: (rule) => rule.required().custom(validateAsset(40, ['video/mp4']))},
+          defineField({name: 'poster', title: 'Imagem de capa do vídeo', type: 'primePhoto'}),
+          defineField({name: 'opening', title: 'Usar na abertura de Videos', type: 'boolean'}),
+        ],
+        preview: {select: {title: 'title', media: 'poster', opening: 'opening'}, prepare: ({title, media, opening}) =>
+          ({title, media, subtitle: opening ? 'Vídeo de abertura' : undefined})},
+      })],
+      validation: (rule) => rule.max(12).custom((entries) => {
+        if (!entries) return true
+        const videos = entries as {opening?: boolean; file?: AssetValue}[]
+        if (videos.filter((entry) => entry.opening).length > 1) return 'Selecione somente um vídeo de abertura.'
+        const assets = videos.flatMap((entry) => entry.file?.asset?._ref ? [entry.file.asset._ref] : [])
+        return assets.length === new Set(assets).size || 'Cada vídeo deve aparecer apenas uma vez na galeria.'
+      }),
+    }),
     {...video('clip', 'Clipe de abertura (upload MP4)', 12), group: 'media'},
     {...video('tour', 'Vídeo do tour (upload MP4)', 40), group: 'media'},
     defineField({
@@ -245,7 +279,57 @@ const property = defineType({
       description: 'Opcional. Link externo para Matterport ou tour virtual 360°.',
       validation: (rule) => rule.uri({scheme: ['http', 'https']}),
     }),
-    defineField({name: 'template', title: 'Design da ficha', type: 'string', group: 'design', options: {list: templates, layout: 'radio'}, validation: (rule) => rule.required().custom((value) => !value || templates.some((template) => template.value === value) || 'Selecione um dos três designs.')}),
+    defineField({
+      name: 'sectionPhoto', title: 'Imagem de Sobre o imóvel / Por dentro do imóvel', type: 'primePhoto', group: 'design',
+      description: 'Define a foto da apresentação do imóvel neste template. Se ficar vazia, usa uma foto da galeria ou a capa.',
+    }),
+    defineField({
+      name: 'detailsPhoto', title: 'Imagem de Detalhes em foco', type: 'primePhoto', group: 'design',
+      hidden: ({document}) => document?.template !== 'editorial',
+      description: 'Foto da seção de diferenciais em Fotos. Escolha uma imagem diferente da apresentação, se quiser.',
+    }),
+    defineField({
+      name: 'mediaPhoto', title: 'Imagem do acesso à galeria em Fotos e tour', type: 'primePhoto', group: 'design',
+      hidden: ({document}) => document?.template !== 'mosaic',
+      description: 'Foto que fica ao lado do vídeo principal no template Padrão.',
+    }),
+    defineField({
+      name: 'mediaVideoPhoto', title: 'Imagem do vídeo em Fotos e tour', type: 'primePhoto', group: 'design',
+      hidden: ({document}) => document?.template !== 'mosaic',
+      description: 'Opcional. Substitui a imagem de capa do vídeo exibido ao lado da galeria no template Padrão.',
+    }),
+    defineField({
+      name: 'videoTourPhoto', title: 'Imagem principal de Visita em vídeo', type: 'primePhoto', group: 'design',
+      hidden: ({document}) => document?.template !== 'immersive',
+      description: 'Define a imagem do primeiro vídeo nesta seção. As imagens dos capítulos são escolhidas dentro de cada vídeo na aba Fotos e vídeos.',
+    }),
+    defineField({
+      name: 'faq', title: 'Perguntas frequentes', type: 'array', group: 'design',
+      description: 'Opcional. A seção aparece na ficha quando houver perguntas cadastradas.',
+      of: [defineArrayMember({
+        name: 'propertyQuestion', title: 'Pergunta', type: 'object',
+        fields: [
+          defineField({name: 'question', title: 'Pergunta', type: 'string', validation: (rule) => rule.required().max(140)}),
+          defineField({name: 'answer', title: 'Resposta', type: 'text', rows: 3, validation: (rule) => rule.required().max(600)}),
+        ],
+        preview: {select: {title: 'question'}},
+      })],
+      validation: (rule) => rule.max(10),
+    }),
+    defineField({
+      name: 'template', title: 'Design da ficha', type: 'string', group: 'design', options: {list: templates, layout: 'radio'},
+      description: 'Fotos prioriza o ensaio fotográfico, Videos prioriza a visita em vídeo e Padrão equilibra as mídias e os dados do imóvel.',
+      validation: (rule) => rule.required().custom((value, {document}) => {
+        if (!value) return true
+        if (!templates.some((template) => template.value === value)) return 'Selecione um dos três designs.'
+        if (value !== 'immersive') return true
+        const videos = document?.videoGallery as {file?: AssetValue}[] | undefined
+        const clip = document?.clip as AssetValue | undefined
+        const tour = document?.tour as AssetValue | undefined
+        return !!(videos?.some((entry) => entry.file?.asset?._ref) || clip?.asset?._ref || tour?.asset?._ref)
+          || 'Adicione pelo menos um vídeo MP4 na aba Fotos e vídeos.'
+      }),
+    }),
   ],
   preview: {
     select: {title: 'title', refCode: 'refCode', availability: 'availability', template: 'template', media: 'cover'},
