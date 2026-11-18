@@ -85,15 +85,26 @@ function PropertyLayout({property, link}: {property: Property; link: string | nu
         <div className={body}><Description property={property} /><Features property={property} /><Contact link={link} /></div>
       </article>
     case 'mosaic':
-      return <article className={article + ' ' + wrap}>
-        <header className="flex flex-wrap items-end justify-between gap-5 pt-5 pb-8"><div><PropertyTitle property={property} /></div><a href="#ficha" className={textLink + ' shrink-0 border-piramide/40 text-piramide hover:border-piramide'}>Detalhes do imóvel <ArrowUpRight size={17} /></a></header>
-        <Gallery photos={[cover, ...photos]} layout="mosaic">{clip}{tour}</Gallery>
-        <div className="mt-10 grid scroll-mt-6 gap-8 border-t border-zinc-200 pt-9 min-[801px]:grid-cols-[minmax(0,1.4fr)_minmax(0,.75fr)] xl:gap-14" id="ficha">
-          <div className="space-y-9"><Description property={property} /><Features property={property} /></div>
-          <aside className="row-start-1 h-fit space-y-3 border border-zinc-200 p-[clamp(20px,3.5vw,48px)] min-[801px]:col-start-2">
-            <p className="text-zinc-600">{locationOf(property)}</p><p className="leading-relaxed text-zinc-600">{property.summary}</p><Attributes property={property} />
-            <div className="mt-5 border-t border-zinc-200 pt-5"><Terms property={property} link={link} /></div>
-          </aside>
+      return <article className={article}>
+        <div className="relative bg-paper">
+          <Header overlay contact={link} />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-2 h-32 bg-[linear-gradient(180deg,#100e0ca6_0%,transparent_100%)]" aria-hidden="true" />
+          <div className="[&_[data-gallery=mosaic]>div:last-child]:mt-0 [&_[data-gallery=mosaic]>div:last-child]:bg-paper [&_[data-gallery=mosaic]>div:last-child]:px-5 [&_[data-gallery=mosaic]>div:last-child]:py-4 sm:[&_[data-gallery=mosaic]>div:last-child]:px-9 lg:[&_[data-gallery=mosaic]>div:last-child]:px-14">
+            <Gallery photos={[cover, ...photos]} layout="mosaic">{clip}{tour}</Gallery>
+          </div>
+        </div>
+        <div className={wrap}>
+          <header className="flex flex-wrap items-end justify-between gap-5 pt-6 pb-8">
+            <div><PropertyTitle property={property} /></div>
+            <a href="#ficha" className={textLink + ' shrink-0 border-piramide/40 text-piramide hover:border-piramide'}>Detalhes do imóvel <ArrowUpRight size={17} /></a>
+          </header>
+          <div className="grid scroll-mt-6 gap-8 border-t border-zinc-200 pt-9 min-[801px]:grid-cols-[minmax(0,1.4fr)_minmax(0,.75fr)] xl:gap-14" id="ficha">
+            <div className="space-y-9"><Description property={property} /><Features property={property} /></div>
+            <aside className="row-start-1 h-fit space-y-3 border border-zinc-200 p-[clamp(20px,3.5vw,48px)] min-[801px]:col-start-2">
+              <p className="text-zinc-600">{locationOf(property)}</p><p className="leading-relaxed text-zinc-600">{property.summary}</p><Attributes property={property} />
+              <div className="mt-5 border-t border-zinc-200 pt-5"><Terms property={property} link={link} /></div>
+            </aside>
+          </div>
         </div>
       </article>
     default:
@@ -101,7 +112,7 @@ function PropertyLayout({property, link}: {property: Property; link: string | nu
         <div className="relative">
           <Header overlay splitOverlay contact={link} />
           <div className="grid items-center gap-[clamp(22px,5vw,75px)] min-[801px]:grid-cols-[minmax(0,.88fr)_minmax(0,1.25fr)]">
-            <div className="px-5 pt-2 pb-4 sm:px-9 min-[801px]:pt-28 min-[801px]:pr-0 min-[801px]:pb-8 lg:pt-32 lg:pl-14 xl:pl-[max(3.5rem,calc((100vw-96rem)/2))]">
+            <div className="px-5 pt-2 pb-4 sm:px-9 min-[801px]:pt-28 min-[801px]:pr-0 min-[801px]:pb-8 lg:pt-32 lg:pl-14">
               <PropertyTitle property={property} />
               <p className="mt-4 leading-relaxed text-zinc-600">{property.summary}</p>
               <Attributes property={property} />
@@ -124,11 +135,10 @@ export default async function PropertyPage({params}: Props) {
   const preview = await isPreview()
   const data = await getProperty(slug, preview)
   if (!data?.property) notFound()
-  const hasOverlayHeader = data.property.template !== 'mosaic'
+  
   const contact = whatsappLink(data.whatsapp, data.property.title)
   return <div className="bg-paper text-zinc-900 [color-scheme:light]">
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
-    {!hasOverlayHeader && <Header light contact={contact} />}
     <main id="conteudo">
 
       <PropertyLayout property={data.property} link={contact} />
