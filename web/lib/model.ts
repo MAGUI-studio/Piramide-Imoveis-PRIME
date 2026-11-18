@@ -1,11 +1,14 @@
 export type Photo = {
   alt: string
+  caption?: string
   asset?: {_ref: string}
   crop?: {top: number; bottom: number; left: number; right: number}
   hotspot?: {x: number; y: number; width: number; height: number}
 }
 
 export type MarqueeItem = {_key: string; title: string; description: string}
+export type PropertyQuestion = {_key: string; question: string; answer: string}
+export type PropertyVideo = {_key: string; title: string; url: string; poster?: Photo | null; opening?: boolean | null}
 
 export type Availability = 'available' | 'reserved' | 'sold'
 
@@ -55,6 +58,13 @@ export type Property = PropertyCard & {
   architect?: string | null
   description: string
   gallery: Photo[] | null
+  videoGallery?: PropertyVideo[] | null
+  sectionPhoto?: Photo | null
+  detailsPhoto?: Photo | null
+  mediaPhoto?: Photo | null
+  mediaVideoPhoto?: Photo | null
+  videoTourPhoto?: Photo | null
+  faq?: PropertyQuestion[] | null
   features: string[] | null
   condoFeatures?: string[] | null
   condoFee?: number | null
@@ -68,6 +78,19 @@ export type Property = PropertyCard & {
 }
 
 const numberFormat = new Intl.NumberFormat('pt-BR')
+const currencyFormat = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'})
+
+export function propertyPrice(price?: number | null) {
+  return price && price > 0 ? currencyFormat.format(price) : 'Valor sob consulta'
+}
+
+export function cardAreaOf({propertyType, specifications}: Pick<PropertyCard, 'propertyType' | 'specifications'>) {
+  const area = specifications?.area
+  const land = specifications?.landArea
+  const isLand = propertyType === 'Terreno' || propertyType === 'Loteamento'
+  const value = (isLand ? [land, area] : [area, land]).find((item) => typeof item === 'number' && item > 0)
+  return value == null ? '' : numberFormat.format(value) + ' m²'
+}
 
 export function locationOf(
   property: Pick<PropertyCard, 'neighborhood' | 'city'> & {condominiumName?: string | null; title?: string},

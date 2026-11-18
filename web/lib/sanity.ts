@@ -44,6 +44,9 @@ const homeQuery = `{
 const propertyQuery = `{
   "property": *[${listing} && slug.current == $slug][0]{
     ${cardFields}, ${mediaFields}, architect, description, features, condoFeatures,
+    sectionPhoto, detailsPhoto, mediaPhoto, mediaVideoPhoto, videoTourPhoto,
+    faq[defined(question) && defined(answer)]{_key, question, answer},
+    videoGallery[defined(file.asset->url)]{_key, title, opening, poster, "url": file.asset->url},
     condoFee, iptu, externalListingUrl, externalVideoUrl, virtualTourUrl, template,
     "tour": tour.asset->url
   },

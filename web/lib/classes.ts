@@ -14,7 +14,6 @@ export const sweepOnCover = 'border-ivory/65 bg-coal/35 text-ivory backdrop-blur
 export const sweepFill = 'pointer-events-none absolute inset-0 size-full translate-y-full bg-piramide transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cta:translate-y-0 group-focus-visible/cta:translate-y-0 motion-reduce:transition-none'
 
 const cinemaControl = 'inline-flex min-h-11 cursor-pointer items-center justify-center gap-2.5 rounded-none border text-center text-xs font-semibold motion-safe:transition-colors motion-safe:duration-200'
-export const cinemaAction = cinemaControl + ' px-4 py-2.5'
 export const glassControl = cinemaControl + ' border-black/15 bg-linear-to-br from-white/85 to-white/35 text-[#29292d] shadow-[inset_0_1px_0_#fffffff2,0_4px_12px_#18181c12] backdrop-blur-md backdrop-saturate-125 enabled:hover:border-black/30 hover:bg-white/75 active:shadow-[inset_0_2px_4px_#18181c17] focus-visible:outline-zinc-700 disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent'
 export const glassAction = glassControl + ' px-4 py-2.5'
 
