@@ -6,6 +6,7 @@ import {Header, Footer} from '../../components/chrome'
 import {CinemaDetails, PropertyPurchase} from '../../components/cinemaDetails'
 import {CinemaIcon} from '../../components/cinemaIcon'
 import {Frame, Gallery, ImmersiveCover, WatchVideo} from '../../components/media'
+import {PropertyLocation, propertyLocationOf} from '../../components/propertyLocation'
 import {PropertyContact, PropertyFAQ, propertyVideos, StoryBackdrop, VideoFrame, type StoryVideo} from '../../components/propertyStory'
 import {WhatsAppWidget} from '../../components/whatsappWidget'
 import {contentGutter, eyebrow, glassAction, heading, previewBanner, sweepButton, sweepFill, wrap} from '../../lib/classes'
@@ -364,7 +365,7 @@ function StandardOverview({property, photo}: {property: Property; photo: Picture
   )
 }
 
-function PropertyLayout({property, link}: {property: Property; link: string | null}) {
+function PropertyLayout({property, link, hasLocation}: {property: Property; link: string | null; hasLocation: boolean}) {
   const cover = picture(property.cover, 16 / 9, 2400)
   const gallery = property.gallery ?? []
   const photos = gallery.map((photo) => picture(photo, 1.5))
@@ -426,6 +427,7 @@ function PropertyLayout({property, link}: {property: Property; link: string | nu
                 <a className="transition-colors hover:text-piramide" href={videos.length || virtualTour ? '#midia' : '#mosaic-photos'}>Fotos e mídias</a>
                 <a className="transition-colors hover:text-piramide" href="#sobre">Sobre o imóvel</a>
                 {!!(property.features?.length || property.condoFeatures?.length) && <a className="transition-colors hover:text-piramide" href="#diferenciais">Diferenciais</a>}
+                {hasLocation && <a className="transition-colors hover:text-piramide" href="#localizacao">Localização</a>}
                 {property.faq?.some(({question, answer}) => question.trim() && answer.trim()) && <a className="transition-colors hover:text-piramide" href="#duvidas">Dúvidas</a>}
               </nav>
             </header>
@@ -468,13 +470,15 @@ export default async function PropertyPage({params}: Props) {
   if (!data?.property) notFound()
 
   const contact = whatsappLink(data.whatsapp, data.property.title, data.property.refCode)
+  const location = propertyLocationOf(data.property)
   return (
-    <div className={'bg-paper text-zinc-900 [color-scheme:light]' + (data.property.template === 'immersive' ? ' rounded-none **:rounded-none!' : '')}>
+    <div className="bg-paper text-zinc-900 [color-scheme:light]">
       {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
-      <main id="conteudo">
-        <PropertyLayout property={data.property} link={contact} />
+      <main id="conteudo" className={data.property.template === 'immersive' ? 'rounded-none **:rounded-none!' : undefined}>
+        <PropertyLayout property={data.property} link={contact} hasLocation={!!location} />
+        {location && <PropertyLocation title={data.property.title} location={location} />}
       </main>
-      <Footer light contact={whatsappLink(data.whatsapp)} />
+      <Footer contact={whatsappLink(data.whatsapp)} />
       <WhatsAppWidget phone={data.whatsapp} />
     </div>
   )

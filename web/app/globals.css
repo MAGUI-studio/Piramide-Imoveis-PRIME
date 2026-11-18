@@ -1,5 +1,34 @@
 @import "tailwindcss";
 
+.prime-map .leaflet-control-zoom {
+  border: 1px solid #dedbd4;
+  box-shadow: 0 2px 8px #24201e17;
+}
+
+.prime-map .leaflet-control-zoom a {
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+}
+
+.prime-map-marker span,
+.prime-map-marker span::after {
+  position: absolute;
+  inset: 0;
+  display: block;
+  clip-path: circle(50%);
+}
+
+.prime-map-marker span {
+  background: color-mix(in srgb, var(--color-piramide) 21%, transparent);
+}
+
+.prime-map-marker span::after {
+  content: "";
+  inset: 10px;
+  background: radial-gradient(circle, var(--color-piramide) 0 49%, white 54% 100%);
+}
+
 @theme {
   --animate-property-marquee: property-marquee 30s linear infinite;
 

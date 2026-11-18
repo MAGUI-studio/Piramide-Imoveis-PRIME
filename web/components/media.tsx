@@ -10,6 +10,7 @@ import {ScrollArea} from './scrollArea'
 const mediaDialog = 'm-auto max-h-[94dvh] w-[min(92vw,1200px)] max-w-none overflow-visible border-0 bg-transparent p-0 text-white outline-none backdrop:bg-black/0 backdrop:backdrop-blur-none backdrop:transition-all backdrop:duration-400 backdrop:ease-out open:data-[visible=true]:backdrop:backdrop-blur-md'
 const photoBackdrop = 'open:data-[visible=true]:backdrop:bg-black/90'
 const mediaContents = 'block size-full object-cover'
+const mediaStage = 'relative h-52 w-full bg-black/40 shadow-2xl sm:h-80 lg:h-[30rem] xl:h-[35rem]'
 const dialogButton = 'inline-grid size-10 shrink-0 cursor-pointer place-items-center rounded-none border border-white/25 bg-black/55 text-white backdrop-blur-md transition-colors hover:border-piramide hover:bg-piramide'
 const dialogClose = dialogButton + ' fixed top-5 right-5 z-20 sm:top-7 sm:right-8'
 const galleryTrack = {
@@ -371,7 +372,7 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
               onPointerCancel={onStagePointerEnd}
               onDragStart={(event) => event.preventDefault()}
               className={
-                'relative h-[75dvh] w-full touch-pan-y overflow-hidden bg-black/40 shadow-2xl select-none ' +
+                mediaStage + ' touch-pan-y overflow-hidden select-none ' +
                 (count > 1 ? (dragging ? 'cursor-grabbing' : 'cursor-grab') : '')
               }
             >
@@ -510,7 +511,7 @@ function PropertyVideoPlayer({src, label, poster, autoplay = false, playerRef, c
   if (!inline) {
     return (
       <div ref={frame} className={'isolate ' + className} onContextMenu={(event) => event.preventDefault()}>
-        <div className="relative h-[75dvh] w-full overflow-hidden bg-black/40 shadow-2xl">
+        <div className={mediaStage + ' overflow-hidden'}>
           <video
             ref={video}
             className={mediaContents + ' cursor-pointer [&:fullscreen]:object-contain'}
@@ -767,7 +768,7 @@ export function WatchVideo({src, label, poster, external = false, cinemaLayout =
           <X size={18} />
         </button>
         {open && (embedSrc
-          ? <iframe className="relative h-[75dvh] w-full bg-black/40 shadow-2xl" src={embedSrc} title={label} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
+          ? <iframe className={mediaStage} src={embedSrc} title={label} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
           : <PropertyVideoPlayer className="w-full" autoplay src={src} poster={poster} label={label} />)}
       </div>
     </dialog>
