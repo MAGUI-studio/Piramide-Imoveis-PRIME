@@ -4,14 +4,17 @@ import {ArrowUpRight} from 'lucide-react'
 import {BackButton} from '../components/backButton'
 import {Header} from '../components/chrome'
 import {eyebrow, heading, outlineButton, sweepButton, wrap} from '../lib/classes'
-import {footerPhoto} from '../lib/image'
+import {picture} from '../lib/image'
+import {getSiteSettings, isPreview} from '../lib/sanity'
 
 export const metadata: Metadata = {
   title: {absolute: 'Página não encontrada | Pirâmide Imóveis Prime'},
   robots: {index: false, follow: true},
 }
 
-export default function NotFound() {
+export default async function NotFound() {
+  const settings = await getSiteSettings(await isPreview())
+  const image = settings.homeCta?.image
   return (
     <div className="min-h-dvh bg-paper text-espresso [color-scheme:light]">
       <Header light />
@@ -35,7 +38,7 @@ export default function NotFound() {
           </div>
         </div>
         <div className="relative isolate aspect-[1.4] overflow-hidden bg-coal lg:aspect-[.9]" aria-hidden="true">
-          <img src={footerPhoto.src} alt="" className="absolute inset-0 size-full object-cover object-[65%_center]" />
+          {image?.asset && <img src={picture(image, 0.9).src} alt="" className="absolute inset-0 size-full object-cover object-[65%_center]" />}
           <div className="absolute inset-0 bg-linear-to-t from-coal/80 via-transparent to-transparent" />
           <div className="absolute inset-x-6 bottom-6 flex items-end justify-between gap-4 text-white sm:inset-x-8 sm:bottom-8">
             <span className="text-[clamp(5rem,10vw,10rem)] leading-none font-semibold tracking-tighter">404</span>

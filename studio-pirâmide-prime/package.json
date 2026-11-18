@@ -6,7 +6,8 @@
     "dev": "sanity dev",
     "build": "sanity build",
     "deploy": "sanity deploy",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "seed:settings": "sanity exec scripts/seed-site-settings.ts --with-user-token"
   },
   "dependencies": {
     "react": "19.2.8",

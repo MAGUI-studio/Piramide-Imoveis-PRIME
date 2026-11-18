@@ -142,7 +142,8 @@ export function availabilityLabel(availability?: Availability | null) {
 }
 
 export function whatsappLink(phone: string | null, property?: string, refCode?: string | null) {
-  const cleanPhone = phone && /^[1-9]\d{9,14}$/.test(phone) ? phone : ''
+  if (!phone || !/^[1-9]\d{9,14}$/.test(phone)) return null
+  const cleanPhone = phone
   const code = refCode?.trim() ? ' (Cód. ' + refCode.trim() + ')' : ''
   const message = property
     ? 'Olá! Gostaria de saber mais sobre o imóvel ' + property + code + '.'

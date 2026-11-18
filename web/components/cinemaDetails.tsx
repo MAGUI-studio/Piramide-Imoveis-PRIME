@@ -1,6 +1,6 @@
 import type {ReactNode} from 'react'
 import {ArrowUpRight} from 'lucide-react'
-import {eyebrow, heading, sweepButton, sweepFill, wrap} from '../lib/classes'
+import {sweepCompact, sweepOnLight, sweepContent, eyebrow, heading, sweepButton, sweepFill, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {propertyPrice, type Property} from '../lib/model'
 import {CinemaIcon} from './cinemaIcon'
@@ -28,8 +28,8 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
         <p className="mt-1.5 text-[clamp(1.45rem,2.55vw,2.35rem)] leading-tight font-semibold tracking-tight tabular-nums">{propertyPrice(property.price)}</p>
       </div>
       {!!fees.length && (
-        <dl className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-[#625768] lg:gap-x-10">
-          {fees.map(({label, value}) => <div key={label}><dt>{label}</dt><dd className="mt-1 text-sm font-semibold text-[#251d29] tabular-nums">{value ? currency.format(value) : 'Isento'}</dd></div>)}
+        <dl className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-secondary lg:gap-x-10">
+          {fees.map(({label, value}) => <div key={label}><dt>{label}</dt><dd className="mt-1 text-sm font-semibold text-ink tabular-nums">{value ? currency.format(value) : 'Isento'}</dd></div>)}
         </dl>
       )}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3 lg:ms-auto">
@@ -40,10 +40,10 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className={sweepButton + ' border-zinc-900/30 px-3.5 py-2 text-xs font-medium text-zinc-900 sm:px-4 sm:py-2.5 sm:text-sm'}
+              className={sweepButton + sweepCompact + ' ' + sweepOnLight}
             >
               <span aria-hidden="true" className={sweepFill} />
-              <span className="pointer-events-none relative z-10 inline-flex items-center justify-center gap-2 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
+              <span className={sweepContent}>
                 Falar pelo WhatsApp <ArrowUpRight size={16} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </a>
@@ -87,7 +87,7 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
 }) {
   const featurePanels = (property.features?.length ? 1 : 0) + (property.condoFeatures?.length ? 1 : 0)
   return (
-    <div className="grid gap-[clamp(3rem,6vw,6rem)] bg-paper pb-[clamp(3rem,7vw,7rem)] text-[#251d29]">
+    <div className="grid gap-[clamp(3rem,6vw,6rem)] bg-paper pb-[clamp(3rem,7vw,7rem)] text-ink">
       <div className={wrap + ' grid gap-4 pt-[clamp(1rem,3vw,2.5rem)] sm:gap-5'}>
         <PropertyPurchase property={property} link={link} />
         {technicalSheet}
@@ -96,7 +96,7 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
       <section className={wrap} aria-labelledby="cinema-gallery">
         <div className="mb-5 flex items-end justify-between gap-4">
           <h2 id="cinema-gallery" className={heading + ' text-[clamp(1.75rem,3vw,2.75rem)]'}>Fotos do imóvel</h2>
-          <p className="shrink-0 text-xs text-[#625768] tabular-nums">{photos.length} {photos.length === 1 ? 'foto' : 'fotos'}</p>
+          <p className="shrink-0 text-xs text-secondary tabular-nums">{photos.length} {photos.length === 1 ? 'foto' : 'fotos'}</p>
         </div>
         <Gallery photos={photos} layout="strip" />
       </section>

@@ -2,6 +2,7 @@ import {defineArrayMember, defineField, defineType, type CustomValidator, type D
 import {defaultPropertyTypes, PropertyTypeInput} from './PropertyTypeInput'
 import {WatermarkedImageInput} from './WatermarkedImageInput'
 import {WatermarkedPhotoArrayInput} from './WatermarkedPhotoArrayInput'
+import {siteSettings} from './siteSettings'
 import {watermarkVersion} from './watermark'
 
 const apiVersion = '2026-02-01'
@@ -478,9 +479,10 @@ const home = defineType({
       }),
     }),
     defineField({
-      name: 'whatsapp', title: 'WhatsApp comercial', type: 'string', group: 'content',
+      name: 'whatsapp', title: 'WhatsApp comercial (legado)', type: 'string', group: 'content',
+      hidden: true, readOnly: true,
       description: 'Use código do país, DDD e número, somente dígitos. Exemplo de formato: 5512999999999.',
-      validation: (rule) => rule.required().regex(/^[1-9]\d{9,14}$/),
+      validation: (rule) => rule.regex(/^[1-9]\d{9,14}$/),
     }),
     defineField({
       name: 'stats', title: 'Números e dados em destaque', type: 'array', group: 'content',
@@ -541,4 +543,4 @@ const marquee = defineType({
   preview: {prepare: () => ({title: 'Faixa informativa do rodapé'})},
 })
 
-export const schemaTypes = [photo, seo, propertyTypeOption, city, neighborhood, property, home, marquee]
+export const schemaTypes = [photo, seo, propertyTypeOption, city, neighborhood, property, home, marquee, siteSettings]

@@ -127,7 +127,7 @@ function TechnicalSheet({property, layout}: {property: Property; layout: 'film' 
           {facts.map(({label, value, icon}) => (
             <li key={label} className="relative isolate flex min-h-14 min-w-0 flex-col justify-center py-2">
               <CinemaIcon name={icon} className="pointer-events-none absolute end-1 top-1/2 -z-10 size-12! -translate-y-1/2 text-piramide opacity-15 sm:end-4 sm:size-14!" />
-              <span className={value ? 'text-xs leading-snug text-[#625768] sm:text-sm' : 'text-sm leading-snug font-semibold sm:text-base'}>{label}</span>
+              <span className={value ? 'text-xs leading-snug text-secondary sm:text-sm' : 'text-sm leading-snug font-semibold sm:text-base'}>{label}</span>
               {value && <span className="mt-1 text-base leading-snug font-semibold wrap-anywhere sm:text-lg">{value}</span>}
             </li>
           ))}

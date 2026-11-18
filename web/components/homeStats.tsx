@@ -2,26 +2,22 @@ import {eyebrow, homeSectionHeading, riseIn, wrap} from '../lib/classes'
 import type {HomeStat} from '../lib/model'
 import {CountUp, Reveal, Words} from './motion'
 
-const fallbackStats: HomeStat[] = [
-  {_key: 'years', label: 'Anos de tradição no mercado', value: 45, prefix: '+'},
-  {_key: 'sales', label: 'Número de vendas realizadas', value: 50000, prefix: '+'},
-  {_key: 'clients', label: 'Clientes atendidos na região', value: 120000, prefix: '+'},
-  {_key: 'curated', label: 'Imóveis de alto padrão avaliados', value: 3500, prefix: '+'},
-]
+import type {ContentIntro} from '../lib/siteSettings'
 
-export function HomeStats({stats}: {stats: HomeStat[]}) {
-  const entries = stats.length ? stats : fallbackStats
+export function HomeStats({stats, intro}: {stats: HomeStat[]; intro?: ContentIntro | null}) {
+  const entries = stats.filter(({label, value}) => label && Number.isFinite(value) && value >= 0)
+  if (!entries.length) return null
   return (
     <div id="numeros" aria-labelledby="home-stats-title" className={'group ' + wrap + ' pt-6 pb-12 sm:pt-8 sm:pb-16'}>
       <Reveal className="group grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
         <div>
-          <p className={eyebrow + ' mb-3 text-[.68rem] text-piramide'}>Trajetória em números</p>
+          <p className={eyebrow + ' mb-3 text-[.68rem] text-piramide'}>{intro?.eyebrow}</p>
           <h2 id="home-stats-title" className={homeSectionHeading + ' max-w-[22ch] text-espresso'}>
-            <Words text="Tradição e resultado que constroem confiança." start={100} />
+            {intro?.title && <Words text={intro.title} start={100} />}
           </h2>
         </div>
         <p className={'max-w-[44ch] text-sm font-light leading-relaxed text-earth sm:text-base lg:justify-self-end ' + riseIn} style={{animationDelay: '400ms'}}>
-          Mais de quatro décadas liderando o mercado imobiliário de São José dos Campos e região.
+          {intro?.description}
         </p>
       </Reveal>
       <dl className={'mt-12 grid gap-10 sm:mt-16 sm:grid-cols-2 lg:gap-12 ' + (entries.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4')}>

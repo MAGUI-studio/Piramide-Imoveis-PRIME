@@ -9,11 +9,16 @@ export const button = 'inline-flex min-h-12 w-fit items-center justify-center ga
 export const outlineButton = button + ' border-zinc-200 bg-white text-zinc-900 hover:border-piramide hover:text-piramide'
 export const iconButton = 'inline-grid size-11 shrink-0 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-900 transition-colors hover:border-piramide hover:text-piramide motion-reduce:transition-none'
 export const previewBanner = 'block bg-piramide px-6 py-3 text-white'
-export const sweepButton = 'group/cta relative inline-flex cursor-pointer select-none items-center justify-center overflow-hidden border transition-all duration-300 ease-out hover:border-piramide active:scale-[0.98] will-change-transform motion-reduce:transition-none'
+export const sweepButton = 'group/cta relative inline-flex cursor-pointer select-none items-center justify-center overflow-hidden rounded-none border transition-all duration-300 ease-out hover:border-piramide active:scale-[0.98] will-change-transform motion-reduce:transition-none'
+export const sweepCompact = ' min-h-11 px-4 py-2.5 text-sm font-semibold'
+export const sweepRegular = ' min-h-12 px-5 py-3 text-sm font-semibold sm:text-base'
+export const sweepOnLight = 'border-zinc-900/30 text-ink'
+export const sweepSolid = 'border-white/65 bg-white text-ink'
+export const sweepContent = 'pointer-events-none relative z-10 inline-flex items-center justify-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none'
 export const sweepOnCover = 'border-ivory/65 bg-coal/35 text-ivory backdrop-blur-xs'
 export const sweepFill = 'pointer-events-none absolute inset-0 size-full translate-y-full bg-piramide transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/cta:translate-y-0 group-focus-visible/cta:translate-y-0 motion-reduce:transition-none'
 
 const cinemaControl = 'inline-flex min-h-11 cursor-pointer items-center justify-center gap-2.5 rounded-none border text-center text-xs font-semibold motion-safe:transition-colors motion-safe:duration-200'
-export const glassControl = cinemaControl + ' border-black/15 bg-linear-to-br from-white/85 to-white/35 text-[#29292d] shadow-[inset_0_1px_0_#fffffff2,0_4px_12px_#18181c12] backdrop-blur-md backdrop-saturate-125 enabled:hover:border-black/30 hover:bg-white/75 active:shadow-[inset_0_2px_4px_#18181c17] focus-visible:outline-zinc-700 disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent'
+export const glassControl = cinemaControl + ' border-black/15 bg-linear-to-br from-white/85 to-white/35 text-ink shadow-[inset_0_1px_0_#fffffff2,0_4px_12px_#18181c12] backdrop-blur-md backdrop-saturate-125 enabled:hover:border-black/30 hover:bg-white/75 active:shadow-[inset_0_2px_4px_#18181c17] focus-visible:outline-zinc-700 disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent'
 export const glassAction = glassControl + ' px-4 py-2.5'
 

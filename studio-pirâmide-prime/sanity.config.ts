@@ -6,7 +6,7 @@ import {schemaTypes} from './schema'
 import {withPublicationFields} from './publish'
 
 const previewUrl = process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:3000'
-const singletonTypes = ['primeHome', 'primeMarquee']
+const singletonTypes = ['primeHome', 'primeMarquee', 'primeSiteSettings']
 
 export default defineConfig({
   name: 'piramide-prime',
@@ -30,6 +30,7 @@ export default defineConfig({
       structure: (S, context) => {
         void ensureDefaultPropertyTypes(context.getClient({apiVersion: '2026-02-01'}))
         return S.list().title('Pirâmide Imóveis Prime').items([
+          S.listItem().title('Configurações do site').child(S.document().schemaType('primeSiteSettings').documentId('primeSiteSettings')),
           S.listItem().title('Home').child(S.document().schemaType('primeHome').documentId('primeHome')),
           S.listItem().title('Faixa informativa do rodapé').child(S.document().schemaType('primeMarquee').documentId('primeMarquee')),
           S.documentTypeListItem('property'),

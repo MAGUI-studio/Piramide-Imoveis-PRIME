@@ -40,3 +40,21 @@ O catálogo, as fichas e os destaques vêm do dataset configurado, inclusive em 
 
 Ao migrar para a conta da Pirâmide, troque o ID e o dataset nas variáveis do Studio e da Vercel, crie um token no projeto definitivo e refaça o CORS. Se já houver conteúdo que deva ser preservado, exporte o dataset pessoal e importe no definitivo com seus assets antes de trocar as variáveis. Mantenha slugs e IDs de referências durante a migração.
 
+
+## Conteúdo global no Sanity
+
+Em **Configurações do site**, edite:
+
+- **Institucional**: nome, razão social, apresentação, CRECI, WhatsApp comercial, portal, endereço, horários, redes sociais, unidades e direitos autorais. Endereço e identificação também alimentam o SEO e a apresentação do controlador na política.
+- **Privacidade e cookies**: título, apresentação, seções da política, telefone, mensagem e botão de atendimento e texto do aviso de cookies.
+- **Conteúdo e chamadas**: diferenciais da empresa, apresentação dos indicadores e títulos, descrições, botões e imagens dos CTAs da Home, catálogo e fichas. A imagem da Home também serve como padrão de compartilhamento e fundo da página 404.
+
+Os valores dos indicadores continuam em **Home → Números e dados em destaque**. Sem indicadores, a seção fica oculta. Não há números comerciais de fallback. Sem título, diferenciais e CTAs ficam ocultos; sem imagem, usam o fundo da seção. Links de contato só aparecem quando há telefone válido e texto de botão.
+
+As alterações devem ser publicadas para aparecer no site público; rascunhos podem ser conferidos em **Prévia**. Em um dataset novo, inicialize o conteúdo anteriormente fixo com:
+
+```powershell
+pnpm --filter studio seed:settings
+```
+
+O comando usa a sessão autenticada do Sanity, aproveita o telefone comercial legado da Home, envia a imagem existente dos CTAs e cria o documento somente se ainda não existir (publicado ou rascunho). Não altera configurações já cadastradas nem cria indicadores comerciais. `siteSettings.defaults.json` é apenas a entrada dessa migração; o site lê o conteúdo do Sanity.

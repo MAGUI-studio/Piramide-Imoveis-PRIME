@@ -7,7 +7,6 @@ export function photoUrl(photo: Photo, width: number, aspect: number, projectId?
 }
 
 export type Picture = {alt: string; caption?: string; src: string; srcSet?: string}
-export const footerPhoto: Picture = {src: '/brand/footer-piramide-prime.webp', alt: ''}
 
 export function picture(photo: Photo, aspect: number, width = 1920): Picture {
   const variants = [480, 800, 1200, 1600, 1920, 2400].filter((size) => size < width).concat(width)

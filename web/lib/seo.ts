@@ -1,7 +1,8 @@
+import type {Organization} from './siteSettings'
 import type {Metadata} from 'next'
-import {footerPhoto, picture} from './image'
+import {picture} from './image'
 import {cardAreaOf, type Photo, type Property, type Seo} from './model'
-import {siteUrl} from './sanity'
+import {getSiteSettings, isPreview, siteUrl} from './sanity'
 
 export const siteName = 'Pirâmide Imóveis Prime'
 export const homeTitle = 'Imóveis de alto padrão'
@@ -14,7 +15,7 @@ export function canonicalUrl(path: string) {
   return new URL(path, siteUrl).href
 }
 
-export function pageMetadata({path, title, description, seo, photo, noIndex = false, titleSuffix = ''}: {
+export async function pageMetadata({path, title, description, seo, photo, noIndex = false, titleSuffix = ''}: {
   path: string
   title: string
   description: string
@@ -22,14 +23,15 @@ export function pageMetadata({path, title, description, seo, photo, noIndex = fa
   photo?: Photo | null
   noIndex?: boolean
   titleSuffix?: string
-}): Metadata {
+}): Promise<Metadata> {
   const pageTitle = (seo?.title?.trim() || title) + titleSuffix + ' | ' + siteName
   const pageDescription = seo?.description?.trim() || description
-  const source = seo?.socialImage?.asset ? seo.socialImage : photo
+  const settings = await getSiteSettings(await isPreview())
+  const source = seo?.socialImage?.asset ? seo.socialImage : photo?.asset ? photo : settings.homeCta?.image
   const image = source?.asset ? picture(source, 1200 / 630, 1200) : null
   const socialImage = image?.src
     ? {url: image.src, width: 1200, height: 630, alt: image.alt || pageTitle}
-    : {url: canonicalUrl(footerPhoto.src), alt: siteName}
+    : {url: canonicalUrl('/logos/piramide/icon.png'), alt: siteName}
   const url = canonicalUrl(path)
   return {
     title: {absolute: pageTitle},
@@ -68,7 +70,7 @@ export function breadcrumbs(items: {name: string; path: string}[]) {
   }
 }
 
-export function homeStructuredData() {
+export function homeStructuredData(organization: Organization = {}) {
   const organizationId = canonicalUrl('/#organizacao')
   return {
     '@context': 'https://schema.org',
@@ -78,11 +80,11 @@ export function homeStructuredData() {
         name: siteName, inLanguage: 'pt-BR', publisher: {'@id': organizationId},
       },
       {
-        '@type': 'Organization', '@id': organizationId, name: 'Pirâmide Imóveis',
+        '@type': 'Organization', '@id': organizationId, name: organization.name, legalName: organization.legalName,
         url: canonicalUrl('/'), logo: canonicalUrl('/logos/piramide/icon.png'),
         address: {
-          '@type': 'PostalAddress', streetAddress: 'Av. São João, 1301, Jardim Esplanada',
-          addressLocality: 'São José dos Campos', addressRegion: 'SP', postalCode: '12242-840', addressCountry: 'BR',
+          '@type': 'PostalAddress', streetAddress: organization.streetAddress,
+          addressLocality: organization.city, addressRegion: organization.state, postalCode: organization.postalCode, addressCountry: organization.country,
         },
       },
     ],

@@ -1,0 +1,151 @@
+{
+  "organization": {
+    "name": "Pirâmide Imóveis",
+    "legalName": "Queops Empreendimentos Imobiliários Ltda",
+    "description": "Mais de 45 anos de tradição no mercado imobiliário de São José dos Campos e região.",
+    "creci": "3787-J",
+    "portalUrl": "https://www.piramideimoveissjc.com.br/",
+    "officeTitle": "Sede principal",
+    "streetAddress": "Av. São João, 1301, Jardim Esplanada",
+    "city": "São José dos Campos",
+    "state": "SP",
+    "postalCode": "12242-840",
+    "country": "BR",
+    "openingHours": "Segunda a sexta, 8h às 18h\nSábado, 9h às 13h",
+    "copyright": "Todos os direitos reservados.",
+    "socialLinks": [
+      {
+        "_key": "instagram",
+        "label": "Instagram",
+        "href": "https://www.instagram.com/piramideimoveis",
+        "icon": "instagram",
+        "_type": "socialLink"
+      },
+      {
+        "_key": "youtube",
+        "label": "YouTube",
+        "href": "https://www.youtube.com/@piramideimoveis9390/featured",
+        "icon": "youtube",
+        "_type": "socialLink"
+      },
+      {
+        "_key": "linkedin",
+        "label": "LinkedIn",
+        "href": "https://www.linkedin.com/company/piramide-im%C3%B3veis-queops-ltda",
+        "icon": "linkedin",
+        "_type": "socialLink"
+      },
+      {
+        "_key": "facebook",
+        "label": "Facebook",
+        "href": "https://www.facebook.com/imobiliariapiramide",
+        "icon": "facebook",
+        "_type": "socialLink"
+      },
+      {
+        "_key": "globe",
+        "label": "Portal Oficial",
+        "href": "https://www.piramideimoveissjc.com.br/",
+        "icon": "globe",
+        "_type": "socialLink"
+      }
+    ],
+    "branches": [
+      {
+        "_key": "urbanova",
+        "label": "Unidade Urbanova",
+        "href": "https://www.google.com/search?q=Pir%C3%A2mide+im%C3%B3veis+unidade+Urbanova+SJC",
+        "_type": "branchLink"
+      },
+      {
+        "_key": "litoral",
+        "label": "Unidade Litoral",
+        "href": "https://www.google.com/search?q=Pir%C3%A2mide+im%C3%B3veis+unidade+caraguatatuba",
+        "_type": "branchLink"
+      }
+    ]
+  },
+  "privacy": {
+    "title": "Política de Privacidade e Proteção de Dados",
+    "subtitle": "Compromisso com a sua privacidade, transparência e segurança na Pirâmide Imóveis.",
+    "sections": [
+      {
+        "_key": "section-1",
+        "title": "Coleta e Finalidade Exclusiva",
+        "body": "Os dados pessoais informados voluntariamente (como Nome, WhatsApp/Telefone e E-mail) são utilizados exclusivamente para que nossos corretores e consultores oficiais possam responder às suas solicitações, enviar tabelas de preços, novidades sobre os empreendimentos e prestar atendimento imobiliário personalizado em São José dos Campos e região.",
+        "_type": "privacySection"
+      },
+      {
+        "_key": "section-2",
+        "title": "Cookies e Rastreamento Estatístico",
+        "body": "Utilizamos cookies e serviços de análise estatística de navegação (como Google Analytics e Meta Ads) para mensurar a audiência, entender os empreendimentos mais visitados e aprimorar a relevância dos nossos serviços. Essas ferramentas não armazenam senhas ou dados financeiros sigilosos.",
+        "_type": "privacySection"
+      },
+      {
+        "_key": "section-3",
+        "title": "Não Compartilhamento e Segurança",
+        "body": "Seus dados nunca serão comercializados, cedidos ou compartilhados com terceiros não autorizados. Mantemos medidas técnicas adequadas de segurança da informação e criptografia para proteger seus dados contra acessos não autorizados.",
+        "_type": "privacySection"
+      },
+      {
+        "_key": "section-4",
+        "title": "Seus Direitos (LGPD - Lei nº 13.709/2018)",
+        "body": "Você possui o direito de confirmar a existência de tratamento, acessar seus dados, solicitar correções ou a exclusão definitiva dos seus dados de nossas listas a qualquer momento, sem qualquer burocracia, mediante solicitação em nosso canal oficial de atendimento.",
+        "_type": "privacySection"
+      }
+    ],
+    "contactPhone": "5512991599801",
+    "contactMessage": "Olá! Gostaria de falar com o encarregado de atendimento sobre privacidade e dados (LGPD) da Pirâmide Imóveis.",
+    "contactLabel": "Falar com o Atendimento no WhatsApp",
+    "cookieNotice": "Utilizamos cookies e tecnologias semelhantes para aprimorar sua experiência, analisar o tráfego e apresentar conteúdos personalizados sobre o mercado imobiliário. Ao continuar navegando, você concorda com nossos termos.",
+    "controllerIntroduction": "Controlador responsável pelos dados tratados neste portal:"
+  },
+  "differentiators": {
+    "eyebrow": "Diferenciais Pirâmide Imóveis Prime",
+    "title": "O endereço certo começa com quem entende de alto padrão.",
+    "description": "Selecionamos os imóveis mais desejados da região e conduzimos cada negociação com discrição, técnica e cuidado.",
+    "items": [
+      {
+        "_key": "0",
+        "title": "Curadoria",
+        "text": "Cada imóvel é visitado e avaliado antes de chegar até você.",
+        "_type": "pillar"
+      },
+      {
+        "_key": "1",
+        "title": "Atendimento exclusivo",
+        "text": "Um especialista dedicado do primeiro contato à entrega das chaves.",
+        "_type": "pillar"
+      },
+      {
+        "_key": "2",
+        "title": "Negociação segura",
+        "text": "Assessoria jurídica e documental em todas as etapas.",
+        "_type": "pillar"
+      }
+    ]
+  },
+  "statsIntro": {
+    "eyebrow": "Trajetória em números",
+    "title": "Tradição e resultado que constroem confiança.",
+    "description": "Mais de quatro décadas liderando o mercado imobiliário de São José dos Campos e região."
+  },
+  "homeCta": {
+    "title": "Encontre o imóvel certo com um especialista",
+    "description": "Conte o que você procura e receba uma seleção de imóveis de acordo com suas preferências.",
+    "buttonLabel": "Falar com especialista",
+    "secondaryLabel": "Ver imóveis"
+  },
+  "catalogCta": {
+    "title": "Ainda procura o imóvel ideal?",
+    "description": "Conte quais regiões, características e valores fazem sentido para você. Nossa equipe ajuda a selecionar as opções.",
+    "buttonLabel": "Falar com um especialista"
+  },
+  "propertyCta": {
+    "eyebrow": "Atendimento exclusivo",
+    "title": "Fale com um especialista",
+    "description": "Entre em contato com a equipe da Pirâmide Imóveis Prime para tirar dúvidas, solicitar mais informações ou conversar sobre as condições deste imóvel.",
+    "buttonLabel": "Falar pelo WhatsApp",
+    "secondaryLabel": "Ver no site da Pirâmide"
+  }
+}

@@ -1,3 +1,4 @@
+import type {SiteSettings} from './siteSettings'
 import {createClient, type QueryParams} from '@sanity/client'
 import {draftMode} from 'next/headers'
 import {cache} from 'react'
@@ -41,7 +42,7 @@ const homeQuery = `{
     "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
   },
   "propertyTypes": coalesce(*[_type == "propertyTypeOption" && defined(name)] | order(name asc) {"id": _id, name, image}, []),
-  "whatsapp": *[_id == "primeHome"][0].whatsapp,
+  "whatsapp": *[_id == "primeSiteSettings"][0].organization.commercialPhone,
   "homeSeo": *[_id == "primeHome"][0].homeSeo,
   "catalogSeo": *[_id == "primeHome"][0].catalogSeo,
   "stats": coalesce(*[_id == "primeHome"][0].stats[defined(label) && defined(value)]{_key, label, value, prefix, suffix}, []),
@@ -59,7 +60,7 @@ const propertyQuery = `{
     address{street, number, complement, state, postalCode, point{lat, lng}, approximate},
     "tour": tour.asset->url
   },
-  "whatsapp": *[_id == "primeHome"][0].whatsapp
+  "whatsapp": *[_id == "primeSiteSettings"][0].organization.commercialPhone
 }`
 
 export const getHome = cache(async (preview: boolean): Promise<Home> => {
@@ -97,3 +98,20 @@ export async function isPreview() {
 }
 
 export const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://prime.piramideimoveissjc.com.br').origin
+
+export const getSiteSettings = cache(async (preview: boolean): Promise<SiteSettings> => {
+  return await read<SiteSettings>(`*[_id == "primeSiteSettings"][0]{
+    organization{
+      name, legalName, description, creci, commercialPhone, portalUrl, officeTitle, streetAddress, city, state, postalCode, country, openingHours, copyright,
+      "socialLinks": coalesce(socialLinks[defined(label) && defined(href)]{_key, label, href, icon}, []),
+      "branches": coalesce(branches[defined(label) && defined(href)]{_key, label, href}, [])
+    },
+    privacy{title, subtitle, controllerIntroduction, contactPhone, contactMessage, contactLabel, cookieNotice,
+      "sections": coalesce(sections[defined(title) && defined(body)]{_key, title, body}, [])},
+    differentiators{eyebrow, title, description, "items": coalesce(items[defined(title) && defined(text)]{_key, title, text}, [])},
+    statsIntro{eyebrow, title, description},
+    homeCta{eyebrow, title, description, buttonLabel, secondaryLabel, image},
+    catalogCta{eyebrow, title, description, buttonLabel, secondaryLabel, image},
+    propertyCta{eyebrow, title, description, buttonLabel, secondaryLabel, image}
+  }`, {}, preview) || {}
+})

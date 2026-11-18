@@ -1,9 +1,10 @@
+import {getSiteSettings, isPreview} from '../lib/sanity'
 import type {ReactNode} from 'react'
 import {ArrowUpRight} from 'lucide-react'
 import {CinemaIcon} from './cinemaIcon'
 import {FaqAccordion, Frame, InlineVideoTour, WatchVideo, type StoryVideo} from './media'
-import {eyebrow, heading, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
-import {footerPhoto, picture, type Picture} from '../lib/image'
+import {sweepRegular, sweepSolid, sweepContent, eyebrow, heading, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
+import {picture, type Picture} from '../lib/image'
 import type {Property} from '../lib/model'
 
 const title = heading + ' text-[clamp(1.75rem,3.2vw,3rem)]'
@@ -102,50 +103,51 @@ export function StoryBackdrop({photo, property}: {photo: Picture; property: Prop
   )
 }
 
-export function PropertyContact({link, listing}: {link: string | null; listing?: string | null}) {
-  if (!link && !listing) return null
+export async function PropertyContact({link, listing}: {link: string | null; listing?: string | null}) {
+  const content = (await getSiteSettings(await isPreview())).propertyCta
+  if (!content?.title || (!link && !listing)) return null
   return (
     <section
       className="relative isolate overflow-hidden bg-coal text-ivory"
       aria-labelledby="property-contact"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-        <Frame photo={footerPhoto} className="size-full object-cover object-[65%_center] opacity-30 md:opacity-65" />
+        {content.image?.asset && <Frame photo={picture(content.image, 16 / 9)} className="size-full object-cover object-[65%_center] opacity-30 md:opacity-65" />}
         <div className="absolute inset-0 bg-linear-to-b from-coal via-transparent to-coal" />
         <div className="absolute inset-0 hidden bg-linear-to-r from-coal via-coal/65 to-transparent md:block" />
       </div>
       <div className={wrap + ' flex min-h-[24rem] flex-col items-start justify-center py-16 md:min-h-[29rem]'}>
-        <p className={eyebrow + ' text-ivory/75'}>Atendimento exclusivo</p>
+        <p className={eyebrow + ' text-ivory/75'}>{content.eyebrow}</p>
         <h2 id="property-contact" className={heading + ' mt-4 max-w-[16ch] text-[clamp(2.4rem,5.6vw,5.5rem)]'}>
-          Fale com um especialista
+          {content.title}
         </h2>
         <p className="mt-5 max-w-[48ch] text-base leading-relaxed text-ivory/90 sm:text-lg">
-          Entre em contato com a equipe da Pirâmide Imóveis Prime para tirar dúvidas, solicitar mais informações ou conversar sobre as condições deste imóvel.
+          {content.description}
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3.5">
-          {link && (
+          {link && content.buttonLabel && (
             <a
-              className={sweepButton + ' border-white/65 bg-white px-5 py-3 text-sm font-medium text-espresso'}
+              className={sweepButton + sweepRegular + ' ' + sweepSolid}
               href={link}
               target="_blank"
               rel="noopener noreferrer"
             >
               <span aria-hidden="true" className={sweepFill} />
-              <span className="pointer-events-none relative z-10 inline-flex items-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
-                Falar pelo WhatsApp <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+              <span className={sweepContent}>
+                {content.buttonLabel} <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </a>
           )}
-          {listing && (
+          {listing && content.secondaryLabel && (
             <a
-              className={sweepButton + ' ' + sweepOnCover + ' px-5 py-3 text-sm font-medium'}
+              className={sweepButton + sweepRegular + ' ' + sweepOnCover}
               href={listing}
               target="_blank"
               rel="noopener noreferrer"
             >
               <span aria-hidden="true" className={sweepFill} />
-              <span className="pointer-events-none relative z-10 inline-flex items-center gap-2.5 transition-colors duration-300 group-hover/cta:text-white group-focus-visible/cta:text-white motion-reduce:transition-none">
-                Ver no site da Pirâmide <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+              <span className={sweepContent}>
+                {content.secondaryLabel} <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </a>
           )}

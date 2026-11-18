@@ -74,6 +74,8 @@
   --color-sand: #f7f7f7;
   --color-espresso: #221f19;
   --color-earth: #5e5648;
+  --color-ink: #221f19;
+  --color-secondary: #5e5648;
   --color-rule: #c9bdaa;
   --color-piramide: oklch(0.5634 0.144 329.83);
   --animate-enter: enter .65s cubic-bezier(.22,.8,.25,1) both;

@@ -16,7 +16,7 @@ import { JsonLd } from '../components/jsonLd'
 import { eyebrow, heading, previewBanner, textLink, wrap } from '../lib/classes'
 import { catalogPictures, picture } from '../lib/image'
 import { locationOf, whatsappLink } from '../lib/model'
-import { getHome, getOpeningProperties, isPreview } from '../lib/sanity'
+import { getHome, getOpeningProperties, getSiteSettings, isPreview } from '../lib/sanity'
 import { homeDescription, homeStructuredData, homeTitle, pageMetadata } from '../lib/seo'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,6 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Home() {
   const preview = await isPreview()
   const data = await getHome(preview)
+  const settings = await getSiteSettings(preview)
   const [hero, ...otherSlides] = getOpeningProperties(data).map((item) => ({
     slug: item.slug,
     title: item.title,
@@ -66,7 +67,7 @@ export default async function Home() {
   }
   const lifestyle = [...lifestyleMap.values()].sort((a, b) => b.count - a.count)
   return <>
-    {!preview && <JsonLd data={homeStructuredData()} />}
+    {!preview && <JsonLd data={homeStructuredData(settings.organization || undefined)} />}
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
     {!hero && <Header home light contact={contact} />}
     <main id="conteudo" className="bg-paper text-espresso [color-scheme:light]">
@@ -100,7 +101,7 @@ export default async function Home() {
       </section>}
       {!!data.catalog.length && <Catalog items={data.catalog.map(catalogPictures)} />}
       {!!data.catalog.length && <SectionDivider />}
-      <HomeStats stats={data.stats} />
+      <HomeStats stats={data.stats} intro={settings.statsIntro} />
     </main>
     <ScrollSpy containerId="conteudo" finalSectionIds={['diferenciais', 'contato']} />
     <Footer contact={contact}>
