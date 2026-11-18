@@ -1,8 +1,8 @@
 'use client'
 
 import {useCallback, useEffect, useId, useRef, useState, type ReactNode, type RefObject} from 'react'
-import {ArrowLeft, ArrowRight, Maximize2, Minimize2, Pause, Play, Volume2, VolumeX, X} from 'lucide-react'
-import {contentGutter, glassAction, glassControl, heading, outlineButton, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
+import {ArrowLeft, ArrowRight, ChevronDown, Maximize2, Minimize2, Pause, Play, Volume2, VolumeX, X} from 'lucide-react'
+import {glassAction, glassControl, heading, outlineButton, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {CinemaIcon} from './cinemaIcon'
 import {ScrollArea} from './scrollArea'
@@ -323,7 +323,7 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
     </div>
   )
   const actions = (
-    <div className={'flex flex-wrap items-center gap-2.5 ' + (cinemaLayout ? '' : mosaicLayout ? contentGutter + ' pointer-events-none absolute inset-x-0 bottom-4 z-3 mx-auto flex w-[calc(100%-2*var(--content-gutter))] justify-end' : 'mt-4')}>
+    <div className={'flex flex-wrap items-center gap-2.5 ' + (cinemaLayout ? '' : mosaicLayout ? wrap + ' pointer-events-none absolute inset-x-0 bottom-4 z-3 justify-end' : 'mt-4')}>
       <button type="button" className={glassAction + ' pointer-events-auto cursor-pointer'} onClick={(event) => open(0, event.currentTarget)}>
         <CinemaIcon name="photos" /> Ver todas as fotos ({count})
       </button>
@@ -784,8 +784,8 @@ export function FaqAccordion({entries}: {entries: {_key: string; question: strin
   }
 
   return (
-    <div className="divide-y divide-zinc-300/75 border-y border-zinc-300/75">
-      {entries.map(({_key, question, answer}, index) => {
+    <div className="grid gap-2.5 sm:gap-3">
+      {entries.map(({_key, question, answer}) => {
         const isOpen = !!openKeys[_key]
         const buttonId = `${baseId}-btn-${_key}`
         const panelId = `${baseId}-panel-${_key}`
@@ -793,7 +793,7 @@ export function FaqAccordion({entries}: {entries: {_key: string; question: strin
           <div
             key={_key}
             data-open={isOpen}
-            className="group/faq transition-colors duration-300 data-[open=true]:bg-white/65"
+            className="group/faq border border-rule/50 bg-white/45 transition-colors hover:border-piramide/40 data-[open=true]:border-piramide/45 data-[open=true]:bg-white"
           >
             <h3 className="m-0">
               <button
@@ -802,23 +802,13 @@ export function FaqAccordion({entries}: {entries: {_key: string; question: strin
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => toggle(_key)}
-                className="flex w-full cursor-pointer items-center justify-between gap-4 px-3 py-5 text-start focus-visible:outline-offset-[-2px] sm:px-5"
+                className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 px-4 py-4 text-start text-espresso transition-colors hover:text-piramide focus-visible:outline-offset-[-2px] aria-expanded:text-piramide sm:px-6 sm:py-5"
               >
-                <span className="flex min-w-0 items-baseline gap-3.5 sm:gap-4">
-                  <span aria-hidden="true" className="text-xs font-bold tracking-widest text-piramide/75 tabular-nums">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <span className="text-base leading-snug font-semibold tracking-tight text-zinc-900 transition-colors duration-200 group-hover/faq:text-piramide sm:text-[1.0625rem]">
-                    {question}
-                  </span>
-                </span>
-                <span
+                <span className="min-w-0 text-sm leading-snug font-semibold sm:text-base">{question}</span>
+                <ChevronDown
                   aria-hidden="true"
-                  className="relative grid size-9 shrink-0 place-items-center border border-zinc-300/90 bg-white/75 text-zinc-800 transition-all duration-300 group-hover/faq:border-piramide group-hover/faq:text-piramide group-data-[open=true]/faq:border-piramide group-data-[open=true]/faq:bg-piramide group-data-[open=true]/faq:text-white"
-                >
-                  <span className="h-[1.5px] w-3.5 bg-current" />
-                  <span className={'absolute h-[1.5px] w-3.5 bg-current transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ' + (isOpen ? 'rotate-0' : 'rotate-90')} />
-                </span>
+                  className="size-5 shrink-0 transition-transform duration-300 group-data-[open=true]/faq:rotate-180 motion-reduce:transition-none"
+                />
               </button>
             </h3>
             <div
@@ -829,7 +819,7 @@ export function FaqAccordion({entries}: {entries: {_key: string; question: strin
               className={'grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ' + (isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}
             >
               <div className="overflow-hidden">
-                <p className="max-w-[65ch] ps-10 pe-5 pb-5 text-sm leading-[1.8] whitespace-pre-line text-zinc-600 sm:ps-13 sm:pe-14 sm:pb-6 sm:text-[0.9375rem]">
+                <p className="max-w-[70ch] px-4 pb-5 text-sm leading-relaxed whitespace-pre-line text-earth sm:px-6 sm:pb-6 sm:text-base">
                   {answer}
                 </p>
               </div>
