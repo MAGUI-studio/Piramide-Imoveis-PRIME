@@ -42,7 +42,10 @@ const homeQuery = `{
 }`
 const propertyQuery = `{
   "property": *[${listing} && slug.current == $slug][0]{
-    ${cardFields}, ${mediaFields}, description, features, price, template, "tour": tour.asset->url
+    ${cardFields}, ${mediaFields}, description, features, price, template,
+    "tour": tour.asset->url,
+    "clipIsPlaceholder": clip.asset->originalFilename == "prime-placeholder-abertura.mp4",
+    "tourIsPlaceholder": tour.asset->originalFilename == "prime-placeholder-tour.mp4"
   },
   "whatsapp": *[_id == "primeHome"][0].whatsapp
 }`

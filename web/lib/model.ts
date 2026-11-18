@@ -34,6 +34,8 @@ export type Property = PropertyCard & {
   price: number | null
   clip: string | null
   tour: string | null
+  clipIsPlaceholder: boolean
+  tourIsPlaceholder: boolean
   template: 'editorial' | 'immersive' | 'mosaic'
 }
 
