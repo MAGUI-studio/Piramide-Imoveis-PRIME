@@ -20,19 +20,19 @@ export function ThemeToggle({isDarkOverlay = false}: ThemeToggleProps): React.JS
   }, [])
 
   if (!mounted) {
-    return <div className="h-9 w-18 animate-pulse rounded-none bg-transparent" />
+    return <div className="h-9 w-[68px] shrink-0 animate-pulse rounded-none bg-transparent" />
   }
 
   const isLight = resolvedTheme === 'light'
 
   return (
-    <div className="group relative flex h-9 w-18 shrink-0 items-center rounded-none bg-transparent p-1 transition-all">
+    <div className="group relative grid h-9 w-[68px] shrink-0 grid-cols-2 items-center gap-1 rounded-none bg-transparent p-1 transition-all">
       <div
         aria-hidden="true"
-        style={{transform: `translateX(${isLight ? 0 : 34}px)`}}
+        style={{transform: `translateX(${isLight ? '0px' : 'calc(100% + 4px)'})`}}
         className={
-          'absolute z-0 h-7 w-7 rounded-none shadow-xs transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:transition-none ' +
-          (isDarkOverlay ? 'bg-white/20' : 'bg-zinc-200/80 dark:bg-zinc-800/80')
+          'pointer-events-none absolute top-1 left-1 z-0 h-7 w-7 rounded-none shadow-xs transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:transition-none ' +
+          (isDarkOverlay ? 'bg-white/20' : 'bg-zinc-200/80 dark:bg-[#1a1a1f]')
         }
       />
 
@@ -63,7 +63,7 @@ export function ThemeToggle({isDarkOverlay = false}: ThemeToggleProps): React.JS
         type="button"
         onClick={() => (!isLight ? null : toggleTheme())}
         className={
-          'relative z-10 ml-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-none transition-colors duration-200 ' +
+          'relative z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-none transition-colors duration-200 ' +
           (isDarkOverlay
             ? !isLight
               ? 'text-white'

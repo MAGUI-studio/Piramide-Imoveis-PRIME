@@ -4,24 +4,24 @@
 
 :root {
   color-scheme: light;
-  --paper: #f7f7f7;
-  --sand: #f7f7f7;
-  --espresso: #221f19;
-  --earth: #5e5648;
-  --ink: #221f19;
-  --secondary: #5e5648;
-  --rule: #c9bdaa;
+  --paper: #f4f6f8;
+  --sand: #eceff2;
+  --espresso: #18181b;
+  --earth: #52525b;
+  --ink: #18181b;
+  --secondary: #52525b;
+  --rule: rgba(24, 24, 27, 0.09);
 }
 
 .dark {
   color-scheme: dark;
-  --paper: #161616;
-  --sand: #1c1c1c;
+  --paper: #0a0a0b;
+  --sand: #121215;
   --espresso: #f4f4f5;
   --earth: #a1a1aa;
   --ink: #f4f4f5;
   --secondary: #a1a1aa;
-  --rule: rgba(255, 255, 255, 0.14);
+  --rule: rgba(255, 255, 255, 0.09);
 }
 
 @layer components {
@@ -90,10 +90,10 @@
   }
 
   --font-sans: var(--font-montserrat), Montserrat, Arial, sans-serif;
-  --color-coal: #161616;
-  --color-charcoal: #161616;
-  --color-ivory: #f4eee3;
-  --color-muted: #b8b1a4;
+  --color-coal: #0c0c0e;
+  --color-charcoal: #0c0c0e;
+  --color-ivory: #f4f4f5;
+  --color-muted: #a1a1aa;
   --color-paper: var(--paper);
   --color-sand: var(--sand);
   --color-espresso: var(--espresso);
