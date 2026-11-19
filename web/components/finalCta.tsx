@@ -35,12 +35,12 @@ export async function FinalCta({contact, marquee}: {contact: string | null; marq
   return (
     <>
       {!!marquee.length && <PropertyMarquee items={marquee} />}
-      <div className="relative isolate overflow-hidden bg-coal text-white">
-        <div className="absolute inset-0 -z-2 opacity-[.28] md:opacity-100">
+      <div className="relative isolate overflow-hidden bg-[#070708] text-[#f5f2ec]">
+        <div className="absolute inset-0 -z-2 opacity-75 md:opacity-90">
           {content?.image?.asset && <Frame photo={picture(content.image, 16 / 9)} className="size-full object-cover object-[65%_center] md:object-center" />}
         </div>
-        <div aria-hidden="true" className="absolute inset-0 -z-1 md:bg-[linear-gradient(90deg,#101010d9_0%,#101010a6_44%,#10101052_75%,#10101038_100%)]" />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 -z-1 h-[clamp(10rem,20vw,21rem)] bg-linear-to-t from-coal from-25% via-coal/85 via-50% to-transparent" />
+        <div aria-hidden="true" className="absolute inset-0 -z-1 bg-linear-to-r from-[#070708]/80 via-[#070708]/50 to-[#070708]/20" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 -z-1 h-28 bg-linear-to-t from-[#070708] via-[#070708]/55 to-transparent" />
         <ValueProposition content={settings.differentiators} />
         {content?.title && (
           <Reveal
@@ -85,7 +85,7 @@ export async function FinalCta({contact, marquee}: {contact: string | null; marq
               )}
               {content.secondaryLabel && (
                 <a
-                  href="#empreendimentos"
+                  href="#imoveis"
                   className="group/explore inline-flex items-center gap-2.5 text-sm font-medium text-white transition-colors hover:text-white/75 sm:text-base"
                 >
                   {content.secondaryLabel}{' '}

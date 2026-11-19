@@ -26,12 +26,12 @@ export function PropertyLocation({title, location}: {title: string; location: No
     : 'https://www.openstreetmap.org/search?query=' + encodeURIComponent(lines.join(', '))
   return (
     <section id="localizacao" aria-labelledby="titulo-localizacao" className="w-full scroll-mt-6 bg-paper text-espresso">
-      <div className={wrap + ' grid items-center gap-x-[clamp(2rem,6vw,6rem)] gap-y-5 pb-7 md:grid-cols-[minmax(0,.85fr)_minmax(0,1fr)] md:pb-9'}>
+      <div className={wrap + ' flex flex-col items-start justify-between gap-6 pb-7 md:flex-row md:items-end md:pb-9'}>
         <div className="grid gap-2.5">
           <p className={eyebrow + ' text-piramide'}>Conheça o entorno</p>
           <h2 id="titulo-localizacao" className={heading + ' text-[clamp(2rem,4vw,3.5rem)]'}>Localização</h2>
         </div>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-4 md:gap-x-8">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4 md:justify-end md:gap-x-8">
           {(lines.length > 0 || (approximate && coordinates)) && (
             <div className="flex min-w-0 items-start gap-3">
               <MapPin className="mt-0.5 size-5 shrink-0 text-piramide" aria-hidden="true" />
@@ -52,12 +52,14 @@ export function PropertyLocation({title, location}: {title: string; location: No
         </div>
       </div>
       {coordinates && (
-        <div className="prime-map relative isolate h-[clamp(18rem,34vw,30rem)] w-full overflow-hidden rounded-t-xl bg-[#eeece7] md:rounded-t-2xl">
+        <div className={wrap}>
+        <div className="prime-map relative isolate h-[clamp(18rem,34vw,30rem)] w-full overflow-hidden rounded-none bg-[#eeece7]">
           <PropertyMap {...coordinates} title={title} approximate={approximate} />
           <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer"
             className="absolute end-0 bottom-0 z-500 bg-coal/90 px-2 py-0.5 text-[11px] text-zinc-200 underline-offset-2 hover:underline">
             © OpenStreetMap contributors
           </a>
+        </div>
         </div>
       )}
     </section>

@@ -3,7 +3,7 @@ import type {ReactNode} from 'react'
 import {ArrowUpRight} from 'lucide-react'
 import {CinemaIcon} from './cinemaIcon'
 import {FaqAccordion, Frame, InlineVideoTour, WatchVideo, type StoryVideo} from './media'
-import {sweepRegular, sweepSolid, sweepContent, eyebrow, heading, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
+import {sweepSolid, sweepContent, eyebrow, heading, sweepButton, sweepFill, sweepOnCover, wrap} from '../lib/classes'
 import {picture, type Picture} from '../lib/image'
 import type {Property} from '../lib/model'
 
@@ -86,18 +86,18 @@ export function PropertyFAQ({property}: {property: Property}) {
 
 export function StoryBackdrop({photo, property}: {photo: Picture; property: Property}) {
   return (
-    <section className="bg-coal text-ivory" aria-labelledby="property-story-title">
+    <section className="bg-coal text-ivory dark:bg-[#f4f6f8] dark:text-[#18181b]" aria-labelledby="property-story-title">
       <figure className="relative min-h-[clamp(22rem,51vw,48rem)] bg-zinc-900">
         <Frame className="absolute inset-0 size-full object-cover" photo={photo} />
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-coal via-coal/65 to-transparent" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-coal via-coal/65 to-transparent dark:from-[#f4f6f8] dark:via-[#f4f6f8]/65" />
         {photo.caption && <figcaption className="absolute bottom-4 start-4 z-1 max-w-[calc(100%-2rem)] border border-white/15 bg-coal/85 px-3 py-2 text-xs text-ivory backdrop-blur-md sm:bottom-6 sm:start-6">{photo.caption}</figcaption>}
       </figure>
       <div className={wrap + ' grid gap-6 py-12 sm:py-16 lg:grid-cols-[minmax(0,.42fr)_minmax(0,1fr)] lg:items-start lg:gap-14'}>
         <div>
           <p className={eyebrow + ' text-[.68rem] text-piramide'}>Apresentação</p>
-          <h2 id="property-story-title" className={title + ' mt-2 text-ivory'}>Sobre o imóvel</h2>
+          <h2 id="property-story-title" className={title + ' mt-2 text-ivory dark:text-[#18181b]'}>Sobre o imóvel</h2>
         </div>
-        <p className="max-w-[65ch] text-base leading-[1.85] whitespace-pre-line text-ivory/80 sm:text-[1.0625rem]">{property.description}</p>
+        <p className="max-w-[65ch] text-base leading-[1.85] whitespace-pre-line text-ivory/80 sm:text-[1.0625rem] dark:text-zinc-600">{property.description}</p>
       </div>
     </section>
   )
@@ -108,46 +108,51 @@ export async function PropertyContact({link, listing}: {link: string | null; lis
   if (!content?.title || (!link && !listing)) return null
   return (
     <section
-      className="relative isolate overflow-hidden bg-coal text-ivory"
+      className="relative isolate overflow-hidden bg-[#070708] text-ivory"
       aria-labelledby="property-contact"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-        {content.image?.asset && <Frame photo={picture(content.image, 16 / 9)} className="size-full object-cover object-[65%_center] opacity-30 md:opacity-65" />}
-        <div className="absolute inset-0 bg-linear-to-b from-coal via-transparent to-coal" />
-        <div className="absolute inset-0 hidden bg-linear-to-r from-coal via-coal/65 to-transparent md:block" />
+        {content.image?.asset && <Frame photo={picture(content.image, 16 / 9)} className="size-full object-cover object-[65%_center] opacity-75 md:opacity-90" />}
+        <div className="absolute inset-0 bg-linear-to-r from-[#070708]/80 via-[#070708]/50 to-[#070708]/20" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-[#070708] via-[#070708]/55 to-transparent" />
       </div>
-      <div className={wrap + ' flex min-h-[24rem] flex-col items-start justify-center py-16 md:min-h-[29rem]'}>
-        <p className={eyebrow + ' text-ivory/75'}>{content.eyebrow}</p>
-        <h2 id="property-contact" className={heading + ' mt-4 max-w-[16ch] text-[clamp(2.4rem,5.6vw,5.5rem)]'}>
-          {content.title}
-        </h2>
-        <p className="mt-5 max-w-[48ch] text-base leading-relaxed text-ivory/90 sm:text-lg">
-          {content.description}
-        </p>
-        <div className="mt-8 flex flex-wrap items-center gap-3.5">
+      <div className={wrap + ' flex flex-col items-start justify-between gap-8 py-20 sm:py-28 lg:flex-row lg:items-center lg:gap-12'}>
+        <div className="min-w-0 flex-1 space-y-4">
+          <h2 id="property-contact" className="font-sans text-[clamp(2rem,3.6vw,3.35rem)] leading-[1.08] font-semibold tracking-tight text-white">
+            {content.title}
+          </h2>
+          {content.description && (
+            <p className="text-sm leading-relaxed text-zinc-300 sm:text-base">
+              {content.description}
+            </p>
+          )}
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-3.5">
           {link && content.buttonLabel && (
             <a
-              className={sweepButton + sweepRegular + ' ' + sweepSolid}
+              className={sweepButton + ' min-h-13 shrink-0 px-7 py-3.5 text-sm font-semibold sm:text-base ' + sweepSolid}
               href={link}
               target="_blank"
               rel="noopener noreferrer"
             >
               <span aria-hidden="true" className={sweepFill} />
-              <span className={sweepContent}>
-                {content.buttonLabel} <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+              <span className={sweepContent + ' gap-2.5'}>
+                <span>{content.buttonLabel}</span>
+                <ArrowUpRight size={18} aria-hidden="true" className="shrink-0 transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </a>
           )}
           {listing && content.secondaryLabel && (
             <a
-              className={sweepButton + sweepRegular + ' ' + sweepOnCover}
+              className={sweepButton + ' min-h-13 shrink-0 px-7 py-3.5 text-sm font-semibold sm:text-base ' + sweepOnCover}
               href={listing}
               target="_blank"
               rel="noopener noreferrer"
             >
               <span aria-hidden="true" className={sweepFill} />
-              <span className={sweepContent}>
-                {content.secondaryLabel} <ArrowUpRight size={17} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+              <span className={sweepContent + ' gap-2.5'}>
+                <span>{content.secondaryLabel}</span>
+                <ArrowUpRight size={18} aria-hidden="true" className="shrink-0 transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </a>
           )}

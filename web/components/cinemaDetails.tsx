@@ -5,7 +5,7 @@ import type {Picture} from '../lib/image'
 import {propertyPrice, type Property} from '../lib/model'
 import {CinemaIcon} from './cinemaIcon'
 import {Frame, Gallery, SharePropertyButton} from './media'
-import {PropertyFAQ, VideoTour, type StoryVideo} from './propertyStory'
+import {VideoTour, type StoryVideo} from './propertyStory'
 
 const currency = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'})
 const label = eyebrow + ' text-[.68rem] text-piramide'
@@ -58,14 +58,14 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
 function FeaturePanel({items, title, eyebrowText, icon}: {items?: string[] | null; title: string; eyebrowText: string; icon: 'sparkle' | 'building'}) {
   if (!items?.length) return null
   return (
-    <section className="border-t border-white/15 pt-6">
+    <section className="border-t border-white/15 pt-6 dark:border-[#1b1916]/15">
       <p className={label}>{eyebrowText}</p>
-      <h2 className={heading + ' mt-2 flex items-center gap-3 text-[clamp(1.35rem,2.2vw,1.85rem)] text-ivory'}>
+      <h2 className={heading + ' mt-2 flex items-center gap-3 text-[clamp(1.35rem,2.2vw,1.85rem)] text-ivory dark:text-[#1b1916]'}>
         <CinemaIcon name={icon} className="size-6! text-piramide" />{title}
       </h2>
-      <ul className="mt-5 grid gap-x-6 gap-y-3 text-sm leading-relaxed text-ivory/80 sm:grid-cols-2 sm:text-[0.9375rem]">
+      <ul className="mt-5 grid gap-x-6 gap-y-3 text-sm leading-relaxed text-ivory/80 sm:grid-cols-2 sm:text-[0.9375rem] dark:text-[#4e4941]">
         {items.map((item, index) => (
-          <li className="flex items-center gap-3 border-b border-white/10 pb-2.5" key={item + index}>
+          <li className="flex items-center gap-3 border-b border-white/10 pb-2.5 dark:border-[#1b1916]/12" key={item + index}>
             <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />
             <span>{item}</span>
           </li>
@@ -87,7 +87,7 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
 }) {
   const featurePanels = (property.features?.length ? 1 : 0) + (property.condoFeatures?.length ? 1 : 0)
   return (
-    <div className="grid gap-[clamp(3rem,6vw,6rem)] bg-paper pb-[clamp(3rem,7vw,7rem)] text-ink">
+    <div className="grid gap-[clamp(3rem,6vw,6rem)] bg-paper pb-[clamp(3rem,6vw,5rem)] text-ink">
       <div className={wrap + ' grid gap-4 pt-[clamp(1rem,3vw,2.5rem)] sm:gap-5'}>
         <PropertyPurchase property={property} link={link} />
         {technicalSheet}
@@ -100,15 +100,15 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
         </div>
         <Gallery photos={photos} layout="strip" />
       </section>
-      <div className="bg-coal text-ivory">
+      <div className="bg-coal text-ivory dark:bg-[#f4f6f8] dark:text-[#18181b]">
         <section className="relative isolate flex min-h-[clamp(23rem,41vw,38rem)] items-center bg-zinc-900" aria-labelledby="cinema-description">
           <Frame photo={storyPhoto} className="absolute inset-0 -z-10 size-full object-cover" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-linear-to-t from-coal via-coal/65 to-transparent" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-linear-to-t from-coal via-coal/65 to-transparent dark:from-[#f4f6f8] dark:via-[#f4f6f8]/65" />
           <div className={wrap + ' py-7 sm:py-12'}>
-            <div className="max-w-[32rem] border border-white/15 bg-coal/90 p-[clamp(1.2rem,4vw,2.75rem)] text-ivory backdrop-blur-md">
+            <div className="max-w-[32rem] border border-white/15 bg-coal/90 p-[clamp(1.2rem,4vw,2.75rem)] text-ivory backdrop-blur-md dark:border-zinc-900/10 dark:bg-[#f4f6f8]/92 dark:text-[#18181b]">
               <p className={label}>Apresentação</p>
-              <h2 id="cinema-description" className={heading + ' mt-2 text-[clamp(1.65rem,3vw,2.7rem)] text-ivory'}>Por dentro do imóvel</h2>
-              <p className="mt-4 text-sm leading-[1.8] whitespace-pre-line text-ivory/80 sm:text-base">{property.description}</p>
+              <h2 id="cinema-description" className={heading + ' mt-2 text-[clamp(1.65rem,3vw,2.7rem)] text-ivory dark:text-[#18181b]'}>Por dentro do imóvel</h2>
+              <p className="mt-4 text-sm leading-[1.8] whitespace-pre-line text-ivory/80 sm:text-base dark:text-zinc-600">{property.description}</p>
             </div>
           </div>
         </section>
@@ -118,9 +118,6 @@ export function CinemaDetails({property, link, photos, storyPhoto, videoTourPhot
             <FeaturePanel eyebrowText="Condomínio e lazer" title="Infraestrutura do condomínio" items={property.condoFeatures} icon="building" />
           </div>
         )}
-      </div>
-      <div className={wrap + ' empty:hidden'}>
-        <PropertyFAQ property={property} />
       </div>
     </div>
   )

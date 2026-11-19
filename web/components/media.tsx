@@ -163,7 +163,7 @@ export function ImmersiveCover({
         />
       )}
       {showOverlay && <>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,#16161680_0%,#16161640_60%,transparent_100%),linear-gradient(to_top,#161616bf_0%,#1616164d_50%,#16161680_100%)]" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,#0a0a0b80_0%,#0a0a0b40_60%,transparent_100%),linear-gradient(to_top,#0a0a0bbf_0%,#0a0a0b4d_50%,#0a0a0b80_100%)]" />
         {header}
         <div className="pointer-events-none relative z-1 mx-auto w-[calc(100%-2.25rem)] max-w-6xl py-16 text-center text-white">
           {src && !failed && !fullscreen && (stage === 'cover' || stage === 'paused') && (
@@ -257,6 +257,15 @@ export function Gallery({photos, layout, children}: {photos: Picture[]; layout: 
 
   useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current)
+  }, [])
+
+  useEffect(() => {
+    function onOpenGallery(event: Event) {
+      const detail = (event as CustomEvent<{index?: number; trigger?: HTMLElement | null}>).detail
+      open(detail?.index ?? 0, detail?.trigger ?? document.body)
+    }
+    window.addEventListener('open-property-gallery', onOpenGallery)
+    return () => window.removeEventListener('open-property-gallery', onOpenGallery)
   }, [])
 
   function step(direction: 1 | -1) {
@@ -792,7 +801,7 @@ export function FaqAccordion({entries}: {entries: {_key: string; question: strin
           <div
             key={_key}
             data-open={isOpen}
-            className="group/faq border border-rule/50 bg-white/45 transition-colors hover:border-piramide/40 data-[open=true]:border-piramide/45 data-[open=true]:bg-white"
+            className="group/faq border border-zinc-200/80 bg-white/75 shadow-[0_4px_18px_rgba(15,23,42,0.03)] backdrop-blur-md backdrop-saturate-150 transition-all duration-300 hover:border-zinc-300/90 hover:bg-white/95 data-[open=true]:border-zinc-300 data-[open=true]:bg-white dark:border-white/[0.06] dark:bg-white/[0.03] dark:shadow-[0_8px_24px_rgba(0,0,0,0.28)] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.05] dark:data-[open=true]:border-white/[0.12] dark:data-[open=true]:bg-white/[0.055]"
           >
             <h3 className="m-0">
               <button
@@ -801,13 +810,17 @@ export function FaqAccordion({entries}: {entries: {_key: string; question: strin
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => toggle(_key)}
-                className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 px-4 py-4 text-start text-espresso transition-colors hover:text-piramide focus-visible:outline-offset-[-2px] aria-expanded:text-piramide sm:px-6 sm:py-5"
+                className="flex min-h-15 w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-start text-espresso transition-colors focus-visible:outline-offset-[-2px] sm:px-6 sm:py-5"
               >
                 <span className="min-w-0 text-sm leading-snug font-semibold sm:text-base">{question}</span>
-                <ChevronDown
+                <span
                   aria-hidden="true"
-                  className="size-5 shrink-0 transition-transform duration-300 group-data-[open=true]/faq:rotate-180 motion-reduce:transition-none"
-                />
+                  className="grid size-8 shrink-0 place-items-center border border-zinc-200/80 bg-zinc-100/70 text-espresso/75 transition-all duration-300 group-hover/faq:border-zinc-300 group-hover/faq:text-espresso dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-[#f5f2ec]/70 dark:group-hover/faq:border-white/[0.16] dark:group-hover/faq:text-[#f5f2ec]"
+                >
+                  <ChevronDown
+                    className="size-4 transition-transform duration-300 group-data-[open=true]/faq:rotate-180 motion-reduce:transition-none"
+                  />
+                </span>
               </button>
             </h3>
             <div
@@ -818,15 +831,43 @@ export function FaqAccordion({entries}: {entries: {_key: string; question: strin
               className={'grid transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none ' + (isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}
             >
               <div className="overflow-hidden">
-                <p className="max-w-[70ch] px-4 pb-5 text-sm leading-relaxed whitespace-pre-line text-earth sm:px-6 sm:pb-6 sm:text-base">
-                  {answer}
-                </p>
+                <div className="px-5 pb-5 sm:px-6 sm:pb-6">
+                  <p className="w-full border-t border-zinc-200/70 pt-4 text-sm leading-relaxed whitespace-pre-line text-zinc-600 sm:text-base dark:border-white/[0.06] dark:text-zinc-300">
+                    {answer}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         )
       })}
     </div>
+  )
+}
+
+export function OpenGalleryTrigger({
+  index = 0,
+  className,
+  children,
+}: {
+  index?: number
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        window.dispatchEvent(
+          new CustomEvent('open-property-gallery', {
+            detail: {index, trigger: event.currentTarget},
+          }),
+        )
+      }}
+      className={className}
+    >
+      {children}
+    </button>
   )
 }
 
@@ -894,7 +935,7 @@ export function SharePropertyButton({title}: {title: string}) {
         aria-label="Compartilhar imóvel"
         aria-expanded={open}
         title="Compartilhar imóvel"
-        className="inline-grid size-9 shrink-0 cursor-pointer place-items-center text-zinc-900"
+        className="inline-grid size-9 shrink-0 cursor-pointer place-items-center text-ink transition-colors hover:text-piramide"
       >
         <Share2 size={17} />
       </button>
@@ -902,7 +943,7 @@ export function SharePropertyButton({title}: {title: string}) {
         <div
           role="menu"
           aria-label="Opções de compartilhamento"
-          className="absolute end-0 top-full z-30 mt-2 w-48 border border-zinc-900/15 bg-paper p-1.5 text-zinc-900 shadow-lg motion-safe:animate-enter"
+          className="absolute end-0 top-full z-30 mt-2 w-48 border border-[#1b1916]/[0.08] bg-white/80 p-1.5 text-ink shadow-lg backdrop-blur-xl backdrop-saturate-150 motion-safe:animate-enter dark:border-white/[0.08] dark:bg-[#0e0e12]/80 dark:text-[#f5f2ec]"
         >
           <button
             type="button"

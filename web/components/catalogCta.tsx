@@ -11,19 +11,18 @@ export async function CatalogCta({contact}: {contact: string | null}) {
 
   return (
     <section
-      className="relative isolate overflow-hidden bg-[#161616] text-white"
+      className="relative isolate overflow-hidden bg-[#070708] text-[#f5f2ec]"
       aria-labelledby="catalog-contact-title"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
         {content.image?.asset && (
           <Frame
             photo={picture(content.image, 16 / 9)}
-            className="size-full object-cover object-[65%_center] opacity-40"
+            className="size-full object-cover object-[65%_center] opacity-75 md:opacity-90"
           />
         )}
-        <div className="absolute inset-0 bg-linear-to-r from-[#161616] via-[#161616]/80 to-[#161616]/35" />
-        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-[#161616]/60 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-[#161616] via-[#161616]/85 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-r from-[#070708]/80 via-[#070708]/50 to-[#070708]/20" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-[#070708] via-[#070708]/55 to-transparent" />
       </div>
 
       <Reveal

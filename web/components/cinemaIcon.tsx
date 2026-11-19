@@ -6,6 +6,7 @@ const assets = {
 }
 
 const paths = {
+  check: 'M6 16l7 7L26 9',
   arrow: 'M5 16h21m-8-8 8 8-8 8',
   external: 'M8 24 24 8M12 8h12v12',
   expand: 'M5 12V5h7m8 0h7v7m0 8v7h-7m-8 0H5v-7',

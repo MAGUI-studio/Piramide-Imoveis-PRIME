@@ -1,23 +1,25 @@
 import type {Metadata} from 'next'
-import type {ComponentProps, ReactNode} from 'react'
+import type {ReactNode} from 'react'
 import {notFound} from 'next/navigation'
 import {ArrowUpRight, ChevronDown} from 'lucide-react'
 import {CinemaDetails, PropertyPurchase} from '../../components/cinemaDetails'
 import {CinemaIcon} from '../../components/cinemaIcon'
-import {Frame, Gallery, ImmersiveCover, WatchVideo} from '../../components/media'
+import {Frame, Gallery, ImmersiveCover, OpenGalleryTrigger, WatchVideo} from '../../components/media'
 import {PropertyLocation, propertyLocationOf} from '../../components/propertyLocation'
 import {PropertyContact, PropertyFAQ, propertyVideos, StoryBackdrop, VideoFrame, type StoryVideo} from '../../components/propertyStory'
 import {WhatsAppWidget} from '../../components/whatsappWidget'
 import {JsonLd} from '../../components/jsonLd'
-import {contentGutter, eyebrow, glassAction, heading, previewBanner, sweepButton, sweepFill, wrap} from '../../lib/classes'
+import {SimilarProperties} from '../../components/similarProperties'
+import {similarPropertiesOf} from '../../lib/similarProperties'
+import {eyebrow, glassAction, heading, previewBanner, sweepButton, sweepFill, wrap} from '../../lib/classes'
 import {picture, type Picture} from '../../lib/image'
 import {availabilityLabel, cardAttributesOf, locationOf, whatsappLink, type Property} from '../../lib/model'
-import {getProperty, isPreview} from '../../lib/sanity'
+import {technicalFactsOf} from '../../lib/technicalFacts'
+import {getHome, getProperty, isPreview} from '../../lib/sanity'
 import {breadcrumbs, catalogPath, pageMetadata, propertySearchCopy} from '../../lib/seo'
 
 type Props = {params: Promise<{slug: string}>}
-const number = new Intl.NumberFormat('pt-BR')
-const article = 'pb-[clamp(70px,10vw,120px)]'
+const article = 'pb-[clamp(3rem,6vw,5rem)]'
 const editorialTitle = heading + ' text-[clamp(1.8rem,3vw,2.8rem)]'
 
 export async function generateMetadata({params}: Props): Promise<Metadata> {
@@ -87,34 +89,7 @@ function Attributes({property}: {property: Property}) {
 }
 
 function TechnicalSheet({property, layout}: {property: Property; layout: 'film' | 'essay' | 'standard'}) {
-  const specs = property.specifications
-  const isLand = property.propertyType === 'Terreno' || property.propertyType === 'Loteamento'
-  const isPrivateUnit = property.propertyType === 'Apartamento/Cobertura' || property.propertyType === 'Comercial'
-  const areaLabel = isLand && !specs?.landArea ? 'Área do terreno' : isPrivateUnit ? 'Área privativa' : 'Área construída'
-
-  type IconName = ComponentProps<typeof CinemaIcon>['name']
-  const items: {label: string; value?: string; icon: IconName}[] = []
-  if (specs?.area && specs.area > 0) items.push({label: areaLabel, value: number.format(specs.area) + ' m²', icon: 'area'})
-  if (specs?.landArea && specs.landArea > 0) items.push({label: 'Área do terreno', value: number.format(specs.landArea) + ' m²', icon: 'area'})
-  if (specs?.bedrooms && specs.bedrooms > 0) items.push({label: 'Dormitórios', value: String(specs.bedrooms), icon: 'bedroom'})
-  if (specs?.suites && specs.suites > 0) items.push({label: 'Suítes', value: String(specs.suites), icon: 'suite'})
-  if (specs?.bathrooms && specs.bathrooms > 0) items.push({label: 'Banheiros', value: String(specs.bathrooms), icon: 'bath'})
-  if (specs?.lavabos && specs.lavabos > 0) items.push({label: 'Lavabos', value: String(specs.lavabos), icon: 'bath'})
-  if (specs?.parking && specs.parking > 0) {
-    const covered = specs.coveredParking && specs.coveredParking > 0
-      ? ` (${specs.coveredParking} ${specs.coveredParking === 1 ? 'coberta' : 'cobertas'})`
-      : ''
-    items.push({label: 'Vagas de garagem', value: specs.parking + covered, icon: 'parking'})
-  }
-  if (specs?.floorProfile) items.push({label: 'Perfil / pavimento', value: specs.floorProfile, icon: 'floors'})
-  if (specs?.sunOrientation) items.push({label: 'Posição solar', value: specs.sunOrientation, icon: 'sun'})
-  if (property.condominiumName) items.push({label: 'Condomínio / edifício', value: property.condominiumName, icon: 'building'})
-  if (property.architect) items.push({label: 'Projeto arquitetônico', value: property.architect, icon: 'plan'})
-  if (property.refCode) items.push({label: 'Código do imóvel', value: property.refCode, icon: 'reference'})
-
-  if (specs?.hasOffice) items.push({label: 'Escritório / Home office', icon: 'office'})
-  if (specs?.hasHobbyBox) items.push({label: 'Hobby box / Depósito privativo', icon: 'storage'})
-  if (specs?.hasEvCharger) items.push({label: 'Ponto para carro elétrico', icon: 'charging'})
+  const items = technicalFactsOf(property)
 
   if (!items.length) return null
 
@@ -123,8 +98,8 @@ function TechnicalSheet({property, layout}: {property: Property; layout: 'film' 
     if (layout === 'film') {
       return (
         <ul className={factGrid}>
-          {facts.map(({label, value, icon}) => (
-            <li key={label} className="relative isolate flex min-h-14 min-w-0 flex-col justify-center py-2">
+          {facts.map(({label, value, icon, key}) => (
+            <li key={key || label} className="relative isolate flex min-h-14 min-w-0 flex-col justify-center py-2">
               <CinemaIcon name={icon} className="pointer-events-none absolute end-1 top-1/2 -z-10 size-12! -translate-y-1/2 text-piramide opacity-15 sm:end-4 sm:size-14!" />
               <span className={value ? 'text-xs leading-snug text-secondary sm:text-sm' : 'text-sm leading-snug font-semibold sm:text-base'}>{label}</span>
               {value && <span className="mt-1 text-base leading-snug font-semibold wrap-anywhere sm:text-lg">{value}</span>}
@@ -135,8 +110,8 @@ function TechnicalSheet({property, layout}: {property: Property; layout: 'film' 
     }
     return (
       <dl className={factGrid}>
-        {facts.map(({label, value, icon}) => (
-          <div key={label} className="flex min-w-0 items-center gap-3.5 py-1.5 sm:gap-4">
+        {facts.map(({label, value, icon, key}) => (
+          <div key={key || label} className="flex min-w-0 items-center gap-3.5 py-1.5 sm:gap-4">
             <CinemaIcon name={icon} className="size-8! shrink-0 text-piramide sm:size-9!" />
             <div className="min-w-0">
               <dt className="text-xs leading-snug text-secondary sm:text-sm">{label}</dt>
@@ -166,98 +141,93 @@ function TechnicalSheet({property, layout}: {property: Property; layout: 'film' 
   )
 }
 
-function StandardHighlights({property}: {property: Property}) {
+function StandardPresentation({property, photo}: {property: Property; photo: Picture}) {
   const groups = [
     {eyebrow: 'Detalhes do imóvel', title: 'Diferenciais do imóvel', items: property.features, icon: 'sparkle' as const},
     {eyebrow: 'Condomínio e lazer', title: 'Infraestrutura do condomínio', items: property.condoFeatures, icon: 'building' as const},
   ].filter(({items}) => items?.length)
-  if (!groups.length) return null
+
   return (
-    <section id="diferenciais" aria-labelledby="standard-highlights" className={wrap + ' scroll-mt-6'}>
-      <span id="standard-highlights" className="sr-only">Diferenciais e infraestrutura</span>
-      <div className={'grid gap-8 ' + (groups.length > 1 ? 'lg:grid-cols-2 lg:gap-14' : '')}>
-        {groups.map(({eyebrow: groupEyebrow, title, items, icon}) => (
-          <section className="border-t border-rule pt-6" key={title}>
-            <p className={eyebrow + ' text-[.68rem] text-piramide'}>{groupEyebrow}</p>
-            <h3 className={heading + ' mt-2 flex items-center gap-3 text-[clamp(1.35rem,2.2vw,1.85rem)]'}>
-              <CinemaIcon name={icon} className="size-6! text-piramide" />{title}
-            </h3>
-            <ul className="mt-5 grid gap-x-6 gap-y-3 text-sm leading-relaxed text-secondary sm:grid-cols-2 sm:text-[0.9375rem]">
-              {items?.map((item, index) => (
-                <li className="flex items-center gap-3 border-b border-rule/60 pb-2.5" key={item + index}>
-                  <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+    <section
+      id="sobre"
+      aria-labelledby="standard-about"
+      className="relative isolate scroll-mt-6 overflow-hidden bg-coal text-white"
+    >
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        <Frame photo={photo} className="size-full object-cover" sizes="100vw" />
+        <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0b]/95 via-[#0a0a0b]/65 to-[#0a0a0b]/35" />
+      </div>
+
+      <div className={wrap + ' relative z-10 py-16 sm:py-24 lg:py-28'}>
+        <div className="max-w-3xl">
+          <p className={eyebrow + ' text-[.68rem] text-piramide'}>Apresentação</p>
+          <h2 id="standard-about" className={heading + ' mt-3 text-[clamp(2.15rem,4vw,3.6rem)] text-white'}>
+            Sobre o imóvel
+          </h2>
+          <p className="mt-5 text-base leading-[1.85] whitespace-pre-line text-white/85 sm:text-lg">
+            {property.description}
+          </p>
+        </div>
+
+        {groups.length > 0 && (
+          <div id="diferenciais" className={'mt-12 grid scroll-mt-6 gap-10 border-t border-white/15 pt-10 ' + (groups.length > 1 ? 'lg:grid-cols-2 lg:gap-14' : '')}>
+            {groups.map(({eyebrow: groupEyebrow, title, items}) => (
+              <div key={title}>
+                <p className={eyebrow + ' text-[.65rem] text-piramide'}>{groupEyebrow}</p>
+                <h3 className={heading + ' mt-2 text-xl text-white sm:text-2xl'}>
+                  {title}
+                </h3>
+                <ul className={'mt-5 grid gap-x-8 gap-y-3.5 ' + (groups.length === 1 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2')}>
+                  {items?.map((item, index) => (
+                    <li
+                      key={item + index}
+                      className="flex items-center gap-3 text-sm font-medium text-white/90 sm:text-[0.9375rem]"
+                    >
+                      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-piramide/20 text-piramide">
+                        <CinemaIcon name="check" className="size-4! text-piramide" />
+                      </span>
+                      <span className="min-w-0 leading-snug">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )
 }
 
 function PhotoHighlights({property, photos}: {property: Property; photos: [Picture, Picture]}) {
-  const rawGroups = [
-    {eyebrow: 'Detalhes em foco', title: 'Diferenciais do imóvel', items: property.features ?? []},
-    {eyebrow: 'Condomínio e lazer', title: 'Infraestrutura do condomínio', items: property.condoFeatures ?? []},
+  const groups = [
+    {eyebrow: 'Dentro de casa', title: 'Diferenciais do imóvel', items: property.features ?? [], icon: 'sparkle' as const},
+    {eyebrow: 'Além da sua porta', title: 'Infraestrutura do condomínio', items: property.condoFeatures ?? [], icon: 'building' as const},
   ].filter(({items}) => items.length > 0)
-  if (!rawGroups.length) return null
-
-  const groups = rawGroups.length === 1 && rawGroups[0].items.length > 2
-    ? [
-        {...rawGroups[0], items: rawGroups[0].items.slice(0, Math.ceil(rawGroups[0].items.length / 2))},
-        {eyebrow: 'Acabamentos e lazer', title: 'Mais diferenciais', items: rawGroups[0].items.slice(Math.ceil(rawGroups[0].items.length / 2))},
-      ]
-    : rawGroups
+  if (!groups.length) return null
 
   return (
-    <section className={contentGutter + ' grid gap-[clamp(3rem,6vw,5.5rem)] overflow-x-clip'} aria-labelledby="photo-notes">
-      {groups.map((group, index) => {
-        const photo = photos[index] ?? photos[0]
-        const reversed = index % 2 === 1
-        return (
-          <div
-            key={group.title + index}
-            className={
-              'grid items-center gap-6 md:gap-8 lg:gap-16 ' +
-              (reversed
-                ? 'md:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]'
-                : 'md:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)]')
-            }
-          >
-            <figure
-              className={
-                'relative aspect-[1.42] w-[72%] overflow-hidden rounded-none bg-zinc-200 shadow-sm sm:w-[76%] md:w-full ' +
-                (reversed
-                  ? 'ms-auto md:order-last'
-                  : 'me-auto')
-              }
-            >
-              <Frame className="absolute inset-0 size-full object-cover" photo={photo} sizes="(max-width: 767px) 75vw, 54vw" />
-              {photo.caption && (
-                <figcaption className={'absolute bottom-3 max-w-[calc(100%-4rem)] bg-paper/95 px-2.5 py-1.5 text-xs text-ink backdrop-blur-md sm:bottom-4 sm:px-3 sm:py-2 ' + (reversed ? 'end-3 sm:end-4' : 'start-3 sm:start-4')}>
-                  {photo.caption}
-                </figcaption>
-              )}
-            </figure>
-            <div className={reversed ? 'px-(--content-gutter) text-end md:ps-(--content-gutter) md:pe-0 md:text-start' : 'px-(--content-gutter) md:ps-0 md:pe-(--content-gutter)'}>
-              <p className={eyebrow + ' text-[.68rem] text-piramide'}>{group.eyebrow}</p>
-              <h2 id={index === 0 ? 'photo-notes' : undefined} className={editorialTitle + ' mt-1.5'}>
-                {group.title}
-              </h2>
-              <ul className={'mt-5 grid max-w-[19rem] gap-x-6 gap-y-3 sm:mt-6 sm:max-w-none sm:grid-cols-2 ' + (reversed ? 'ms-auto md:ms-0' : '')}>
-                {group.items.map((item, itemIdx) => (
-                  <li key={item + itemIdx} className={'flex items-center gap-3 border-b border-rule/70 pb-2.5 text-sm font-medium text-ink sm:pb-3 sm:text-[0.9375rem] ' + (reversed ? 'flex-row-reverse sm:flex-row' : '')}>
-                    <span aria-hidden="true" className="size-1.5 shrink-0 bg-piramide" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+    <section className="w-full" aria-labelledby="photo-notes">
+      <h2 id="photo-notes" className="sr-only">Diferenciais e infraestrutura</h2>
+      <div className={'grid ' + (groups.length > 1 ? 'sm:grid-cols-2' : '')}>
+        {groups.map((group, groupIndex) => <section key={group.title} className="flex min-w-0 flex-col">
+          <div className={'grid ' + (groups.length === 1 ? 'sm:grid-cols-2' : '')}>
+            {(groups.length === 1 ? photos : [photos[groupIndex]]).map((photo, index) => <figure key={index} className="relative min-w-0">
+              <div className="aspect-[1.6] overflow-hidden bg-espresso/5"><Frame photo={photo} className="size-full object-cover" sizes="(max-width: 639px) 100vw, 50vw" /></div>
+              <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-linear-to-b from-coal via-coal/65 to-transparent sm:h-40 dark:from-[#f4f6f8] dark:via-[#f4f6f8]/65" />
+              {photo.caption && <figcaption className="absolute inset-x-0 bottom-0 bg-black/45 px-4 py-2 text-xs leading-relaxed text-white backdrop-blur-sm">{photo.caption}</figcaption>}
+            </figure>)}
           </div>
-        )
-      })}
+          <div className="relative isolate flex-1 overflow-hidden p-6 sm:p-8 lg:p-10">
+            <CinemaIcon name={group.icon} className="pointer-events-none absolute right-4 bottom-4 -z-10 size-40! text-espresso/[.065] sm:right-6 sm:bottom-6 sm:size-48! lg:size-56!" />
+            <p className={eyebrow + ' text-[.65rem] text-piramide'}>{group.eyebrow}</p>
+            <h3 className="mt-2 text-[clamp(1.5rem,2.3vw,2.2rem)] leading-tight font-medium tracking-tight text-balance">{group.title}</h3>
+            <ul className="mt-7 grid gap-x-6 gap-y-4 lg:grid-cols-2">
+              {group.items.map((item, index) => <li key={item + index} className="flex min-h-10 items-center gap-3 text-sm leading-relaxed font-medium text-ink sm:gap-4"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-piramide/10"><CinemaIcon name="check" className="size-6! text-piramide" /></span><span className="min-w-0">{item}</span></li>)}
+            </ul>
+          </div>
+        </section>)}
+      </div>
     </section>
   )
 }
@@ -277,8 +247,10 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhotos, vi
         <PropertyPurchase property={property} link={link} />
         <TechnicalSheet property={property} layout="essay" />
       </div>
-      <StoryBackdrop photo={storyPhoto} property={property} />
-      <PhotoHighlights property={property} photos={detailsPhotos} />
+      <div>
+        <StoryBackdrop photo={storyPhoto} property={property} />
+        <PhotoHighlights property={property} photos={detailsPhotos} />
+      </div>
       <section className={wrap + ' min-w-0'} aria-labelledby="editorial-gallery">
         <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2 sm:mb-6">
           <h2 id="editorial-gallery" className={editorialTitle}>Galeria</h2>
@@ -286,8 +258,8 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhotos, vi
         </div>
         <Gallery photos={photos} layout="story" />
       </section>
-      <div className={wrap + ' grid gap-[clamp(2.5rem,6vw,5.5rem)]'}>
-        {(videos.length > 0 || virtualTour) && (
+      {(videos.length > 0 || virtualTour) && (
+        <div className={wrap}>
           <section className="grid gap-5 border-y border-rule py-8 sm:py-10 lg:grid-cols-[minmax(0,.42fr)_minmax(0,1fr)] lg:items-center lg:gap-14" aria-labelledby="editorial-video">
             <div>
               <p className={eyebrow + ' text-[.68rem] text-piramide'}>Tour audiovisual</p>
@@ -298,9 +270,8 @@ function EditorialDetails({property, link, photos, storyPhoto, detailsPhotos, vi
               {virtualTour}
             </div>
           </section>
-        )}
-        <PropertyFAQ property={property} />
-      </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -309,13 +280,10 @@ function StandardMedia({photo, photoCount, videos, videoPhoto, virtualTour}: {ph
   const [lead, ...more] = videos
   if (!lead && !virtualTour) return null
   return (
-    <section id="midia" className={wrap + ' grid scroll-mt-6 gap-5'} aria-labelledby="standard-media">
-      <div>
-        <p className={eyebrow + ' text-[.68rem] text-piramide'}>Galeria multimídia</p>
-        <h2 className={editorialTitle + ' mt-2'} id="standard-media">Fotos e tour</h2>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:gap-6">
-        <a className="group relative isolate flex aspect-video items-end overflow-hidden bg-zinc-200 p-4 sm:p-6" href="#mosaic-photos">
+    <section id="midia" className="w-full scroll-mt-6" aria-labelledby="standard-media">
+      <h2 className="sr-only" id="standard-media">Fotos e tour</h2>
+      <div className="grid md:grid-cols-2">
+        <OpenGalleryTrigger className="group relative isolate flex aspect-video w-full cursor-pointer items-end overflow-hidden bg-zinc-900 p-4 text-start sm:p-6">
           <Frame className="absolute inset-0 -z-20 size-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105" photo={photo} sizes="(max-width: 767px) 100vw, 50vw" />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
           <div className="flex w-full flex-wrap items-end justify-between gap-3">
@@ -325,47 +293,17 @@ function StandardMedia({photo, photoCount, videos, videoPhoto, virtualTour}: {ph
             </div>
             <span className={glassAction}><CinemaIcon name="photos" /> Ver galeria</span>
           </div>
-        </a>
+        </OpenGalleryTrigger>
         {lead
           ? <VideoFrame video={videoPhoto ? {...lead, poster: videoPhoto} : lead} />
-          : <div className="grid min-h-40 place-items-center bg-zinc-200/55 p-5">{virtualTour}</div>}
+          : <div className="grid min-h-40 place-items-center bg-coal/95 p-5">{virtualTour}</div>}
       </div>
       {!!lead && (more.length > 0 || virtualTour) && (
-        <div className="flex flex-wrap items-center gap-3 pt-1">
+        <div className={wrap + ' flex flex-wrap items-center gap-3 pt-5'}>
           {more.map((video) => <WatchVideo key={video.url} src={video.url} label={video.title} poster={video.poster.src} external={video.external} />)}
           {virtualTour}
         </div>
       )}
-    </section>
-  )
-}
-
-function StandardOverview({property, photo}: {property: Property; photo: Picture}) {
-  return (
-    <section
-      id="sobre"
-      className={contentGutter + ' relative isolate grid scroll-mt-6 items-stretch overflow-hidden bg-coal text-ivory md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]'}
-      aria-labelledby="standard-about"
-    >
-      <div className="relative isolate flex flex-col justify-center px-(--content-gutter) py-14 sm:py-20 md:pe-12 lg:pe-16">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-[repeating-linear-gradient(-45deg,#ffffff04_0px,#ffffff04_1px,transparent_1px,transparent_14px)]"
-        />
-        <p className={eyebrow + ' text-[.68rem] text-piramide'}>Apresentação</p>
-        <h2 id="standard-about" className={editorialTitle + ' mt-3 text-ivory'}>Sobre o imóvel</h2>
-        <p className="mt-6 max-w-[54ch] border-s border-white/20 ps-5 text-base leading-[1.9] whitespace-pre-line text-ivory/80 sm:ps-6 sm:text-[1.0625rem]">
-          {property.description}
-        </p>
-      </div>
-      <figure className="relative aspect-[1.35] min-h-[clamp(20rem,38vw,36rem)] w-full overflow-hidden bg-zinc-900 md:aspect-auto">
-        <Frame photo={photo} className="absolute inset-0 size-full object-cover" sizes="(max-width: 767px) 100vw, 55vw" />
-        {photo.caption && (
-          <figcaption className="absolute bottom-4 start-4 z-1 max-w-[calc(100%-2rem)] border border-white/15 bg-coal/85 px-3 py-2 text-xs text-ivory backdrop-blur-md">
-            {photo.caption}
-          </figcaption>
-        )}
-      </figure>
     </section>
   )
 }
@@ -425,21 +363,10 @@ function PropertyLayout({property, link, hasLocation}: {property: Property; link
                 <PropertyPurchase property={property} link={link} />
                 <TechnicalSheet property={property} layout="standard" />
               </div>
-              <nav aria-label="Nesta página" className="flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-rule py-3.5 text-xs font-semibold tracking-wider text-secondary uppercase sm:gap-x-8">
-                <a className="transition-colors hover:text-piramide" href="#mosaic-photos">Fotos</a>
-                <a className="transition-colors hover:text-piramide" href="#ficha">Ficha e valores</a>
-                <a className="transition-colors hover:text-piramide" href="#sobre">Sobre o imóvel</a>
-                {!!(property.features?.length || property.condoFeatures?.length) && <a className="transition-colors hover:text-piramide" href="#diferenciais">Diferenciais</a>}
-                {(videos.length > 0 || virtualTour) && <a className="transition-colors hover:text-piramide" href="#midia">Vídeos e tour</a>}
-                {property.faq?.some(({question, answer}) => question.trim() && answer.trim()) && <a className="transition-colors hover:text-piramide" href="#duvidas">Dúvidas</a>}
-                {hasLocation && <a className="transition-colors hover:text-piramide" href="#localizacao">Localização</a>}
-              </nav>
             </header>
-            <StandardOverview photo={storyPhoto} property={property} />
-            <StandardHighlights property={property} />
-            <StandardMedia photo={property.mediaPhoto?.asset ? picture(property.mediaPhoto, 16 / 9) : photos[0] ?? cover} photoCount={photos.length + 1} videos={videos} videoPhoto={property.mediaVideoPhoto?.asset ? picture(property.mediaVideoPhoto, 16 / 9) : undefined} virtualTour={virtualTour} />
-            <div className={wrap + ' empty:hidden'}>
-              <PropertyFAQ property={property} />
+            <div>
+              <StandardPresentation photo={storyPhoto} property={property} />
+              <StandardMedia photo={property.mediaPhoto?.asset ? picture(property.mediaPhoto, 16 / 9) : photos[0] ?? cover} photoCount={photos.length + 1} videos={videos} videoPhoto={property.mediaVideoPhoto?.asset ? picture(property.mediaVideoPhoto, 16 / 9) : undefined} virtualTour={virtualTour} />
             </div>
           </div>
         </article>
@@ -447,18 +374,20 @@ function PropertyLayout({property, link, hasLocation}: {property: Property; link
     default:
       return (
         <article className={article}>
-          <div className="relative">
-            <div className={contentGutter + ' grid items-center gap-[clamp(22px,5vw,75px)] overflow-x-clip min-[801px]:grid-cols-[minmax(0,.88fr)_minmax(0,1.25fr)] min-[801px]:ps-(--content-gutter)'}>
-              <div className={wrap + ' pt-6 pb-4 min-[801px]:mx-0 min-[801px]:w-auto min-[801px]:py-10'}>
-                <PropertyTitle property={property} />
-                <p className="mt-4 leading-relaxed text-secondary">{property.summary}</p>
-                <Attributes property={property} />
+          <header>
+            <figure className="relative w-full">
+              <div className="aspect-[1.7] overflow-hidden bg-espresso/5 sm:aspect-[2.5] lg:aspect-[2.9]">
+                <Frame className="size-full object-cover" photo={picture(property.cover, 1.9, 2400)} priority sizes="100vw" />
               </div>
-              <figure className="relative order-first aspect-[1.04] w-full min-w-0 overflow-hidden rounded-none bg-zinc-200 min-[801px]:order-none min-[801px]:aspect-[1.08]">
-                <Frame className="size-full object-cover" photo={picture(property.cover, 1.12)} priority sizes="(max-width: 800px) 100vw, 58vw" />
-              </figure>
+              {property.cover.caption && <figcaption className="mt-2 text-xs text-secondary">{property.cover.caption}</figcaption>}
+            </figure>
+            <div className={wrap + ' pt-8 pb-4 text-center sm:pt-12 sm:pb-6 [&>div]:justify-center'}>
+              <StatusBadges property={property} />
+              <p className={eyebrow + ' mx-auto max-w-[70ch] text-[.65rem] leading-relaxed text-piramide sm:text-xs'}>{locationOf(property)}</p>
+              <h1 className="mx-auto mt-4 max-w-[22ch] text-[clamp(2.5rem,5.5vw,6rem)] leading-[1.03] font-medium tracking-[-.045em] text-balance">{property.title}</h1>
+              <p className="mx-auto mt-5 max-w-[65ch] text-sm leading-relaxed text-secondary sm:text-base">{property.summary}</p>
             </div>
-          </div>
+          </header>
           <EditorialDetails property={property} link={link} photos={[cover, ...photos]} storyPhoto={storyPhoto} detailsPhotos={detailsPhotos} videos={videos} virtualTour={virtualTour} />
         </article>
       )
@@ -473,6 +402,7 @@ export default async function PropertyPage({params}: Props) {
 
   const contact = whatsappLink(data.whatsapp, data.property.title, data.property.refCode)
   const location = propertyLocationOf(data.property)
+  const similar = similarPropertiesOf(data.property, (await getHome(preview)).catalog)
   return (
     <div className="bg-paper text-ink">
       {!preview && !data.property.noIndex && <JsonLd data={breadcrumbs([
@@ -485,6 +415,10 @@ export default async function PropertyPage({params}: Props) {
         <PropertyLayout property={data.property} link={contact} hasLocation={!!location} />
       </main>
       {location && <PropertyLocation title={data.property.title} location={location} />}
+      <div className={wrap + ' pt-[clamp(3rem,6vw,5.5rem)] pb-[clamp(2rem,5vw,4rem)] empty:hidden'}>
+        <PropertyFAQ property={data.property} />
+      </div>
+      <SimilarProperties items={similar} />
       <PropertyContact link={contact} listing={data.property.externalListingUrl} />
       <WhatsAppWidget phone={data.whatsapp} />
     </div>
