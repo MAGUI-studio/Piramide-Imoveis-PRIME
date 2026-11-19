@@ -1,7 +1,6 @@
 import type {Metadata} from 'next'
 import {Suspense} from 'react'
 import {Catalog} from '../../components/catalog'
-import {Footer, Header} from '../../components/chrome'
 import {CatalogCta} from '../../components/catalogCta'
 import {JsonLd} from '../../components/jsonLd'
 import {WhatsAppWidget} from '../../components/whatsappWidget'
@@ -17,7 +16,7 @@ export async function generateMetadata({searchParams}: {
   const preview = await isPreview()
   const {catalog, catalogSeo} = await getHome(preview)
   const params = await searchParams
-  const filtered = ['busca', 'cidade', 'bairro', 'tipo', 'suites'].some((key) => !!params[key])
+  const filtered = ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'condominio'].some((key) => !!params[key])
   const requested = Array.isArray(params.pagina) ? params.pagina[0] : params.pagina
   const page = !filtered && requested && /^[1-9]\d*$/.test(requested)
     ? Math.min(Number(requested), Math.max(1, Math.ceil(catalog.length / catalogPageSize)))
@@ -35,20 +34,17 @@ export default async function Empreendimentos() {
   const contact = whatsappLink(whatsapp)
 
   return <>
-    {!preview && <JsonLd data={breadcrumbs([{name: 'Início', path: '/'}, {name: 'Empreendimentos', path: catalogPath}])} />}
+    {!preview && <JsonLd data={breadcrumbs([{name: 'Início', path: '/'}, {name: 'Imóveis', path: catalogPath}])} />}
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
-    <Header light contact={contact} />
-    <main id="conteudo" className="bg-paper text-espresso [color-scheme:light]">
+    <main id="conteudo" className="bg-paper text-espresso">
       <Suspense fallback={<div className={wrap + ' py-16'}>
-        <h1 className={homeSectionHeading}>Todos os empreendimentos</h1>
-        <p role="status" className="mt-4 text-earth">Carregando empreendimentos…</p>
+        <h1 className={homeSectionHeading}>Todos os imóveis</h1>
+        <p role="status" className="mt-4 text-earth">Carregando imóveis…</p>
       </div>}>
         <Catalog items={catalog.map(catalogPictures)} full />
       </Suspense>
     </main>
-    <Footer contact={contact} integrated>
-      <CatalogCta contact={contact} />
-    </Footer>
+    <CatalogCta contact={contact} />
     <WhatsAppWidget phone={whatsapp} />
   </>
 }

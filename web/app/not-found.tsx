@@ -2,7 +2,6 @@ import Link from 'next/link'
 import type {Metadata} from 'next'
 import {ArrowUpRight} from 'lucide-react'
 import {BackButton} from '../components/backButton'
-import {Header} from '../components/chrome'
 import {eyebrow, heading, outlineButton, sweepButton, wrap} from '../lib/classes'
 import {picture} from '../lib/image'
 import {getSiteSettings, isPreview} from '../lib/sanity'
@@ -16,13 +15,12 @@ export default async function NotFound() {
   const settings = await getSiteSettings(await isPreview())
   const image = settings.homeCta?.image
   return (
-    <div className="min-h-dvh bg-paper text-espresso [color-scheme:light]">
-      <Header light />
+    <div className="min-h-dvh bg-paper text-espresso">
       <main id="conteudo" className={wrap + ' grid items-center gap-10 pt-10 pb-12 sm:pt-14 sm:pb-16 lg:min-h-[calc(100dvh-10rem)] lg:grid-cols-[1fr_.9fr] lg:gap-16'}>
         <div className="max-w-[38rem]">
           <p className={eyebrow + ' mb-5 text-piramide'}>Erro 404 · Página não encontrada</p>
           <h1 className={heading + ' text-[clamp(2.5rem,5vw,5rem)]'}>Este endereço não foi encontrado.</h1>
-          <p className="mt-6 max-w-[43ch] text-base leading-relaxed text-zinc-600 sm:text-lg">
+          <p className="mt-6 max-w-[43ch] text-base leading-relaxed text-earth sm:text-lg">
             O link pode estar incorreto ou a página pode ter sido removida. Explore nosso portfólio para encontrar seu próximo imóvel.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
