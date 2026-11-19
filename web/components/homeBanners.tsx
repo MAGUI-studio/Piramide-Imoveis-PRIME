@@ -1,23 +1,66 @@
 'use client'
 
-import {useEffect, useState} from 'react'
-import {ArrowLeft, ArrowRight, Pause, Play} from 'lucide-react'
+import {useEffect, useLayoutEffect, useRef, useState} from 'react'
 import {wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {Frame} from './media'
 
 type Banner = {id: string; title: string; href: string; newTab?: boolean; image: Picture}
-const control = 'inline-grid size-10 shrink-0 cursor-pointer place-items-center text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-white motion-reduce:transition-none'
+const slideDuration = 6500
+const transitionDuration = 1800
 
 export function HomeBanners({items}: {items: Banner[]}) {
   const [index, setIndex] = useState(0)
-  const [paused, setPaused] = useState(false)
-  const [hovered, setHovered] = useState(false)
+  const [previousIndex, setPreviousIndex] = useState(-1)
+  const [transitioning, setTransitioning] = useState(false)
   const [focused, setFocused] = useState(false)
   const [visible, setVisible] = useState(true)
   const [reducedMotion, setReducedMotion] = useState(true)
+  const banner = useRef<HTMLElement>(null)
+  const photoLayers = useRef<(HTMLDivElement | null)[]>([])
+  const photoImages = useRef<(HTMLDivElement | null)[]>([])
+  const transitionLock = useRef(false)
+  const selectionRequest = useRef(0)
+  const elapsed = useRef(0)
   const count = items.length
   const active = count ? index % count : 0
+
+  function syncProgress(ratio: number) {
+    const pct = Math.max(0, Math.min(100, ratio * 100))
+    banner.current?.style.setProperty('--slide-progress', pct + '%')
+  }
+
+  useLayoutEffect(() => {
+    const incoming = photoLayers.current[active]
+    const outgoing = photoLayers.current[previousIndex]
+    if (!incoming || !outgoing || reducedMotion) {
+      transitionLock.current = false
+      setTransitioning(false)
+      return
+    }
+    const timing = {duration: transitionDuration, easing: 'cubic-bezier(.55,.08,.25,1)', fill: 'both' as const}
+    const enter = incoming.animate([
+      {clipPath: 'polygon(0 0, -24% 0, -48% 100%, 0 100%)'},
+      {clipPath: 'polygon(0 0, 148% 0, 124% 100%, 0 100%)'},
+    ], timing)
+    const settle = photoImages.current[active]?.animate([
+      {transform: 'scale(1.045)'},
+      {transform: 'scale(1)'},
+    ], {...timing, easing: 'cubic-bezier(.2,.6,.25,1)'})
+    const startTime = document.timeline.currentTime
+    enter.startTime = startTime
+    if (settle) settle.startTime = startTime
+    enter.onfinish = () => {
+      transitionLock.current = false
+      setTransitioning(false)
+    }
+    return () => {
+      enter.onfinish = null
+      enter.cancel()
+      settle?.cancel()
+      transitionLock.current = false
+    }
+  }, [active, previousIndex, reducedMotion])
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -34,31 +77,76 @@ export function HomeBanners({items}: {items: Banner[]}) {
   }, [])
 
   useEffect(() => {
-    if (count < 2 || paused || hovered || focused || !visible || reducedMotion) return
-    const timer = window.setInterval(() => setIndex((current) => (current + 1) % count), 6500)
-    return () => window.clearInterval(timer)
-  }, [count, paused, hovered, focused, visible, reducedMotion, index])
+    if (reducedMotion) {
+      syncProgress(1)
+      return
+    }
+    syncProgress(elapsed.current / slideDuration)
+    if (count < 2 || focused || !visible) return
+    let frame: number
+    let previous = performance.now()
+    function tick(now: number) {
+      elapsed.current += now - previous
+      previous = now
+      const ratio = Math.min(elapsed.current / slideDuration, 1)
+      syncProgress(ratio)
+      if (ratio >= 1) {
+        if (!transitionLock.current) void select((active + 1) % count)
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [count, focused, visible, reducedMotion, index])
 
   if (!count) return null
 
-  function select(next: number) {
-    setIndex((next + count) % count)
+  async function select(next: number) {
+    const target = (next + count) % count
+    if (transitionLock.current || target === active) return
+    const request = ++selectionRequest.current
+    const image = banner.current?.querySelectorAll('img')[target]
+    if (!image) return
+    transitionLock.current = true
+    try {
+      await image.decode()
+    } catch {
+      transitionLock.current = false
+      return
+    }
+    if (request !== selectionRequest.current) return
+    transitionLock.current = !reducedMotion
+    setTransitioning(!reducedMotion)
+    elapsed.current = 0
+    syncProgress(reducedMotion ? 1 : 0)
+    setFocused(false)
+    setPreviousIndex(active)
+    setIndex(target)
   }
 
-  return <section aria-label="Novidades e campanhas" aria-roledescription={count > 1 ? 'carrossel' : undefined} className={wrap} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => {if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)}}>
+  return <section id="campanhas" ref={banner} aria-label="Novidades e campanhas" aria-roledescription={count > 1 ? 'carrossel' : undefined} className={wrap} onFocus={(event) => {if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) setFocused(true)}} onBlur={(event) => {if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)}}>
     <div className="w-full overflow-hidden bg-coal">
     <div className="relative aspect-[3/1] overflow-hidden">
-      {items.map((item, position) => <a key={item.id} href={item.href} target={item.newTab ? '_blank' : undefined} rel={item.newTab ? 'noopener noreferrer' : undefined} aria-label={item.title + (item.newTab ? ' (abre em nova aba)' : '')} aria-hidden={position !== active} tabIndex={position === active ? 0 : -1} className={'absolute inset-0 block focus-visible:-outline-offset-4 focus-visible:outline-white motion-safe:transition-opacity motion-safe:duration-700 ' + (position === active ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0')}>
-        <Frame photo={item.image} className="size-full object-cover" sizes="(min-width: 1712px) 1632px, calc(100vw - 2rem)" />
+      {items.map((item, position) => <a key={item.id} href={item.href} target={item.newTab ? '_blank' : undefined} rel={item.newTab ? 'noopener noreferrer' : undefined} aria-label={item.title + (item.newTab ? ' (abre em nova aba)' : '')} aria-hidden={position !== active} tabIndex={position === active ? 0 : -1} className={'absolute inset-0 block focus-visible:-outline-offset-4 focus-visible:outline-white ' + (position === active ? 'z-10' : position === previousIndex ? 'pointer-events-none z-0' : 'pointer-events-none invisible -z-10')}>
+        <div ref={(node) => {photoLayers.current[position] = node}} className="size-full overflow-hidden motion-safe:will-change-[clip-path]">
+          <div ref={(node) => {photoImages.current[position] = node}} className="size-full motion-safe:will-change-transform">
+            <Frame photo={item.image} className="size-full object-cover" sizes="(min-width: 2032px) 1952px, calc(100vw - 2rem)" />
+          </div>
+        </div>
       </a>)}
+      {count > 1 && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center bg-linear-to-t from-black/50 to-transparent px-4 pt-6 pb-1 sm:pt-10 sm:pb-3">
+        <div className="pointer-events-auto flex items-center gap-2.5" role="group" aria-label="Selecionar campanha">
+          {items.map((item, position) => <button type="button" key={item.id} disabled={transitioning} onPointerDown={(event) => event.preventDefault()} aria-label={'Ir para slide ' + (position + 1) + ': ' + item.title} aria-current={position === active ? 'true' : undefined} onClick={() => select(position)} className="group/dot flex min-h-11 cursor-pointer items-center py-3 focus-visible:outline-white focus-visible:outline-offset-4">
+            {position === active ? (
+              <span className="relative block h-1.5 w-14 overflow-hidden rounded-none bg-white/25 shadow-sm">
+                <span className="block h-full w-(--slide-progress,0%) rounded-none bg-white" />
+              </span>
+            ) : <span className="block h-1.5 w-3.5 rounded-none bg-white/35 shadow-sm transition-colors duration-300 group-hover/dot:bg-white/70 motion-reduce:transition-none" />}
+          </button>)}
+        </div>
+        <span className="sr-only" role="status" aria-live={focused ? 'polite' : 'off'}>{active + 1} de {count}: {items[active].title}</span>
+      </div>}
     </div>
-    {count > 1 && <div className="flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 text-white">
-      <button type="button" onClick={() => select(active - 1)} aria-label="Banner anterior" className={control}><ArrowLeft size={17} aria-hidden="true" /></button>
-      <div className="flex max-w-[60vw] flex-wrap items-center justify-center" aria-label="Selecionar banner">{items.map((item, position) => <button type="button" key={item.id} aria-label={'Banner ' + (position + 1) + ': ' + item.title} aria-current={position === active ? 'true' : undefined} onClick={() => select(position)} className="group/dot grid min-h-11 min-w-8 cursor-pointer place-items-center px-1 focus-visible:outline-white"><span className={'h-1 rounded-full transition-[width,background-color] duration-300 motion-reduce:transition-none ' + (position === active ? 'w-7 bg-white' : 'w-3 bg-white/35 group-hover/dot:bg-white/70')} /></button>)}</div>
-      <button type="button" onClick={() => select(active + 1)} aria-label="Próximo banner" className={control}><ArrowRight size={17} aria-hidden="true" /></button>
-      {!reducedMotion && <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? 'Retomar rotação dos banners' : 'Pausar rotação dos banners'} className={control}>{paused ? <Play size={15} aria-hidden="true" /> : <Pause size={15} aria-hidden="true" />}</button>}
-      <span className="sr-only" role="status" aria-live={paused || focused ? 'polite' : 'off'}>{active + 1} de {count}: {items[active].title}</span>
-    </div>}
     </div>
   </section>
 }
