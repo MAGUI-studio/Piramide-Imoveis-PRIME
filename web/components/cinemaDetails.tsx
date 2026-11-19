@@ -21,11 +21,27 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
     property.conditions?.acceptsFinancing && 'Aceita financiamento',
   ].filter(Boolean)
 
+  const hasSale = !!(property.price && property.price > 0)
+  const hasRent = !!(property.rentPrice && property.rentPrice > 0)
+
   return (
     <aside className="flex min-w-0 flex-wrap items-end gap-x-10 gap-y-4 pb-2 lg:gap-x-14" aria-labelledby="property-purchase">
-      <div>
-        <h2 id="property-purchase" className={label}>Valor de venda</h2>
-        <p className="mt-1.5 text-[clamp(1.45rem,2.55vw,2.35rem)] leading-tight font-semibold tracking-tight tabular-nums">{propertyPrice(property.price)}</p>
+      <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
+        {(hasSale || !hasRent) && (
+          <div>
+            <h2 id="property-purchase" className={label}>{hasSale ? 'Valor de venda' : 'Valor'}</h2>
+            <p className="mt-1.5 text-[clamp(1.45rem,2.55vw,2.35rem)] leading-tight font-semibold tracking-tight tabular-nums">{propertyPrice(property.price)}</p>
+          </div>
+        )}
+        {hasRent && (
+          <div className={hasSale ? 'border-s border-rule ps-6 sm:ps-8' : undefined}>
+            <h2 id={hasSale ? undefined : 'property-purchase'} className={label}>Valor de locação</h2>
+            <p className="mt-1.5 text-[clamp(1.45rem,2.55vw,2.35rem)] leading-tight font-semibold tracking-tight tabular-nums">
+              {currency.format(property.rentPrice!)}
+              <span className="ml-1.5 text-sm font-normal text-secondary sm:text-base">/ mês</span>
+            </p>
+          </div>
+        )}
       </div>
       {!!fees.length && (
         <dl className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-secondary lg:gap-x-10">

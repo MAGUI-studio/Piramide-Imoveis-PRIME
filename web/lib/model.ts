@@ -52,6 +52,7 @@ export type PropertyCard = {
   condominiumName?: string | null
   availability?: Availability | null
   price?: number | null
+  rentPrice?: number | null
   conditions?: PropertyConditions | null
   specifications?: Specifications | null
   city: {id: string; name: string} | null
@@ -105,6 +106,19 @@ const currencyFormat = new Intl.NumberFormat('pt-BR', {style: 'currency', curren
 
 export function propertyPrice(price?: number | null) {
   return price && price > 0 ? currencyFormat.format(price) : 'Valor sob consulta'
+}
+
+export function propertyRentPrice(rentPrice?: number | null) {
+  return rentPrice && rentPrice > 0 ? currencyFormat.format(rentPrice) + ' / mês' : null
+}
+
+export function propertyAreaValue({propertyType, specifications}: Pick<PropertyCard, 'propertyType' | 'specifications'>) {
+  const area = specifications?.area
+  const land = specifications?.landArea
+  const total = specifications?.totalArea
+  const isLand = propertyType === 'Terreno' || propertyType === 'Loteamento'
+  const candidates = isLand ? [land, total, area] : [area, total, land]
+  return candidates.find((item) => typeof item === 'number' && item > 0) ?? 0
 }
 
 export function cardAreaOf({propertyType, specifications}: Pick<PropertyCard, 'propertyType' | 'specifications'>) {

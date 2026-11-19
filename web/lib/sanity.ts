@@ -24,7 +24,7 @@ async function read<T>(query: string, params: QueryParams = {}, preview = false)
 const cardFields = `
   "id": _id, title, refCode, "slug": slug.current, propertyType, "condominiumName": coalesce(condominium->name, condominiumName),
   "condominium": condominium->{"id": _id, name, "slug": slug.current},
-  availability, price, conditions, summary, attributes, cover, specifications,
+  availability, price, rentPrice, conditions, summary, attributes, cover, specifications,
   "createdAt": _createdAt,
   "city": neighborhood->city->{"id": _id, name},
   "neighborhood": neighborhood->{"id": _id, name}

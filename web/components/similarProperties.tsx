@@ -2,7 +2,7 @@ import Link from 'next/link'
 import {ArrowUpRight, BedDouble, CarFront, MapPin, Ruler} from 'lucide-react'
 import {eyebrow, homeSectionHeading, wrap} from '../lib/classes'
 import {picture} from '../lib/image'
-import {cardAreaOf, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
+import {cardAreaOf, locationOf, propertyPrice, propertyRentPrice, type PropertyCard} from '../lib/model'
 import {DragCarousel} from './dragCarousel'
 import {Frame} from './media'
 
@@ -30,7 +30,33 @@ export function SimilarProperties({items}: {items: PropertyCard[]}) {
                 {!!item.specifications?.suites && <span className="inline-flex items-center gap-1.5"><BedDouble size={14} aria-hidden="true" />{item.specifications.suites} {item.specifications.suites === 1 ? 'suíte' : 'suítes'}</span>}
                 {!!item.specifications?.parking && <span className="inline-flex items-center gap-1.5"><CarFront size={14} aria-hidden="true" />{item.specifications.parking} {item.specifications.parking === 1 ? 'vaga' : 'vagas'}</span>}
               </div>
-              <p className="mt-auto pt-5 text-lg font-semibold tracking-tight text-ink">{propertyPrice(item.price)}</p>
+              <div className="mt-auto flex flex-wrap items-end gap-x-4 gap-y-2 pt-5 tracking-tight text-ink tabular-nums">
+                {item.price && item.price > 0 && item.rentPrice && item.rentPrice > 0 ? (
+                  <>
+                    <div>
+                      <span className="mb-0.5 block text-[10px] font-semibold tracking-[0.14em] text-secondary uppercase">Venda</span>
+                      <span className="text-base font-semibold sm:text-lg">{propertyPrice(item.price)}</span>
+                    </div>
+                    <div className="border-l border-rule pl-4">
+                      <span className="mb-0.5 block text-[10px] font-semibold tracking-[0.14em] text-secondary uppercase">Locação</span>
+                      <span className="text-base font-semibold sm:text-lg">
+                        {propertyPrice(item.rentPrice)}
+                        <span className="ml-1 text-xs font-medium text-secondary">/ mês</span>
+                      </span>
+                    </div>
+                  </>
+                ) : item.rentPrice && item.rentPrice > 0 ? (
+                  <div>
+                    <span className="mb-0.5 block text-[10px] font-semibold tracking-[0.14em] text-secondary uppercase">Locação</span>
+                    <span className="text-lg font-semibold">
+                      {propertyPrice(item.rentPrice)}
+                      <span className="ml-1 text-xs font-medium text-secondary">/ mês</span>
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-lg font-semibold">{propertyPrice(item.price)}</span>
+                )}
+              </div>
             </div>
           </Link>
         </article>)}
