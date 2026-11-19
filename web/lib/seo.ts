@@ -3,7 +3,7 @@ import type {Metadata} from 'next'
 import {picture} from './image'
 import {cardAreaOf, type Photo, type Property, type Seo} from './model'
 import {siteUrl} from './sanity'
-import defaultOgImage from '../public/utils/SEO/og-image.png'
+import defaultOgImage from '../public/utils/SEO/og-image.jpg'
 
 export const siteName = 'Pirâmide Imóveis Prime'
 export const homeTitle = 'Imóveis de alto padrão'
@@ -12,7 +12,8 @@ export const catalogTitle = 'Imóveis de alto padrão'
 export const catalogDescription = 'Explore imóveis de alto padrão e compare opções por cidade, bairro, tipo e número de suítes no catálogo da Pirâmide Imóveis Prime.'
 export const catalogPath = '/imoveis'
 export const defaultSocialImage = {
-  url: new URL('/utils/SEO/og-image.png', siteUrl).href,
+  url: new URL('/utils/SEO/og-image.jpg', siteUrl).href,
+  type: 'image/jpeg',
   width: defaultOgImage.width,
   height: defaultOgImage.height,
   alt: siteName,
@@ -35,8 +36,13 @@ export async function pageMetadata({path, title, description, seo, photo, noInde
   const pageDescription = seo?.description?.trim() || description
   const source = seo?.socialImage?.asset ? seo.socialImage : photo
   const image = source?.asset ? picture(source, 1200 / 630, 1200) : null
+  const imageUrl = image?.src ? new URL(image.src) : null
+  if (imageUrl) {
+    imageUrl.searchParams.delete('auto')
+    imageUrl.searchParams.set('fm', 'jpg')
+  }
   const socialImage = image?.src
-    ? {url: image.src, width: 1200, height: 630, alt: image.alt || pageTitle}
+    ? {url: imageUrl!.href, type: 'image/jpeg', width: 1200, height: 630, alt: image.alt || pageTitle}
     : defaultSocialImage
   const url = canonicalUrl(path)
   return {
