@@ -16,13 +16,16 @@ export function DragCarousel({children, className = ''}: {children: ReactNode; c
       moved: false,
     }
     setGrabbing(true)
-    track.current.setPointerCapture(event.pointerId)
   }
 
   function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
     if (!drag.current.active || !track.current) return
     const delta = event.clientX - drag.current.startX
-    if (Math.abs(delta) > 5) drag.current.moved = true
+    if (Math.abs(delta) > 5 && !drag.current.moved) {
+      drag.current.moved = true
+      track.current.setPointerCapture(event.pointerId)
+    }
+    if (!drag.current.moved) return
     track.current.scrollLeft = drag.current.scrollLeft - delta
   }
 
@@ -50,6 +53,7 @@ export function DragCarousel({children, className = ''}: {children: ReactNode; c
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onPointerLeave={endDrag}
       onClickCapture={onClickCapture}
       onDragStart={(event) => event.preventDefault()}
       className={

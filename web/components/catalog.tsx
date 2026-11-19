@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
-import {useEffect, useId, useRef, useState} from 'react'
-import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, CarFront, Check, ChevronDown, House, MapPin, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
+import {MultiSelect} from './multiSelect'
+import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, CarFront, House, MapPin, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
 import {availabilityLabel, cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
 import {button, eyebrow, heading, homeSectionHeading, riseIn, wrap} from '../lib/classes'
@@ -17,140 +17,19 @@ const homeLimit = 5
 const paginationLink = 'inline-flex min-h-11 items-center gap-2 px-3 text-sm font-semibold text-piramide transition-colors hover:bg-piramide/10'
 const filterField = 'flex min-h-15 items-center gap-3 border-b border-espresso/25 bg-transparent px-1 transition-colors hover:border-espresso/55 focus-within:border-piramide sm:px-2'
 
-type SelectOption = {value: string; label: string}
-
-function MultiSelect({
-  label,
-  placeholder,
-  icon: Icon,
-  values,
-  options,
-  onChange,
-}: {
-  label: string
-  placeholder: string
-  icon: typeof MapPin
-  values: string[]
-  options: SelectOption[]
-  onChange: (values: string[]) => void
-}) {
-  const id = useId()
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const container = useRef<HTMLDivElement>(null)
-  const trigger = useRef<HTMLButtonElement>(null)
-  const input = useRef<HTMLInputElement>(null)
-  const selected = options.filter(({value}) => values.includes(value))
-  const term = normalize(search).trim()
-  const matching = options.filter((option) => normalize(option.label).includes(term))
-
-  function close() {
-    setOpen(false)
-    setSearch('')
-  }
-
-  useEffect(() => {
-    if (!open) return
-    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) input.current?.focus()
-    function closeOutside(event: PointerEvent) {
-      if (!container.current?.contains(event.target as Node)) close()
-    }
-    document.addEventListener('pointerdown', closeOutside)
-    return () => document.removeEventListener('pointerdown', closeOutside)
-  }, [open])
-
-  return (
-    <div
-      ref={container}
-      className="relative min-w-0"
-      onBlur={(event) => {
-        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) close()
-      }}
-      onKeyDown={(event) => {
-        if (!open || event.key !== 'Escape') return
-        event.preventDefault()
-        event.stopPropagation()
-        close()
-        trigger.current?.focus()
-      }}
-    >
-      <button
-        ref={trigger}
-        type="button"
-        aria-expanded={open}
-        aria-controls={open ? id : undefined}
-        onClick={() => open ? close() : setOpen(true)}
-        className={filterField + ' w-full cursor-pointer text-left aria-expanded:border-piramide'}
-      >
-        <Icon aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">{label}</span>
-          <span className="mt-0.5 block truncate text-sm font-medium text-espresso">{selected[0]?.label || placeholder}</span>
-        </span>
-        {selected.length > 1 && <span className="shrink-0 bg-piramide/10 px-1.5 py-0.5 text-[10px] font-bold text-piramide">+{selected.length - 1}</span>}
-        <ChevronDown aria-hidden="true" size={15} className={'shrink-0 text-piramide motion-safe:transition-transform ' + (open ? 'rotate-180' : '')} />
-      </button>
-
-      {open && (
-        <div id={id} className="absolute inset-x-0 top-full z-30 mt-2 border border-espresso/15 bg-paper p-2 shadow-lg motion-safe:animate-enter">
-          <label className="flex items-center gap-2 border-b border-espresso/20 px-2.5 text-piramide focus-within:border-piramide">
-            <Search aria-hidden="true" size={16} className="shrink-0" />
-            <span className="sr-only">Pesquisar opções de {label.toLowerCase()}</span>
-            <input
-              ref={input}
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Pesquisar opções"
-              className="h-10 w-full min-w-0 bg-transparent text-sm text-espresso placeholder:text-earth focus:outline-none"
-            />
-          </label>
-
-          <fieldset className="mt-2 max-h-52 min-w-0 overflow-y-auto overscroll-contain">
-            <legend className="sr-only">{label}</legend>
-            {matching.map(({value, label: optionLabel}) => {
-              const checked = values.includes(value)
-              return (
-                <label key={value} className="flex min-h-10 cursor-pointer items-center gap-2.5 px-2.5 py-2 text-sm text-espresso hover:bg-espresso/5 focus-within:bg-piramide/10">
-                  <span className="relative grid size-4 shrink-0 place-items-center">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => onChange(checked ? values.filter((selection) => selection !== value) : [...values, value])}
-                      className="peer size-4 appearance-none border border-espresso/30 checked:border-piramide checked:bg-piramide focus-visible:outline-piramide"
-                    />
-                    <Check aria-hidden="true" size={12} strokeWidth={2.5} className="pointer-events-none absolute hidden text-white peer-checked:block" />
-                  </span>
-                  <span className="min-w-0 break-words">{optionLabel}</span>
-                </label>
-              )
-            })}
-            {!matching.length && <p role="status" className="px-2.5 py-3 text-xs text-earth">Nenhuma opção encontrada.</p>}
-          </fieldset>
-          {!!selected.length && <div className="mt-2 flex items-center justify-between gap-2 border-t border-espresso/10 px-2.5 pt-2 text-xs">
-            <span className="text-earth">{selected.length} {selected.length === 1 ? 'selecionado' : 'selecionados'}</span>
-            <button type="button" className="cursor-pointer py-1 font-semibold text-piramide hover:underline" onClick={() => {
-              input.current?.focus()
-              onChange([])
-            }}>Limpar seleção</button>
-          </div>}
-        </div>
-      )}
-    </div>
-  )
-}
-
-export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boolean}) {
+export function Catalog({items, full = false, scopeTitle, fixedLocation = false, showAllLink = false, basePath = '/empreendimentos'}: {items: CatalogItem[]; full?: boolean; scopeTitle?: string; fixedLocation?: boolean; showAllLink?: boolean; basePath?: string}) {
   const params = useSearchParams()
   const query = params.get('busca') || ''
+  const selectedCondominium = params.get('condominio') || ''
+  const condominiumName = items.find((item) => item.condominium?.slug === selectedCondominium)?.condominium?.name
   const cities = Array.from(new Map(items.flatMap(({city}) => city ? [[city.id, city]] : [])).values()).sort((a, b) => collator.compare(a.name, b.name))
-  const selectedCities = params.getAll('cidade').filter((value) => cities.some(({id}) => id === value))
+  const selectedCities = (fixedLocation ? [] : params.getAll('cidade')).filter((value) => cities.some(({id}) => id === value))
   const neighborhoods = Array.from(new Map(items.flatMap(({neighborhood, city}) => (
     neighborhood && (!selectedCities.length || (city && selectedCities.includes(city.id)))
       ? [[neighborhood.id, {...neighborhood, label: selectedCities.length === 1 ? neighborhood.name : [neighborhood.name, city?.name].filter(Boolean).join(', ')}]]
       : []
   ))).values()).sort((a, b) => collator.compare(a.label, b.label))
-  const selectedNeighborhoods = params.getAll('bairro').filter((value) => neighborhoods.some(({id}) => id === value))
+  const selectedNeighborhoods = (fixedLocation ? [] : params.getAll('bairro')).filter((value) => neighborhoods.some(({id}) => id === value))
   const types = Array.from(new Set(items.map(({propertyType}) => propertyType))).filter(Boolean).sort(collator.compare)
   const selectedTypes = params.getAll('tipo').filter((value) => types.includes(value))
   const suiteCounts = Array.from(new Set(items.map(({specifications}) => specifications?.suites).filter((n): n is number => typeof n === 'number' && n > 0))).sort((a, b) => a - b)
@@ -158,6 +37,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
   const selectedSuites = params.getAll('suites').filter((value) => suiteValues.includes(value))
   const words = normalize(query).trim().split(/\s+/).filter(Boolean)
   const results = items.filter((item) => {
+    if (selectedCondominium && item.condominium?.slug !== selectedCondominium) return false
     if (selectedCities.length && !selectedCities.includes(item.city?.id || '')) return false
     if (selectedNeighborhoods.length && !selectedNeighborhoods.includes(item.neighborhood?.id || '')) return false
     if (selectedTypes.length && !selectedTypes.includes(item.propertyType)) return false
@@ -171,14 +51,22 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
   const start = (page - 1) * catalogPageSize
   const displayed = full ? results.slice(start, start + catalogPageSize) : results.slice(0, homeLimit)
   const hasLeadStack = displayed.length === 3 || displayed.length === homeLimit
-  const Title = full ? 'h1' : 'h2'
+  const Title = full && !scopeTitle ? 'h1' : 'h2'
+  const typeTitle = selectedTypes.length > 1
+    ? 'Imóveis selecionados para você'
+    : selectedTypes[0] === 'Casa/Mansão' ? 'Casas e mansões à venda' : selectedTypes[0] || 'Imóveis'
+  const title = !full ? 'Explore os imóveis'
+    : selectedTypes.length || selectedCondominium
+      ? [typeTitle, scopeTitle ? scopeTitle.replace(/^Imóveis /, '') : selectedCondominium ? 'em ' + (condominiumName || 'condomínio selecionado') : ''].filter(Boolean).join(' ')
+      : query || selectedCities.length || selectedNeighborhoods.length || selectedSuites.length ? scopeTitle || 'Imóveis selecionados' : scopeTitle || 'Todos os imóveis'
+
 
   function pageHref(target: number) {
     const nextParams = new URLSearchParams(params.toString())
     if (target === 1) nextParams.delete('pagina')
     else nextParams.set('pagina', String(target))
     const search = nextParams.toString()
-    return '/empreendimentos' + (search ? '?' + search : '') + '#resultados'
+    return basePath + (search ? '?' + search : '') + '#resultados'
   }
 
   function updateSearch(value: string) {
@@ -206,18 +94,19 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
 
   function clear() {
     const url = new URL(window.location.href)
-    for (const key of ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'pagina']) url.searchParams.delete(key)
+    for (const key of ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'condominio', 'pagina']) url.searchParams.delete(key)
     window.history.pushState(null, '', url)
   }
 
   return (
-    <section id="empreendimentos" className={wrap + ' scroll-mt-4 ' + (full ? 'pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]' : 'pt-10 pb-10 sm:pt-16 sm:pb-14')}>
-      <Reveal className="group mb-7">
-        <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide ' + riseIn}>Portfólio Pirâmide Imóveis Prime</p>
-        <Title className={homeSectionHeading}><Words text={full ? 'Todos os empreendimentos' : 'Explore os empreendimentos'} start={100} /></Title>
+    <section id="empreendimentos" className={wrap + ' scroll-mt-4 ' + (full ? (fixedLocation ? 'pt-10 pb-14 sm:pt-14 sm:pb-20' : 'pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]') : 'pt-6 pb-10 sm:pt-8 sm:pb-12')}>
+      <Reveal className="group mb-4 sm:mb-5">
+        <p className={eyebrow + ' mb-1.5 text-[.68rem] text-piramide ' + riseIn}>Portfólio Pirâmide Imóveis Prime</p>
+        <Title className={homeSectionHeading}><Words key={title} text={title} start={100} /></Title>
+        {selectedCondominium && <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-piramide"><Link href={'/condominios/' + encodeURIComponent(selectedCondominium)} className="hover:underline">Conhecer {condominiumName || 'o condomínio'}</Link><button type="button" className="inline-flex min-h-11 cursor-pointer items-center gap-2 border border-piramide/25 px-3" onClick={() => {const url = new URL(window.location.href); url.searchParams.delete('condominio'); url.searchParams.delete('pagina'); window.history.pushState(null, '', url)}}>Remover condomínio <X size={14} aria-hidden="true" /></button></div>}
       </Reveal>
       {items.length ? <>
-        <form role="search" aria-label="Filtrar empreendimentos" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3.4fr)] xl:grid-cols-[minmax(16rem,1.1fr)_minmax(0,3.4fr)]" onSubmit={(event) => event.preventDefault()}>
+        <form role="search" aria-label="Filtrar imóveis" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3.4fr)] xl:grid-cols-[minmax(16rem,1.1fr)_minmax(0,3.4fr)]" onSubmit={(event) => event.preventDefault()}>
           <div className={filterField}>
             <label className="flex min-w-0 flex-1 items-center gap-3">
               <Search aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
@@ -245,7 +134,8 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
           </div>
           <details className="min-[801px]:[&:not([open])::details-content]:[content-visibility:visible]" open>
             <summary className="flex h-11 cursor-pointer items-center gap-2 text-sm font-medium text-espresso min-[801px]:hidden"><SlidersHorizontal size={16} /> Filtros</summary>
-            <div className={'grid grid-cols-1 gap-2 sm:gap-3 ' + (suiteCounts.length ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3')}>
+            <div className={'grid grid-cols-1 gap-2 sm:gap-3 ' + (fixedLocation ? suiteCounts.length ? 'sm:grid-cols-2' : 'sm:grid-cols-1' : suiteCounts.length ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3')}>
+              {!fixedLocation && <>
               <MultiSelect
                 label="Cidade"
                 placeholder="Todas as cidades"
@@ -262,6 +152,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
                 options={neighborhoods.map(({id, label}) => ({value: id, label}))}
                 onChange={(values) => updateFilter('bairro', values)}
               />
+              </>}
               <MultiSelect
                 label="Tipo de imóvel"
                 placeholder="Todos os tipos"
@@ -283,9 +174,9 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
             </div>
           </details>
         </form>
-        <div id={full ? 'resultados' : undefined} className="flex min-h-12 scroll-mt-4 items-center justify-between text-xs text-earth">
+        <div id={full ? 'resultados' : undefined} className="flex min-h-9 scroll-mt-4 items-center justify-between text-xs text-earth">
           <span aria-live="polite">{results.length} {results.length === 1 ? 'imóvel' : 'imóveis'}</span>
-          {(query || selectedCities.length > 0 || selectedNeighborhoods.length > 0 || selectedTypes.length > 0 || selectedSuites.length > 0) && <button type="button" className="cursor-pointer py-2 font-medium text-piramide transition-opacity hover:opacity-80" onClick={clear}>Limpar filtros</button>}
+          {(query || selectedCondominium || selectedCities.length > 0 || selectedNeighborhoods.length > 0 || selectedTypes.length > 0 || selectedSuites.length > 0) && <button type="button" className="cursor-pointer py-2 font-medium text-piramide transition-opacity hover:opacity-80" onClick={clear}>Limpar filtros</button>}
         </div>
         {displayed.length ? <div className={'grid gap-3 sm:gap-4 xl:gap-5 ' + (full ? 'sm:grid-cols-2' : 'min-[801px]:grid-cols-12')}>
           {displayed.map((item, index) => {
@@ -369,10 +260,10 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
             )
           })}
         </div> : <div className="border border-rule p-7 text-earth"><p>Nenhum imóvel encontrado com esses filtros.</p><button type="button" className={button + ' mt-4 cursor-pointer border-piramide text-piramide hover:bg-piramide/10'} onClick={clear}>Limpar filtros</button></div>}
-        {!full && items.length > homeLimit && (
+        {!full && (showAllLink || items.length > homeLimit) && (
           <div className="mt-6 flex justify-end">
             <Link href="/empreendimentos" className="group/explore inline-flex min-h-11 w-fit items-center gap-2.5 text-right text-sm text-espresso transition-colors hover:text-piramide motion-reduce:transition-none sm:text-base">
-              Ver todos os empreendimentos <ArrowUpRight aria-hidden="true" size={18} className="shrink-0 motion-safe:transition-transform motion-safe:group-hover/explore:translate-x-0.5 motion-safe:group-hover/explore:-translate-y-0.5" />
+              Ver todos os imóveis <ArrowUpRight aria-hidden="true" size={18} className="shrink-0 motion-safe:transition-transform motion-safe:group-hover/explore:translate-x-0.5 motion-safe:group-hover/explore:-translate-y-0.5" />
             </Link>
           </div>
         )}
@@ -386,7 +277,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
             }
           }
           return (
-            <nav aria-label="Paginação dos empreendimentos" className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
+            <nav aria-label="Paginação dos imóveis" className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
               {page > 1 && (
                 <Link href={pageHref(page - 1)} rel="prev" aria-label="Página anterior" className={paginationLink}>
                   <ArrowLeft aria-hidden="true" size={16} />
@@ -419,7 +310,7 @@ export function Catalog({items, full = false}: {items: CatalogItem[]; full?: boo
             </nav>
           )
         })()}
-      </> : <div className="border border-rule p-7 text-earth">Nenhum empreendimento disponível no momento.</div>}
+      </> : <div className="border border-rule p-7 text-earth">Nenhum imóvel disponível no momento.</div>}
     </section>
   )
 }

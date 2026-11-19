@@ -219,7 +219,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
             <Link className={sweepButton + sweepRegular + ' ' + sweepOnCover} href={'/' + leftActive.slug}>
               <span aria-hidden="true" className={sweepFill} />
               <span className={sweepContent}>
-                Ver empreendimento <ArrowUpRight size={18} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
+                Ver imóvel <ArrowUpRight size={18} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </Link>
             <a className="group/explore inline-flex w-fit items-center gap-2.5 text-sm text-ivory transition-colors hover:text-white sm:text-base motion-reduce:transition-none" href="#empreendimentos">
@@ -235,7 +235,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
               return (
                 <dl
                   key={item.slug + '-facts'}
-                  aria-label="Dados do empreendimento"
+                  aria-label="Dados do imóvel"
                   aria-hidden={idx !== rightIndex}
                   aria-live={idx === rightIndex && (focused || !canAnimate) ? 'polite' : 'off'}
                   className={
@@ -257,7 +257,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
               )
             })}
           </div>
-          <div className="flex items-center gap-2.5" role="group" aria-label="Selecionar empreendimento">
+          <div className="flex items-center gap-2.5" role="group" aria-label="Selecionar imóvel">
             {items.map((item, idx) => (
               <button
                 key={item.slug}
