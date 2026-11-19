@@ -24,7 +24,7 @@ export default async function NotFound() {
             O link pode estar incorreto ou a página pode ter sido removida. Explore nosso portfólio para encontrar seu próximo imóvel.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/empreendimentos" className={sweepButton + ' border-piramide bg-piramide px-5 py-3.5 text-sm font-semibold text-white hover:bg-piramide/90'}>
+            <Link href="/imoveis" className={sweepButton + ' border-piramide bg-piramide px-5 py-3.5 text-sm font-semibold text-white hover:bg-piramide/90'}>
               <span className="relative z-10 inline-flex items-center gap-3">
                 Explorar imóveis <ArrowUpRight size={17} aria-hidden="true" />
               </span>

@@ -28,7 +28,7 @@ export async function generateMetadata({searchParams}: {
   })
 }
 
-export default async function Empreendimentos() {
+export default async function Imoveis() {
   const preview = await isPreview()
   const {catalog, whatsapp} = await getHome(preview)
   const contact = whatsappLink(whatsapp)
@@ -37,7 +37,7 @@ export default async function Empreendimentos() {
     {!preview && <JsonLd data={breadcrumbs([{name: 'Início', path: '/'}, {name: 'Imóveis', path: catalogPath}])} />}
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
     <main id="conteudo" className="bg-paper text-espresso">
-      <Suspense fallback={<div className={wrap + ' py-16'}>
+      <Suspense fallback={<div className={wrap + ' pt-6 pb-8 sm:pt-8 sm:pb-12'}>
         <h1 className={homeSectionHeading}>Todos os imóveis</h1>
         <p role="status" className="mt-4 text-earth">Carregando imóveis…</p>
       </div>}>

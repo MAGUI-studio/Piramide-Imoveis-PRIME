@@ -9,7 +9,7 @@ export const homeTitle = 'Imóveis de alto padrão'
 export const homeDescription = 'Conheça casas, apartamentos, coberturas e terrenos de alto padrão. Encontre seu próximo imóvel com a curadoria e o atendimento da Pirâmide Imóveis Prime.'
 export const catalogTitle = 'Imóveis de alto padrão'
 export const catalogDescription = 'Explore imóveis de alto padrão e compare opções por cidade, bairro, tipo e número de suítes no catálogo da Pirâmide Imóveis Prime.'
-export const catalogPath = '/empreendimentos'
+export const catalogPath = '/imoveis'
 
 export function canonicalUrl(path: string) {
   return new URL(path, siteUrl).href
