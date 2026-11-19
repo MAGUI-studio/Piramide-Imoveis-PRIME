@@ -74,7 +74,7 @@ export function PropertyFAQ({property}: {property: Property}) {
 
   return (
     <section
-      id="duvidas"
+      id="perguntas-frequentes"
       aria-labelledby="property-faq"
       className="w-full scroll-mt-6"
     >

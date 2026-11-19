@@ -85,7 +85,7 @@ export async function FinalCta({contact, marquee}: {contact: string | null; marq
               )}
               {content.secondaryLabel && (
                 <a
-                  href="#imoveis"
+                  href="/imoveis"
                   className="group/explore inline-flex items-center gap-2.5 text-sm font-medium text-white transition-colors hover:text-white/75 sm:text-base"
                 >
                   {content.secondaryLabel}{' '}

@@ -7,7 +7,7 @@ export function ScrollSpy({containerId, finalSectionIds}: {containerId: string; 
     const container = document.getElementById(containerId)
     if (!container) return
     const pathname = window.location.pathname
-    let timer: number | undefined
+    let frame: number | undefined
 
     function syncHash() {
       if (!container || window.location.pathname !== pathname) return
@@ -30,15 +30,18 @@ export function ScrollSpy({containerId, finalSectionIds}: {containerId: string; 
     }
 
     function schedule() {
-      window.clearTimeout(timer)
-      timer = window.setTimeout(syncHash, 120)
+      if (frame !== undefined) return
+      frame = window.requestAnimationFrame(() => {
+        frame = undefined
+        syncHash()
+      })
     }
 
     if (!window.location.hash) schedule()
     window.addEventListener('scroll', schedule, {passive: true})
     window.addEventListener('resize', schedule)
     return () => {
-      window.clearTimeout(timer)
+      if (frame !== undefined) window.cancelAnimationFrame(frame)
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
     }

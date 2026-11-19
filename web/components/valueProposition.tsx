@@ -7,7 +7,7 @@ export function ValueProposition({content}: {content: SiteSettings['differentiat
   if (!content?.title) return null
   const pillars = content.items || []
   return (
-    <section id="diferenciais" className="relative text-ivory">
+    <section id="por-que-escolher-a-piramide" className="relative text-ivory">
       <div className={wrap + ' py-[clamp(56px,8vw,116px)]'}>
         <Reveal className="group grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
           <div>
