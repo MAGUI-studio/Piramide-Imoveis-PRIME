@@ -1,5 +1,5 @@
 import {ArrowUp, ArrowUpRight} from 'lucide-react'
-import {sweepButton, sweepFill, sweepRegular, sweepSolid, sweepContent, eyebrow, heading, wrap} from '../lib/classes'
+import {sweepButton, sweepFill, sweepSolid, sweepContent, wrap} from '../lib/classes'
 import {picture} from '../lib/image'
 import {getSiteSettings, isPreview} from '../lib/sanity'
 import type {MarqueeItem} from '../lib/model'
@@ -42,28 +42,63 @@ export async function FinalCta({contact, marquee}: {contact: string | null; marq
         <div aria-hidden="true" className="absolute inset-0 -z-1 md:bg-[linear-gradient(90deg,#101010d9_0%,#101010a6_44%,#10101052_75%,#10101038_100%)]" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 -z-1 h-[clamp(10rem,20vw,21rem)] bg-linear-to-t from-coal from-25% via-coal/85 via-50% to-transparent" />
         <ValueProposition content={settings.differentiators} />
-        {content?.title && <Reveal id="contato" className={wrap + ' flex min-h-[24rem] flex-col items-start justify-center pt-16 pb-24 motion-safe:data-[entered=true]:animate-enter md:min-h-[30rem] md:pt-24 md:pb-28 lg:pb-32'}>
-          {content.eyebrow && <p className={eyebrow + ' mb-3 text-ivory/75'}>{content.eyebrow}</p>}
-          <h2 className={heading + ' max-w-[16ch] text-[clamp(2.4rem,5.6vw,5.5rem)]'}>
-            {content.title}
-          </h2>
-          <p className="mt-6 max-w-[48ch] text-base font-normal text-white/90 sm:text-lg">
-            {content.description}
-          </p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-            {contact && content.buttonLabel && (
-              <a href={contact} target="_blank" rel="noreferrer" className={sweepButton + sweepRegular + ' ' + sweepSolid}>
-                <span aria-hidden="true" className={sweepFill} />
-                <span className={sweepContent}>
-                  {content.buttonLabel} <ArrowUpRight size={18} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
-                </span>
-              </a>
-            )}
-            {content.secondaryLabel && <a href="#empreendimentos" className="group/explore inline-flex items-center gap-2.5 text-sm font-medium text-white transition-colors hover:text-white/75 sm:text-base">
-              {content.secondaryLabel} <ArrowUp aria-hidden="true" size={18} className="transition-transform duration-300 group-hover/explore:-translate-y-1 motion-reduce:transition-none" />
-            </a>}
-          </div>
-        </Reveal>}
+        {content?.title && (
+          <Reveal
+            id="contato"
+            className={
+              wrap +
+              ' flex flex-col items-start justify-between gap-8 py-20 sm:py-28 lg:flex-row lg:items-center lg:gap-12 motion-safe:data-[entered=true]:animate-enter'
+            }
+          >
+            <div className="min-w-0 flex-1 space-y-4">
+              <h2 className="font-sans text-[clamp(2rem,3.6vw,3.35rem)] leading-[1.08] font-semibold tracking-tight text-white">
+                {content.title}
+              </h2>
+              {content.description && (
+                <p className="text-sm leading-relaxed text-zinc-300 sm:text-base">
+                  {content.description}
+                </p>
+              )}
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-4">
+              {contact && content.buttonLabel && (
+                <a
+                  href={contact}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={
+                    sweepButton +
+                    ' min-h-13 shrink-0 px-7 py-3.5 text-sm font-semibold sm:text-base ' +
+                    sweepSolid
+                  }
+                >
+                  <span aria-hidden="true" className={sweepFill} />
+                  <span className={sweepContent + ' gap-2.5'}>
+                    <span>{content.buttonLabel}</span>
+                    <ArrowUpRight
+                      size={18}
+                      aria-hidden="true"
+                      className="shrink-0 transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none"
+                    />
+                  </span>
+                </a>
+              )}
+              {content.secondaryLabel && (
+                <a
+                  href="#empreendimentos"
+                  className="group/explore inline-flex items-center gap-2.5 text-sm font-medium text-white transition-colors hover:text-white/75 sm:text-base"
+                >
+                  {content.secondaryLabel}{' '}
+                  <ArrowUp
+                    aria-hidden="true"
+                    size={18}
+                    className="transition-transform duration-300 group-hover/explore:-translate-y-1 motion-reduce:transition-none"
+                  />
+                </a>
+              )}
+            </div>
+          </Reveal>
+        )}
       </div>
     </>
   )
