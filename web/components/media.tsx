@@ -53,7 +53,7 @@ export function ImmersiveCover({
 }: {
   photo: Picture
   src?: string | null
-  header: ReactNode
+  header?: ReactNode
   children: ReactNode
 }) {
   const [stage, setStage] = useState<'cover' | 'player' | 'paused'>('cover')

@@ -45,16 +45,16 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
             triggerRef.current?.focus()
           }}
           data-whatsapp-widget
-          className="pointer-events-auto relative size-14 sm:size-15"
+          className="pointer-events-auto relative size-16 sm:size-20"
         >
           {isOpen && (
             <div
               id={panelId}
               role="region"
               aria-label="Atendimento pelo WhatsApp"
-              className="absolute right-0 bottom-full mb-3 w-72 max-w-[calc(100vw-2rem)] origin-bottom-right rounded-none border border-zinc-200 bg-white/95 p-3 text-ink shadow-xl backdrop-blur-xl [color-scheme:light] sm:w-80 motion-safe:animate-enter"
+              className="absolute right-0 bottom-full mb-3 w-72 max-w-[calc(100vw-2rem)] origin-bottom-right rounded-none border border-zinc-200 bg-white/95 p-3 text-ink shadow-xl backdrop-blur-xl sm:w-80 motion-safe:animate-enter dark:border-white/10 dark:bg-[#181818]/95 dark:text-zinc-100"
             >
-              <div className="mb-2 flex items-center justify-between border-b border-zinc-200 px-3 py-2">
+              <div className="mb-2 flex items-center justify-between border-b border-zinc-200 px-3 py-2 dark:border-white/10">
                 <div className="flex items-center gap-2">
                   <span className="relative flex size-2">
                     <span className="absolute inline-flex size-full motion-safe:animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -74,7 +74,7 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
                     setIsOpen(false)
                     setIsHovered(false)
                   }}
-                  className="grid size-11 cursor-pointer place-items-center rounded-none text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+                  className="grid size-11 cursor-pointer place-items-center rounded-none text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white"
                   aria-label="Fechar atendimento"
                 >
                   <X size={14} strokeWidth={2.5} />
@@ -89,7 +89,7 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
                   setIsOpen(false)
                   setIsHovered(false)
                 }}
-                className="group flex w-full items-center gap-3 rounded-none p-2.5 text-sm font-semibold text-ink transition-colors hover:bg-piramide/5 hover:text-piramide"
+                className="group flex w-full items-center gap-3 rounded-none p-2.5 text-sm font-semibold text-ink transition-colors hover:bg-piramide/5 hover:text-piramide dark:text-zinc-100 dark:hover:bg-piramide/15"
               >
                 <span className="rounded-none bg-piramide/15 p-2 text-piramide">
                   <MessageCircle aria-hidden="true" size={18} />
@@ -110,15 +110,15 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
             aria-label="Atendimento pelo WhatsApp"
             aria-expanded={isOpen}
             className={
-              'relative flex size-14 cursor-pointer select-none items-center justify-center bg-transparent p-0.5 drop-shadow-xl transition-transform duration-300 active:scale-95 sm:size-15 ' +
+              'relative flex size-16 cursor-pointer select-none items-center justify-center bg-transparent p-0.5 drop-shadow-xl transition-transform duration-300 active:scale-95 sm:size-20 ' +
               (isHovered || isOpen ? 'scale-108' : 'motion-safe:animate-[whatsapp-pulse_2.2s_ease-in-out_infinite]')
             }
           >
             <img
               src="/utils/icons/whatsapp.svg"
               alt="WhatsApp Pirâmide Imóveis"
-              width={60}
-              height={60}
+              width={80}
+              height={80}
               className="size-full object-contain"
             />
           </button>

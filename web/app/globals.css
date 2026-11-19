@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: light;
+  --paper: #f7f7f7;
+  --sand: #f7f7f7;
+  --espresso: #221f19;
+  --earth: #5e5648;
+  --ink: #221f19;
+  --secondary: #5e5648;
+  --rule: #c9bdaa;
+}
+
+.dark {
+  color-scheme: dark;
+  --paper: #161616;
+  --sand: #1c1c1c;
+  --espresso: #f4f4f5;
+  --earth: #a1a1aa;
+  --ink: #f4f4f5;
+  --secondary: #a1a1aa;
+  --rule: rgba(255, 255, 255, 0.14);
+}
+
 @layer components {
   .content-gutter,
   .content-wrap {
@@ -58,7 +82,7 @@
   background: radial-gradient(circle, var(--color-piramide) 0 49%, white 54% 100%);
 }
 
-@theme {
+@theme inline {
   --animate-property-marquee: property-marquee 30s linear infinite;
 
   @keyframes property-marquee {
@@ -70,13 +94,13 @@
   --color-charcoal: #161616;
   --color-ivory: #f4eee3;
   --color-muted: #b8b1a4;
-  --color-paper: #f7f7f7;
-  --color-sand: #f7f7f7;
-  --color-espresso: #221f19;
-  --color-earth: #5e5648;
-  --color-ink: #221f19;
-  --color-secondary: #5e5648;
-  --color-rule: #c9bdaa;
+  --color-paper: var(--paper);
+  --color-sand: var(--sand);
+  --color-espresso: var(--espresso);
+  --color-earth: var(--earth);
+  --color-ink: var(--ink);
+  --color-secondary: var(--secondary);
+  --color-rule: var(--rule);
   --color-piramide: oklch(0.5634 0.144 329.83);
   --animate-enter: enter .65s cubic-bezier(.22,.8,.25,1) both;
   --animate-photo-wipe: photo-wipe 1.4s cubic-bezier(.68,.04,.22,1) both;
@@ -120,5 +144,44 @@
   @keyframes gallery-out-prev {
     from { transform: translateX(0); opacity: 1; }
     to { transform: translateX(35%); opacity: 0; }
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root),
+[data-theme-transition="to-dark"]::view-transition-new(root) {
+  z-index: 9999;
+  animation: theme-wipe-left-to-right 0.65s cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+[data-theme-transition="to-light"]::view-transition-new(root) {
+  z-index: 9999;
+  animation: theme-wipe-right-to-left 0.65s cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+@keyframes theme-wipe-left-to-right {
+  from {
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes theme-wipe-right-to-left {
+  from {
+    clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+  }
+  to {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   }
 }
