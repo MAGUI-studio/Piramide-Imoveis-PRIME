@@ -40,7 +40,7 @@ export function LoadingCurtain({embedded = false, onComplete}: {embedded?: boole
     <div
       data-testid="loading-curtain"
       aria-hidden={embedded || undefined}
-      className={'pointer-events-none overflow-hidden select-none transform-gpu ' + (embedded ? 'absolute inset-0 z-10' : 'fixed inset-y-0 left-1/2 z-[999999] w-full max-w-[110rem] -translate-x-1/2')}
+      className={'pointer-events-none overflow-hidden select-none transform-gpu ' + (embedded ? 'absolute inset-0 z-10' : 'fixed inset-y-0 left-1/2 z-[999999] w-full max-w-520 -translate-x-1/2')}
     >
       <div className="pointer-events-none absolute inset-0 z-[1000000] flex items-center justify-center px-6">
         <div

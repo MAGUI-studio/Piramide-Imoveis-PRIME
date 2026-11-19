@@ -92,7 +92,7 @@ export function SiteUtilities({privacy = {}, organization = {}}: {privacy?: Priv
   return (
     <>
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40">
-        <div className="mx-auto flex w-full max-w-440 flex-col items-start gap-3 px-4 sm:px-6 md:px-12">
+        <div className="mx-auto flex w-full max-w-520 flex-col items-start gap-3 px-4 sm:px-6 md:px-12">
           {cookieNotice === 'visible' && privacy.cookieNotice && (
             <section
               aria-labelledby="cookie-notice-title"

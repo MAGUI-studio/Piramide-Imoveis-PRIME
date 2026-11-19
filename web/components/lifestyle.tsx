@@ -11,7 +11,7 @@ export type LifestyleItem = {type: string; count: number; image: Picture}
 export function Lifestyle({items}: {items: LifestyleItem[]}) {
   if (!items.length) return null
   return (
-    <div id="estilos-de-vida" className="group pt-12 pb-16 sm:pt-20 sm:pb-24">
+    <div id="tipos-de-imoveis" className="group pt-12 pb-16 sm:pt-20 sm:pb-24">
       <div className={wrap + ' mb-6 sm:mb-8 flex flex-wrap items-end justify-between gap-4'}>
         <div>
           <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Curadoria por perfil</p>
@@ -22,7 +22,7 @@ export function Lifestyle({items}: {items: LifestyleItem[]}) {
         </p>
       </div>
       <Reveal className="motion-safe:opacity-0 motion-safe:data-[entered=true]:opacity-100 motion-safe:data-[entered=true]:animate-enter">
-        <DragCarousel className="ml-4 flex gap-4 overflow-x-auto [scrollbar-width:none] after:block after:w-0 after:shrink-0 md:ml-7 md:after:w-3 xl:ml-[max(2.5rem,calc((100%_-_102rem)/2))] xl:after:w-[max(1.5rem,calc((100%_-_102rem)/2_-_1rem))] [&::-webkit-scrollbar]:hidden">
+        <DragCarousel className="ml-4 flex gap-4 overflow-x-auto [scrollbar-width:none] after:block after:w-0 after:shrink-0 md:ml-7 md:after:w-3 xl:ml-[max(2.5rem,calc((100%_-_var(--content-max-width))/2))] xl:after:w-[max(1.5rem,calc((100%_-_var(--content-max-width))/2_-_1rem))] [&::-webkit-scrollbar]:hidden">
           {items.map((item) => (
             <div key={item.type} className={(item.type === 'Condomínio' ? 'w-[78vw] sm:w-[64vw] md:w-[46vw] lg:w-[36vw] xl:w-[33rem]' : 'w-[72vw] sm:w-[44vw] md:w-[31vw] lg:w-[23.5vw] xl:w-[21.5rem]') + ' shrink-0'}>
               <Link
