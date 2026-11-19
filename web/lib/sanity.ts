@@ -32,8 +32,9 @@ const cardFields = `
 const mediaFields = 'gallery, "clip": clip.asset->url'
 const listing = '_type == "property" && defined(slug.current) && defined(cover.asset)'
 type CatalogProperty = PropertyCard & {alternate?: Photo | null; coverOriginalFilename?: string | null}
-type Home = {banners: HomeBanner[]; heroSlides?: (PropertyCard | null)[] | null; homeSelection?: (CatalogProperty | null)[] | null; hero: PropertyCard | null; featured: CatalogProperty[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
+type Home = {propertyTypeOrder?: (string | null)[]; banners: HomeBanner[]; heroSlides?: (PropertyCard | null)[] | null; homeSelection?: (CatalogProperty | null)[] | null; hero: PropertyCard | null; featured: CatalogProperty[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
 const homeQuery = `{
+  "propertyTypeOrder": coalesce(*[_id == "primeHome"][0].propertyTypeOrder[]->name, []),
   "banners": coalesce(*[_id == "primeHome"][0].banners[defined(image.asset) && defined(href)]{_key,title,image,href,newTab}, []),
   "heroSlides": *[_id == "primeHome"][0].heroSlides[]->{${cardFields}},
   "homeSelection": *[_id == "primeHome"][0].homeSelection[]->{
@@ -62,6 +63,7 @@ const homeQuery = `{
 const propertyQuery = `{
   "property": *[${listing} && slug.current == $slug][0]{
     ${cardFields}, ${mediaFields}, architect, description, features, condoFeatures, seo, noIndex,
+    customFacts[]{_key,label,value},
     sectionPhoto, detailsPhoto,
     "detailsPhotos": select(defined(detailsPhoto[0]) => detailsPhoto, defined(detailsPhoto.asset) => [detailsPhoto], []),
     mediaPhoto, mediaVideoPhoto, videoTourPhoto,

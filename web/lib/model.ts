@@ -18,12 +18,12 @@ export type PropertyVideo = {_key: string; title: string; url: string; poster?: 
 export type Availability = 'available' | 'reserved' | 'sold'
 
 export type Specifications = {
+  totalArea?: number
   area?: number
   landArea?: number
   bedrooms?: number
   suites?: number
   bathrooms?: number
-  lavabos?: number
   parking?: number
   coveredParking?: number
   floorProfile?: string
@@ -73,6 +73,7 @@ export type PropertyAddress = {
 }
 
 export type Property = PropertyCard & {
+  customFacts?: {_key: string; label: string; value: string}[] | null
   seo?: Seo | null
   noIndex?: boolean | null
   address?: PropertyAddress | null
