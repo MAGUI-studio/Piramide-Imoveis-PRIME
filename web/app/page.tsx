@@ -24,8 +24,7 @@ import { homeDescription, homeStructuredData, homeTitle, pageMetadata } from '..
 export async function generateMetadata(): Promise<Metadata> {
   const preview = await isPreview()
   const data = await getHome(preview)
-  const [hero] = getOpeningProperties(data)
-  return pageMetadata({path: '/', title: homeTitle, description: homeDescription, seo: data.homeSeo, photo: hero?.cover, noIndex: preview})
+  return pageMetadata({path: '/', title: homeTitle, description: homeDescription, seo: data.homeSeo, noIndex: preview})
 }
 
 export default async function Home() {

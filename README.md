@@ -30,6 +30,10 @@ O catálogo, as fichas e os destaques vêm do dataset configurado, inclusive em 
 
 ## Vercel e Studio
 
+O Google Analytics usa `NEXT_PUBLIC_GA_ID` (ex.: `G-XXXXXXXXXX`). Configure em `web/.env.local` no desenvolvimento e nas variáveis do projeto web na Vercel, com redeploy após alterações. Sem o ID, nenhum script do Analytics é carregado. O modo de prévia editorial não carrega o Analytics. A configuração acompanha navegação pelo Google tag; mantenha a medição otimizada de mudanças de página habilitada no fluxo GA4.
+
+A imagem padrão de compartilhamento é `web/public/utils/SEO/og-image.png`, usada no Open Graph e Twitter. A prioridade é a imagem de SEO cadastrada no Sanity, depois a capa do imóvel ou condomínio nas respectivas fichas e, por último, a arte padrão. A home e as páginas gerais usam a arte padrão quando não há imagem de SEO cadastrada.
+
 1. Importe o repositório na Vercel. Use **web** como Root Directory, habilite a inclusão dos arquivos externos a essa pasta e selecione o preset Next.js.
 2. Configure `SANITY_PROJECT_ID`, `SANITY_DATASET` e `NEXT_PUBLIC_SITE_URL`. Use `https://prime.piramideimoveissjc.com.br` como URL final e adicione o domínio no projeto da Vercel.
 3. Para prévia, crie no Sanity um token de leitura com acesso a rascunhos e configure `SANITY_API_READ_TOKEN` somente no servidor, tanto em produção quanto nos ambientes de prévia desejados. Um dataset privado também exige esse token para as consultas públicas do servidor. Adicione no Sanity os origins do Studio e do site utilizados, com credenciais, incluindo os endereços locais para desenvolvimento. Abra a prévia no navegador com cookies permitidos. Em previews protegidos da Vercel, use a configuração de bypass de proteção do Presentation Tool se necessário.
