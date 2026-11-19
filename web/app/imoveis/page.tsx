@@ -16,7 +16,7 @@ export async function generateMetadata({searchParams}: {
   const preview = await isPreview()
   const {catalog, catalogSeo} = await getHome(preview)
   const params = await searchParams
-  const filtered = ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'condominio'].some((key) => !!params[key])
+  const filtered = ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'condominio', 'negocio', 'vendaMin', 'vendaMax', 'locacaoMin', 'locacaoMax', 'ordem'].some((key) => !!params[key])
   const requested = Array.isArray(params.pagina) ? params.pagina[0] : params.pagina
   const page = !filtered && requested && /^[1-9]\d*$/.test(requested)
     ? Math.min(Number(requested), Math.max(1, Math.ceil(catalog.length / catalogPageSize)))

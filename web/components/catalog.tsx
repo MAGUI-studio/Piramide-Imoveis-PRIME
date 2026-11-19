@@ -2,22 +2,194 @@
 
 import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
+import {useEffect, useId, useMemo, useRef, useState} from 'react'
 import {MultiSelect} from './multiSelect'
-import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, CarFront, House, MapPin, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
-import {cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
+import {Slider} from './slider'
+import {ArrowLeft, ArrowRight, ArrowUpDown, ArrowUpRight, BedDouble, Building2, CarFront, Check, ChevronDown, House, MapPin, RotateCcw, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
+import {cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyAreaValue, propertyPrice, propertyRentPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
-import {button, eyebrow, glassField, heading, homeSectionHeading, riseIn, wrap} from '../lib/classes'
+import {eyebrow, glassField, heading, homeSectionHeading, riseIn, wrap} from '../lib/classes'
 import {Frame} from './media'
 import {Reveal, Words} from './motion'
 
 export type CatalogItem = Omit<PropertyCard, 'cover'> & {image: Picture; alternate?: Picture}
+type DealFilter = 'ambos' | 'venda' | 'locacao'
+type SortOption = 'recente' | 'maior-preco' | 'menor-preco' | 'maior-area'
+
 const collator = new Intl.Collator('pt-BR', {sensitivity: 'base'})
 const normalize = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR')
 const homeLimit = 5
 const paginationLink = 'inline-flex min-h-11 items-center gap-2 px-3 text-sm font-semibold text-piramide transition-colors hover:bg-piramide/10'
 
+const sortOptions: {value: SortOption; label: string}[] = [
+  {value: 'recente', label: 'Mais recente'},
+  {value: 'maior-preco', label: 'Maior preço'},
+  {value: 'menor-preco', label: 'Menor preço'},
+  {value: 'maior-area', label: 'Maior área'},
+]
+
+function parsePositiveNumber(raw: string | null): number | null {
+  if (!raw) return null
+  const num = Number(raw)
+  return Number.isFinite(num) && num > 0 ? num : null
+}
+
+function formatCompactCurrency(value: number): string {
+  if (value >= 1_000_000) {
+    const millions = value / 1_000_000
+    return 'R$ ' + (Number.isInteger(millions) ? millions : millions.toFixed(1).replace('.', ',')) + ' mi'
+  }
+  if (value >= 1_000) {
+    const thousands = Math.round(value / 1_000)
+    return 'R$ ' + thousands.toLocaleString('pt-BR') + ' mil'
+  }
+  return 'R$ ' + value.toLocaleString('pt-BR')
+}
+
+function computeRangeBounds(values: number[], fallbackMin: number, fallbackMax: number, step: number) {
+  if (!values.length) return {min: fallbackMin, max: fallbackMax}
+  const rawMin = Math.min(...values)
+  const rawMax = Math.max(...values)
+  const min = Math.max(0, Math.floor(rawMin / step) * step)
+  const max = Math.max(min + step, Math.ceil(rawMax / step) * step)
+  return {min, max}
+}
+
+function computeHistogram(values: number[], min: number, max: number, buckets = 12): number[] {
+  if (!values.length || max <= min) return []
+  const counts = Array.from({length: buckets}, () => 0)
+  const span = max - min
+  for (const v of values) {
+    const idx = Math.min(buckets - 1, Math.max(0, Math.floor(((v - min) / span) * buckets)))
+    counts[idx]++
+  }
+  return counts
+}
+
+function SortDropdown({value, onChange}: {value: SortOption; onChange: (next: SortOption) => void}) {
+  const [open, setOpen] = useState(false)
+  const id = useId()
+  const container = useRef<HTMLDivElement>(null)
+  const current = sortOptions.find((opt) => opt.value === value) ?? sortOptions[0]
+
+  useEffect(() => {
+    if (!open) return
+    function onPointerDown(event: PointerEvent) {
+      if (!container.current?.contains(event.target as Node)) setOpen(false)
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  return (
+    <div ref={container} className="relative">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={open ? id : undefined}
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex min-h-11 cursor-pointer items-center gap-2.5 border border-zinc-200/80 bg-white/80 px-3.5 shadow-[0_4px_16px_rgba(15,23,42,0.03)] backdrop-blur-md backdrop-saturate-150 transition-all hover:border-zinc-300 hover:bg-white focus-visible:border-piramide/70 dark:border-white/[0.06] dark:bg-white/[0.03] dark:shadow-[0_6px_20px_rgba(0,0,0,0.22)] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.05]"
+      >
+        <ArrowUpDown aria-hidden="true" size={14} className="shrink-0 text-piramide" />
+        <span className="text-[10px] font-semibold tracking-wider text-earth uppercase">Ordenar:</span>
+        <span className="text-xs font-semibold text-espresso">{current.label}</span>
+        <ChevronDown
+          aria-hidden="true"
+          size={14}
+          className={'shrink-0 text-piramide transition-transform duration-200 ' + (open ? 'rotate-180' : '')}
+        />
+      </button>
+
+      {open && (
+        <div
+          id={id}
+          role="listbox"
+          aria-label="Ordenar imóveis"
+          className="absolute right-0 top-full z-30 mt-2 w-52 border border-[#1b1916]/[0.08] bg-white/80 p-1.5 shadow-[0_16px_40px_rgba(27,25,22,0.10),inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl backdrop-saturate-150 motion-safe:animate-enter dark:border-white/[0.08] dark:bg-[#0e0e12]/80 dark:shadow-[0_20px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.05)]"
+        >
+          {sortOptions.map((opt) => {
+            const active = opt.value === value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  onChange(opt.value)
+                  setOpen(false)
+                }}
+                className={
+                  'flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-left text-xs font-medium transition-colors ' +
+                  (active
+                    ? 'bg-piramide/12 font-semibold text-piramide'
+                    : 'text-espresso hover:bg-zinc-900/[0.05] dark:hover:bg-white/[0.06]')
+                }
+              >
+                <span>{opt.label}</span>
+                {active && <Check aria-hidden="true" size={14} className="shrink-0 text-piramide" />}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CardPriceRow({price, rentPrice}: {price?: number | null; rentPrice?: number | null}) {
+  const hasSale = !!(price && price > 0)
+  const hasRent = !!(rentPrice && rentPrice > 0)
+
+  if (hasSale && hasRent) {
+    return (
+      <div className="mt-4 flex flex-wrap items-end gap-x-5 gap-y-2 border-t border-white/20 pt-3 leading-tight tracking-tight text-white tabular-nums">
+        <div>
+          <span className="mb-0.5 block text-[10px] font-semibold tracking-[0.14em] text-white/60 uppercase">Venda</span>
+          <span className="text-[clamp(1.05rem,1.35vw,1.4rem)] font-semibold">{propertyPrice(price)}</span>
+        </div>
+        <div className="border-l border-white/20 pl-5">
+          <span className="mb-0.5 block text-[10px] font-semibold tracking-[0.14em] text-white/60 uppercase">Locação</span>
+          <span className="text-[clamp(1.05rem,1.35vw,1.4rem)] font-semibold">
+            {propertyPrice(rentPrice)}
+            <span className="ml-1 text-xs font-medium text-white/75">/ mês</span>
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  if (hasRent) {
+    return (
+      <div className="mt-4 border-t border-white/20 pt-3 leading-tight tracking-tight text-white tabular-nums">
+        <span className="mb-0.5 block text-[10px] font-semibold tracking-[0.14em] text-white/60 uppercase">Locação</span>
+        <span className="text-[clamp(1.15rem,1.6vw,1.65rem)] font-semibold">
+          {propertyPrice(rentPrice)}
+          <span className="ml-1 text-sm font-medium text-white/75">/ mês</span>
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-4 border-t border-white/20 pt-3 leading-snug tracking-tight text-white tabular-nums">
+      <span className="text-[clamp(1.15rem,1.6vw,1.65rem)] font-semibold">{propertyPrice(price)}</span>
+    </div>
+  )
+}
+
 export function Catalog({items, full = false, scopeTitle, fixedLocation = false, showAllLink = false, basePath = '/imoveis'}: {items: CatalogItem[]; full?: boolean; scopeTitle?: string; fixedLocation?: boolean; showAllLink?: boolean; basePath?: string}) {
   const params = useSearchParams()
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const isEcommerceLayout = full && !fixedLocation
+
   const query = params.get('busca') || ''
   const selectedCondominium = params.get('condominio') || ''
   const condominiumName = items.find((item) => item.condominium?.slug === selectedCondominium)?.condominium?.name
@@ -34,16 +206,125 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
   const suiteCounts = Array.from(new Set(items.map(({specifications}) => specifications?.suites).filter((n): n is number => typeof n === 'number' && n > 0))).sort((a, b) => a - b)
   const suiteValues = suiteCounts.map(String)
   const selectedSuites = params.getAll('suites').filter((value) => suiteValues.includes(value))
+
+  const saleValues = useMemo(
+    () => items.map((i) => i.price).filter((n): n is number => typeof n === 'number' && n > 0),
+    [items],
+  )
+  const rentValues = useMemo(
+    () => items.map((i) => i.rentPrice).filter((n): n is number => typeof n === 'number' && n > 0),
+    [items],
+  )
+
+  const saleBounds = useMemo(() => computeRangeBounds(saleValues, 500_000, 15_000_000, 100_000), [saleValues])
+  const rentBounds = useMemo(() => computeRangeBounds(rentValues, 2_000, 40_000, 500), [rentValues])
+  const saleHistogram = useMemo(() => computeHistogram(saleValues, saleBounds.min, saleBounds.max, 14), [saleValues, saleBounds])
+  const rentHistogram = useMemo(() => computeHistogram(rentValues, rentBounds.min, rentBounds.max, 14), [rentValues, rentBounds])
+
+  const rawDeal = params.get('negocio')
+  const deal: DealFilter = rawDeal === 'venda' || rawDeal === 'locacao' ? rawDeal : 'ambos'
+  const urlSaleMin = parsePositiveNumber(params.get('vendaMin'))
+  const urlSaleMax = parsePositiveNumber(params.get('vendaMax'))
+  const urlRentMin = parsePositiveNumber(params.get('locacaoMin'))
+  const urlRentMax = parsePositiveNumber(params.get('locacaoMax'))
+
+  const [saleRange, setSaleRange] = useState<[number, number]>([
+    urlSaleMin ?? saleBounds.min,
+    urlSaleMax ?? saleBounds.max,
+  ])
+  const [rentRange, setRentRange] = useState<[number, number]>([
+    urlRentMin ?? rentBounds.min,
+    urlRentMax ?? rentBounds.max,
+  ])
+
+  useEffect(() => {
+    setSaleRange([
+      Math.max(saleBounds.min, Math.min(saleBounds.max, urlSaleMin ?? saleBounds.min)),
+      Math.max(saleBounds.min, Math.min(saleBounds.max, urlSaleMax ?? saleBounds.max)),
+    ])
+  }, [urlSaleMin, urlSaleMax, saleBounds.min, saleBounds.max])
+
+  useEffect(() => {
+    setRentRange([
+      Math.max(rentBounds.min, Math.min(rentBounds.max, urlRentMin ?? rentBounds.min)),
+      Math.max(rentBounds.min, Math.min(rentBounds.max, urlRentMax ?? rentBounds.max)),
+    ])
+  }, [urlRentMin, urlRentMax, rentBounds.min, rentBounds.max])
+
+  const saleFilterActive = saleRange[0] > saleBounds.min || saleRange[1] < saleBounds.max
+  const rentFilterActive = rentRange[0] > rentBounds.min || rentRange[1] < rentBounds.max
+
+  const rawSort = params.get('ordem')
+  const sort: SortOption =
+    rawSort === 'maior-preco' || rawSort === 'menor-preco' || rawSort === 'maior-area' ? rawSort : 'recente'
+
   const words = normalize(query).trim().split(/\s+/).filter(Boolean)
-  const results = items.filter((item) => {
+  const filtered = items.filter((item) => {
     if (selectedCondominium && item.condominium?.slug !== selectedCondominium) return false
     if (selectedCities.length && !selectedCities.includes(item.city?.id || '')) return false
     if (selectedNeighborhoods.length && !selectedNeighborhoods.includes(item.neighborhood?.id || '')) return false
     if (selectedTypes.length && !selectedTypes.includes(item.propertyType)) return false
     if (selectedSuites.length && !selectedSuites.includes(String(item.specifications?.suites || ''))) return false
+
+    const hasSale = !!(item.price && item.price > 0)
+    const hasRent = !!(item.rentPrice && item.rentPrice > 0)
+
+    if (deal === 'venda' && !hasSale) return false
+    if (deal === 'locacao' && !hasRent) return false
+
+    if (deal !== 'locacao' && saleFilterActive) {
+      if (!hasSale) return false
+      if (item.price! < saleRange[0] || item.price! > saleRange[1]) return false
+    }
+
+    if (deal !== 'venda' && rentFilterActive) {
+      if (!hasRent) return false
+      if (item.rentPrice! < rentRange[0] || item.rentPrice! > rentRange[1]) return false
+    }
+
     const copy = normalize([item.title, item.refCode, item.condominiumName, item.summary, locationOf(item)].filter(Boolean).join(' '))
     return words.every((word) => copy.includes(word))
   })
+
+  const effectivePrice = (item: CatalogItem) => {
+    if (deal === 'locacao') return item.rentPrice && item.rentPrice > 0 ? item.rentPrice : null
+    if (item.price && item.price > 0) return item.price
+    if (item.rentPrice && item.rentPrice > 0) return item.rentPrice
+    return null
+  }
+
+  const results = sort === 'recente'
+    ? filtered
+    : [...filtered].sort((a, b) => {
+        if (sort === 'maior-area') {
+          const areaA = propertyAreaValue(a)
+          const areaB = propertyAreaValue(b)
+          if (areaA === 0 && areaB === 0) return 0
+          if (areaA === 0) return 1
+          if (areaB === 0) return -1
+          return areaB - areaA
+        }
+        const priceA = effectivePrice(a)
+        const priceB = effectivePrice(b)
+        if (priceA === null && priceB === null) return 0
+        if (priceA === null) return 1
+        if (priceB === null) return -1
+        return sort === 'maior-preco' ? priceB - priceA : priceA - priceB
+      })
+
+  const activeFilterCount =
+    (query ? 1 : 0) +
+    (selectedCondominium ? 1 : 0) +
+    (deal !== 'ambos' ? 1 : 0) +
+    (saleFilterActive ? 1 : 0) +
+    (rentFilterActive ? 1 : 0) +
+    selectedCities.length +
+    selectedNeighborhoods.length +
+    selectedTypes.length +
+    selectedSuites.length
+
+  const hasAnyFilter = activeFilterCount > 0 || sort !== 'recente'
+
   const totalPages = Math.max(1, Math.ceil(results.length / catalogPageSize))
   const requestedPage = params.get('pagina') || ''
   const page = full && /^[1-9]\d*$/.test(requestedPage) ? Math.min(Number(requestedPage), totalPages) : 1
@@ -53,12 +334,11 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
   const Title = full && !scopeTitle ? 'h1' : 'h2'
   const typeTitle = selectedTypes.length > 1
     ? 'Imóveis selecionados para você'
-    : selectedTypes[0] === 'Casa/Mansão' ? 'Casas e mansões à venda' : selectedTypes[0] || 'Imóveis'
+    : selectedTypes[0] === 'Casa/Mansão' ? 'Casas e mansões' : selectedTypes[0] || 'Imóveis'
   const title = !full ? 'Explore os imóveis'
     : selectedTypes.length || selectedCondominium
       ? [typeTitle, scopeTitle ? scopeTitle.replace(/^Imóveis /, '') : selectedCondominium ? 'em ' + (condominiumName || 'condomínio selecionado') : ''].filter(Boolean).join(' ')
-      : query || selectedCities.length || selectedNeighborhoods.length || selectedSuites.length ? scopeTitle || 'Imóveis selecionados' : scopeTitle || 'Todos os imóveis'
-
+      : activeFilterCount > 0 ? scopeTitle || 'Imóveis selecionados' : scopeTitle || 'Todos os imóveis'
 
   function pageHref(target: number) {
     const nextParams = new URLSearchParams(params.toString())
@@ -74,6 +354,34 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
     else url.searchParams.delete('busca')
     url.searchParams.delete('pagina')
     window.history.replaceState(null, '', url)
+  }
+
+  function commitRangeParams(minKey: 'vendaMin' | 'locacaoMin', maxKey: 'vendaMax' | 'locacaoMax', vals: number[], bounds: {min: number; max: number}) {
+    const [low, high] = vals
+    const url = new URL(window.location.href)
+    url.searchParams.delete('pagina')
+    if (low > bounds.min) url.searchParams.set(minKey, String(low))
+    else url.searchParams.delete(minKey)
+    if (high < bounds.max) url.searchParams.set(maxKey, String(high))
+    else url.searchParams.delete(maxKey)
+    window.history.replaceState(null, '', url)
+  }
+
+  function updateSingleParam(key: 'negocio' | 'ordem', value: string, defaultValue = '') {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('pagina')
+    if (!value || value === defaultValue) url.searchParams.delete(key)
+    else url.searchParams.set(key, value)
+    if (key === 'negocio') {
+      if (value === 'locacao') {
+        url.searchParams.delete('vendaMin')
+        url.searchParams.delete('vendaMax')
+      } else if (value === 'venda') {
+        url.searchParams.delete('locacaoMin')
+        url.searchParams.delete('locacaoMax')
+      }
+    }
+    window.history.pushState(null, '', url)
   }
 
   function updateFilter(key: 'cidade' | 'bairro' | 'tipo' | 'suites', values: string[]) {
@@ -93,211 +401,477 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
 
   function clear() {
     const url = new URL(window.location.href)
-    for (const key of ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'condominio', 'pagina']) url.searchParams.delete(key)
+    for (const key of ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'condominio', 'negocio', 'vendaMin', 'vendaMax', 'locacaoMin', 'locacaoMax', 'ordem', 'pagina']) {
+      url.searchParams.delete(key)
+    }
     window.history.pushState(null, '', url)
   }
 
+  const cardsGrid = displayed.length ? (
+    <div className={'grid gap-3 sm:gap-4 xl:gap-5 ' + (full ? 'sm:grid-cols-2' : 'min-[801px]:grid-cols-12')}>
+      {displayed.map((item, index) => {
+        const isLead = !full && index === 0
+        const isStacked = !full && hasLeadStack && index > 0 && index < 3
+        let gridClass = full ? '' : 'min-[801px]:col-span-6'
+        let desktopImageWidth = '50vw'
+
+        if (!full && displayed.length === 1) {
+          gridClass = 'min-[801px]:col-span-12'
+          desktopImageWidth = '100vw'
+        } else if (isLead && hasLeadStack) {
+          gridClass = 'min-[801px]:col-span-7 min-[801px]:row-span-2'
+          desktopImageWidth = '60vw'
+        } else if (isStacked) {
+          gridClass = 'min-[801px]:col-span-5'
+          desktopImageWidth = '42vw'
+        } else if (!full && (displayed.length === 2 || displayed.length === 4)) {
+          const isWide = index === 0 || index === 3
+          gridClass = isWide ? 'min-[801px]:col-span-7' : 'min-[801px]:col-span-5'
+          desktopImageWidth = isWide ? '60vw' : '42vw'
+        }
+
+        const sizes = full ? '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 38vw' : '(max-width: 800px) 100vw, ' + desktopImageWidth
+        const cardHeight = isLead
+          ? 'min-h-[27rem] sm:min-h-[34rem]'
+          : isStacked
+            ? 'min-h-[23rem] xl:min-h-[24.5rem]'
+            : 'min-h-[24rem] xl:min-h-[27rem]'
+        const titleSize = isLead
+          ? 'text-[clamp(1.65rem,2.75vw,3.25rem)]'
+          : 'text-[clamp(1.35rem,1.8vw,2rem)]'
+        const titleStyle = isLead ? heading : 'font-sans font-semibold leading-tight tracking-tight'
+        const location = locationOf(item)
+        const area = cardAreaOf(item) || cardAttributesOf(item).find((value) => /^[\d.,]+\s*m²$/i.test(value.trim()))
+
+        return (
+          <Reveal key={item.id} className={gridClass + ' min-w-0 motion-safe:opacity-0 motion-safe:data-[entered=true]:opacity-100 motion-safe:data-[entered=true]:animate-enter'}>
+            <Link
+              className={'group relative isolate flex h-full min-w-0 items-end overflow-hidden bg-coal px-5 pt-28 pb-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] ring-1 ring-inset ring-black/[0.04] transition-shadow duration-300 after:pointer-events-none after:absolute after:inset-0 after:z-10 after:ring-1 after:ring-inset after:ring-white/[0.06] after:transition-colors after:duration-300 hover:after:ring-white/[0.12] sm:px-6 sm:pt-32 sm:pb-6 dark:shadow-[0_12px_30px_rgba(0,0,0,0.35)] dark:ring-white/[0.05] ' + cardHeight + (isLead ? ' xl:px-8 xl:pt-36 xl:pb-8' : '')}
+              href={'/' + item.slug}
+            >
+              <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
+                <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-104 motion-safe:group-focus-visible:scale-104" photo={item.image} sizes={sizes} />
+                {item.alternate && <div className="absolute inset-0 [clip-path:inset(0_100%_0_0)] group-focus-visible:[clip-path:inset(0)] group-hover:[clip-path:inset(0)] motion-safe:transition-[clip-path] motion-safe:duration-700" aria-hidden="true">
+                  <Frame className="size-full object-cover" photo={item.alternate} sizes={sizes} />
+                </div>}
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#080808_0%,#080808f5_30%,#080808c9_50%,#0808084d_75%,#08080814_100%)]" />
+              </div>
+              <div className={'absolute right-5 bottom-5 left-5 text-white sm:right-6 sm:bottom-6 sm:left-6 ' + (isLead ? 'xl:right-8 xl:bottom-8 xl:left-8' : '')}>
+                {item.propertyType && <p className="mb-2 text-xs font-medium tracking-wide text-white/80">{item.propertyType}</p>}
+                <h3 className={titleStyle + ' min-w-0 line-clamp-2 ' + titleSize} title={item.title}>{item.title}</h3>
+                {location && <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-white/90"><MapPin aria-hidden="true" size={15} className="mt-0.5 shrink-0" /><span>{location}</span></p>}
+                <div className="grid grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity] duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-visible:grid-rows-[1fr] group-focus-visible:opacity-100 motion-reduce:transition-none">
+                  <div className="min-h-0 overflow-hidden">
+                    {item.summary && <p className="mt-4 line-clamp-2 max-w-[52ch] text-sm leading-relaxed text-white/80">{item.summary}</p>}
+                    <ul aria-label="Características do imóvel" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-white [&>li]:inline-flex [&>li]:items-center [&>li]:gap-2 [&>li]:whitespace-nowrap [&>li]:tabular-nums [&>li:not(:first-child)]:before:me-1 [&>li:not(:first-child)]:before:size-1 [&>li:not(:first-child)]:before:rounded-full [&>li:not(:first-child)]:before:bg-white/50 [&_svg]:shrink-0 [&_svg]:text-white/80">
+                      {area && <li><Ruler size={16} strokeWidth={1.7} aria-hidden="true" /><span>{area}</span></li>}
+                      {!!item.specifications?.suites && <li><BedDouble size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.suites} {item.specifications.suites === 1 ? 'suíte' : 'suítes'}</span></li>}
+                      {!!item.specifications?.parking && <li><CarFront size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.parking} {item.specifications.parking === 1 ? 'vaga' : 'vagas'}</span></li>}
+                    </ul>
+                  </div>
+                </div>
+                <CardPriceRow price={item.price} rentPrice={item.rentPrice} />
+              </div>
+            </Link>
+          </Reveal>
+        )
+      })}
+    </div>
+  ) : (
+    <div className="relative flex min-h-[30rem] flex-1 flex-col items-center justify-center overflow-hidden border border-rule bg-white/40 px-6 py-16 text-center sm:min-h-[36rem] sm:px-12 sm:py-24 dark:bg-white/[0.015]">
+      <img
+        src="/logos/piramide/icon.png"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-12 -bottom-6 w-[26rem] max-w-none select-none object-contain opacity-[0.07] grayscale sm:-right-16 sm:-bottom-8 sm:w-[42rem] dark:opacity-[0.06] dark:brightness-200 dark:grayscale"
+      />
+      <div className="relative z-10 flex max-w-md flex-col items-center">
+        <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Nenhum resultado</p>
+        <h3 className="text-xl font-semibold tracking-tight text-espresso sm:text-2xl">
+          Nenhum imóvel encontrado
+        </h3>
+        <p className="mt-2.5 text-sm leading-relaxed text-earth">
+          Não encontramos imóveis com os filtros aplicados. Tente ajustar os critérios ou limpar a seleção para explorar todo o portfólio.
+        </p>
+        <button
+          type="button"
+          onClick={clear}
+          className="mt-7 inline-flex min-h-11 cursor-pointer items-center gap-2.5 border border-[#1b1916]/[0.12] bg-white/75 px-6 text-sm font-medium text-espresso shadow-[0_6px_20px_rgba(27,25,22,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl transition-all hover:border-[#1b1916]/[0.24] hover:bg-white dark:border-white/[0.1] dark:bg-white/[0.06] dark:text-[#f5f2ec] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)] dark:hover:border-white/[0.2] dark:hover:bg-white/[0.1]"
+        >
+          <RotateCcw size={15} strokeWidth={1.7} aria-hidden="true" className="text-earth" />
+          <span>Limpar filtros</span>
+        </button>
+      </div>
+    </div>
+  )
+
+  const pagination = full && totalPages > 1 ? (() => {
+    const pages: (number | 'ellipsis')[] = []
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - page) <= 1) {
+        pages.push(i)
+      } else if (pages[pages.length - 1] !== 'ellipsis') {
+        pages.push('ellipsis')
+      }
+    }
+    return (
+      <nav aria-label="Paginação dos imóveis" className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
+        {page > 1 && (
+          <Link href={pageHref(page - 1)} rel="prev" aria-label="Página anterior" className={paginationLink}>
+            <ArrowLeft aria-hidden="true" size={16} />
+          </Link>
+        )}
+        {pages.map((entry, idx) =>
+          entry === 'ellipsis' ? (
+            <span key={'ellipsis-' + idx} className="px-2 text-xs text-earth select-none" aria-hidden="true">…</span>
+          ) : (
+            <Link
+              key={entry}
+              href={pageHref(entry)}
+              aria-current={entry === page ? 'page' : undefined}
+              className={
+                'inline-grid min-h-10 min-w-10 place-items-center px-3 text-sm font-medium transition-colors ' +
+                (entry === page
+                  ? 'bg-piramide font-semibold text-white'
+                  : 'text-espresso hover:bg-piramide/10 hover:text-piramide')
+              }
+            >
+              {entry}
+            </Link>
+          ),
+        )}
+        {page < totalPages && (
+          <Link href={pageHref(page + 1)} rel="next" aria-label="Próxima página" className={paginationLink}>
+            <ArrowRight aria-hidden="true" size={16} />
+          </Link>
+        )}
+      </nav>
+    )
+  })() : null
+
   return (
-    <section id="imoveis" className={wrap + ' scroll-mt-4 ' + (full ? (fixedLocation ? 'pt-10 pb-14 sm:pt-14 sm:pb-20' : 'pt-6 pb-8 sm:pt-8 sm:pb-12') : 'pt-6 pb-10 sm:pt-8 sm:pb-12')}>
-      <Reveal className="group mb-4 sm:mb-5">
+    <section id="imoveis" className={wrap + ' relative z-10 scroll-mt-4 ' + (full ? (fixedLocation ? 'pt-10 pb-14 sm:pt-14 sm:pb-20' : 'pt-6 pb-20 sm:pt-8 sm:pb-28') : 'pt-6 pb-10 sm:pt-8 sm:pb-12')}>
+      <Reveal className="group mb-5 sm:mb-7">
         <p className={eyebrow + ' mb-1.5 text-[.68rem] text-piramide ' + riseIn}>Portfólio Pirâmide Imóveis Prime</p>
         <Title className={homeSectionHeading}><Words key={title} text={title} start={100} /></Title>
-        {selectedCondominium && <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-piramide"><Link href={'/condominios/' + encodeURIComponent(selectedCondominium)} className="hover:underline">Conhecer {condominiumName || 'o condomínio'}</Link><button type="button" className="inline-flex min-h-11 cursor-pointer items-center gap-2 border border-piramide/25 px-3" onClick={() => {const url = new URL(window.location.href); url.searchParams.delete('condominio'); url.searchParams.delete('pagina'); window.history.pushState(null, '', url)}}>Remover condomínio <X size={14} aria-hidden="true" /></button></div>}
-      </Reveal>
-      {items.length ? <>
-        <form role="search" aria-label="Filtrar imóveis" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3.4fr)] xl:grid-cols-[minmax(16rem,1.1fr)_minmax(0,3.4fr)]" onSubmit={(event) => event.preventDefault()}>
-          <div className={glassField}>
-            <label className="flex min-w-0 flex-1 items-center gap-3">
-              <Search aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">Buscar imóveis</span>
-                <input
-                  className="mt-0.5 block w-full min-w-0 bg-transparent text-sm font-medium text-espresso placeholder:font-normal placeholder:text-earth focus:outline-none"
-                  type="text"
-                  placeholder="Nome, condomínio ou código"
-                  value={query}
-                  onChange={(event) => updateSearch(event.target.value)}
-                />
-              </span>
-            </label>
-            {query && (
-              <button
-                type="button"
-                onClick={() => updateSearch('')}
-                aria-label="Limpar busca"
-                className="grid size-6 shrink-0 cursor-pointer place-items-center rounded-full text-earth transition-colors hover:bg-espresso/10 hover:text-espresso"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-          <details className="min-[801px]:[&:not([open])::details-content]:[content-visibility:visible]" open>
-            <summary className="flex h-11 cursor-pointer items-center gap-2 text-sm font-medium text-espresso min-[801px]:hidden"><SlidersHorizontal size={16} /> Filtros</summary>
-            <div className={'grid grid-cols-1 gap-2 sm:gap-3 ' + (fixedLocation ? suiteCounts.length ? 'sm:grid-cols-2' : 'sm:grid-cols-1' : suiteCounts.length ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3')}>
-              {!fixedLocation && <>
-              <MultiSelect
-                label="Cidade"
-                placeholder="Todas as cidades"
-                icon={Building2}
-                values={selectedCities}
-                options={cities.map(({id, name}) => ({value: id, label: name}))}
-                onChange={(values) => updateFilter('cidade', values)}
-              />
-              <MultiSelect
-                label="Bairro"
-                placeholder="Todos os bairros"
-                icon={MapPin}
-                values={selectedNeighborhoods}
-                options={neighborhoods.map(({id, label}) => ({value: id, label}))}
-                onChange={(values) => updateFilter('bairro', values)}
-              />
-              </>}
-              <MultiSelect
-                label="Tipo de imóvel"
-                placeholder="Todos os tipos"
-                icon={House}
-                values={selectedTypes}
-                options={types.map((type) => ({value: type, label: type}))}
-                onChange={(values) => updateFilter('tipo', values)}
-              />
-              {!!suiteCounts.length && (
-                <MultiSelect
-                  label="Suítes"
-                  placeholder="Qualquer quantidade"
-                  icon={BedDouble}
-                  values={selectedSuites}
-                  options={suiteCounts.map((count) => ({value: String(count), label: count + (count === 1 ? ' suíte' : ' suítes')}))}
-                  onChange={(values) => updateFilter('suites', values)}
-                />
-              )}
-            </div>
-          </details>
-        </form>
-        <div id={full ? 'resultados' : undefined} className="flex min-h-9 scroll-mt-4 items-center justify-between text-xs text-earth">
-          <span aria-live="polite">{results.length} {results.length === 1 ? 'imóvel' : 'imóveis'}</span>
-          {(query || selectedCondominium || selectedCities.length > 0 || selectedNeighborhoods.length > 0 || selectedTypes.length > 0 || selectedSuites.length > 0) && <button type="button" className="cursor-pointer py-2 font-medium text-piramide transition-opacity hover:opacity-80" onClick={clear}>Limpar filtros</button>}
-        </div>
-        {displayed.length ? <div className={'grid gap-3 sm:gap-4 xl:gap-5 ' + (full ? 'sm:grid-cols-2' : 'min-[801px]:grid-cols-12')}>
-          {displayed.map((item, index) => {
-            const isLead = !full && index === 0
-            const isStacked = !full && hasLeadStack && index > 0 && index < 3
-            let gridClass = full ? '' : 'min-[801px]:col-span-6'
-            let desktopImageWidth = '50vw'
-
-            if (!full && displayed.length === 1) {
-              gridClass = 'min-[801px]:col-span-12'
-              desktopImageWidth = '100vw'
-            } else if (isLead && hasLeadStack) {
-              gridClass = 'min-[801px]:col-span-7 min-[801px]:row-span-2'
-              desktopImageWidth = '60vw'
-            } else if (isStacked) {
-              gridClass = 'min-[801px]:col-span-5'
-              desktopImageWidth = '42vw'
-            } else if (!full && (displayed.length === 2 || displayed.length === 4)) {
-              const isWide = index === 0 || index === 3
-              gridClass = isWide ? 'min-[801px]:col-span-7' : 'min-[801px]:col-span-5'
-              desktopImageWidth = isWide ? '60vw' : '42vw'
-            }
-
-            const sizes = full ? '(max-width: 639px) 100vw, 50vw' : '(max-width: 800px) 100vw, ' + desktopImageWidth
-            const cardHeight = isLead
-              ? 'min-h-[30rem] sm:min-h-[36rem]'
-              : isStacked
-                ? 'min-h-[25rem] sm:min-h-[26rem]'
-                : 'min-h-[26rem] xl:min-h-[28rem]'
-            const titleSize = isLead
-              ? 'text-[clamp(1.65rem,2.75vw,3.25rem)]'
-              : 'text-[clamp(1.35rem,1.8vw,2rem)]'
-            const titleStyle = isLead ? heading : 'font-sans font-semibold leading-tight tracking-tight'
-            const location = locationOf(item)
-            const area = cardAreaOf(item) || cardAttributesOf(item).find((value) => /^[\d.,]+\s*m²$/i.test(value.trim()))
-
-            return (
-              <Reveal key={item.id} className={gridClass + ' min-w-0 motion-safe:opacity-0 motion-safe:data-[entered=true]:opacity-100 motion-safe:data-[entered=true]:animate-enter'}>
-                <Link
-                  className={'group relative isolate flex h-full min-w-0 items-end overflow-hidden bg-coal px-5 pt-28 pb-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] ring-1 ring-inset ring-black/[0.04] transition-shadow duration-300 after:pointer-events-none after:absolute after:inset-0 after:z-10 after:ring-1 after:ring-inset after:ring-white/[0.06] after:transition-colors after:duration-300 hover:after:ring-white/[0.12] sm:px-6 sm:pt-32 sm:pb-6 dark:shadow-[0_12px_30px_rgba(0,0,0,0.35)] dark:ring-white/[0.05] ' + cardHeight + (isLead ? ' xl:px-8 xl:pt-36 xl:pb-8' : '')}
-                  href={'/' + item.slug}
-                >
-                  <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
-                    <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-104 motion-safe:group-focus-visible:scale-104" photo={item.image} sizes={sizes} />
-                    {item.alternate && <div className="absolute inset-0 [clip-path:inset(0_100%_0_0)] group-focus-visible:[clip-path:inset(0)] group-hover:[clip-path:inset(0)] motion-safe:transition-[clip-path] motion-safe:duration-700" aria-hidden="true">
-                      <Frame className="size-full object-cover" photo={item.alternate} sizes={sizes} />
-                    </div>}
-                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#080808_0%,#080808f5_30%,#080808c9_50%,#0808084d_75%,#08080814_100%)]" />
-                  </div>
-                  <div className={'absolute right-5 bottom-5 left-5 text-white sm:right-6 sm:bottom-6 sm:left-6 ' + (isLead ? 'xl:right-8 xl:bottom-8 xl:left-8' : '')}>
-                    <h3 className={titleStyle + ' min-w-0 line-clamp-2 ' + titleSize} title={item.title}>{item.title}</h3>
-                    {location && <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-white/90"><MapPin aria-hidden="true" size={15} className="mt-0.5 shrink-0" /><span>{location}</span></p>}
-                    <div className="grid grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity] duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-visible:grid-rows-[1fr] group-focus-visible:opacity-100 motion-reduce:transition-none">
-                      <div className="min-h-0 overflow-hidden">
-                        {item.summary && <p className="mt-4 line-clamp-2 max-w-[52ch] text-sm leading-relaxed text-white/80">{item.summary}</p>}
-                        <ul aria-label="Características do imóvel" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-white [&>li]:inline-flex [&>li]:items-center [&>li]:gap-2 [&>li]:whitespace-nowrap [&>li]:tabular-nums [&>li:not(:first-child)]:before:me-1 [&>li:not(:first-child)]:before:size-1 [&>li:not(:first-child)]:before:rounded-full [&>li:not(:first-child)]:before:bg-white/50 [&_svg]:shrink-0 [&_svg]:text-white/80">
-                          {area && <li><Ruler size={16} strokeWidth={1.7} aria-hidden="true" /><span>{area}</span></li>}
-                          {!!item.specifications?.suites && <li><BedDouble size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.suites} {item.specifications.suites === 1 ? 'suíte' : 'suítes'}</span></li>}
-                          {!!item.specifications?.parking && <li><CarFront size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.parking} {item.specifications.parking === 1 ? 'vaga' : 'vagas'}</span></li>}
-                        </ul>
-                      </div>
-                    </div>
-                    <p className="mt-5 border-t border-white/20 pt-3 text-[clamp(1.15rem,1.6vw,1.65rem)] leading-snug font-semibold tracking-tight text-white tabular-nums">
-                      {propertyPrice(item.price)}
-                    </p>
-                  </div>
-                </Link>
-              </Reveal>
-            )
-          })}
-        </div> : <div className="border border-rule p-7 text-earth"><p>Nenhum imóvel encontrado com esses filtros.</p><button type="button" className={button + ' mt-4 cursor-pointer border-piramide text-piramide hover:bg-piramide/10'} onClick={clear}>Limpar filtros</button></div>}
-        {!full && (showAllLink || items.length > homeLimit) && (
-          <div className="mt-6 flex justify-end">
-            <Link href="/imoveis" className="group/explore inline-flex min-h-11 w-fit items-center gap-2.5 text-right text-sm text-espresso transition-colors hover:text-piramide motion-reduce:transition-none sm:text-base">
-              Ver todos os imóveis <ArrowUpRight aria-hidden="true" size={18} className="shrink-0 motion-safe:transition-transform motion-safe:group-hover/explore:translate-x-0.5 motion-safe:group-hover/explore:-translate-y-0.5" />
+        {selectedCondominium && (
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-piramide">
+            <Link href={'/condominios/' + encodeURIComponent(selectedCondominium)} className="hover:underline">
+              Conhecer {condominiumName || 'o condomínio'}
             </Link>
+            <button
+              type="button"
+              className="inline-flex min-h-11 cursor-pointer items-center gap-2 border border-piramide/25 px-3"
+              onClick={() => {
+                const url = new URL(window.location.href)
+                url.searchParams.delete('condominio')
+                url.searchParams.delete('pagina')
+                window.history.pushState(null, '', url)
+              }}
+            >
+              Remover condomínio <X size={14} aria-hidden="true" />
+            </button>
           </div>
         )}
-        {full && totalPages > 1 && (() => {
-          const pages: (number | 'ellipsis')[] = []
-          for (let i = 1; i <= totalPages; i++) {
-            if (i === 1 || i === totalPages || Math.abs(i - page) <= 1) {
-              pages.push(i)
-            } else if (pages[pages.length - 1] !== 'ellipsis') {
-              pages.push('ellipsis')
-            }
-          }
-          return (
-            <nav aria-label="Paginação dos imóveis" className="mt-8 flex flex-wrap items-center justify-center gap-1.5">
-              {page > 1 && (
-                <Link href={pageHref(page - 1)} rel="prev" aria-label="Página anterior" className={paginationLink}>
-                  <ArrowLeft aria-hidden="true" size={16} />
-                </Link>
-              )}
-              {pages.map((entry, idx) =>
-                entry === 'ellipsis' ? (
-                  <span key={'ellipsis-' + idx} className="px-2 text-xs text-earth select-none" aria-hidden="true">…</span>
-                ) : (
-                  <Link
-                    key={entry}
-                    href={pageHref(entry)}
-                    aria-current={entry === page ? 'page' : undefined}
-                    className={
-                      'inline-grid min-h-10 min-w-10 place-items-center px-3 text-sm font-medium transition-colors ' +
-                      (entry === page
-                        ? 'bg-piramide font-semibold text-white'
-                        : 'text-espresso hover:bg-piramide/10 hover:text-piramide')
-                    }
+      </Reveal>
+
+      {items.length ? (
+        isEcommerceLayout ? (
+          <div className="grid gap-7 lg:grid-cols-[19.5rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[21rem_minmax(0,1fr)] xl:gap-10">
+            <aside aria-label="Filtros do catálogo" className="lg:border-r lg:border-rule lg:pr-8 xl:pr-10">
+              <button
+                type="button"
+                onClick={() => setMobileFiltersOpen((prev) => !prev)}
+                aria-expanded={mobileFiltersOpen}
+                className={glassField + ' mb-3 w-full cursor-pointer justify-between lg:hidden'}
+              >
+                <span className="inline-flex items-center gap-2.5 text-sm font-semibold text-espresso">
+                  <SlidersHorizontal aria-hidden="true" size={16} className="text-piramide" />
+                  <span>Filtros</span>
+                  {activeFilterCount > 0 && (
+                    <span className="bg-piramide px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </span>
+                <ChevronDown aria-hidden="true" size={16} className={'text-piramide transition-transform ' + (mobileFiltersOpen ? 'rotate-180' : '')} />
+              </button>
+
+              <form
+                role="search"
+                aria-label="Filtrar imóveis"
+                onSubmit={(event) => event.preventDefault()}
+                className={
+                  'space-y-4 border-b border-rule pb-6 lg:sticky lg:top-6 lg:border-b-0 lg:pb-0 ' +
+                  (mobileFiltersOpen ? 'block' : 'hidden lg:block')
+                }
+              >
+                <div className="flex items-center justify-between border-b border-rule pb-3">
+                  <span className="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-espresso uppercase">
+                    <SlidersHorizontal aria-hidden="true" size={14} className="text-piramide" />
+                    Filtros
+                  </span>
+                  {hasAnyFilter && (
+                    <button
+                      type="button"
+                      onClick={clear}
+                      className="cursor-pointer text-xs font-semibold text-piramide transition-opacity hover:opacity-75"
+                    >
+                      Limpar tudo
+                    </button>
+                  )}
+                </div>
+
+                <div className={glassField}>
+                  <label className="flex min-w-0 flex-1 items-center gap-3">
+                    <Search aria-hidden="true" size={16} strokeWidth={1.6} className="shrink-0 text-piramide" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">Buscar imóveis</span>
+                      <input
+                        className="mt-0.5 block w-full min-w-0 bg-transparent text-sm font-medium text-espresso placeholder:font-normal placeholder:text-earth focus:outline-none"
+                        type="text"
+                        placeholder="Nome, condomínio ou código"
+                        value={query}
+                        onChange={(event) => updateSearch(event.target.value)}
+                      />
+                    </span>
+                  </label>
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => updateSearch('')}
+                      aria-label="Limpar busca"
+                      className="grid size-6 shrink-0 cursor-pointer place-items-center rounded-full text-earth transition-colors hover:bg-espresso/10 hover:text-espresso"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">Finalidade</span>
+                  <div
+                    role="group"
+                    aria-label="Finalidade do imóvel"
+                    className="grid grid-cols-3 border border-zinc-200/80 bg-zinc-100/80 p-1 dark:border-white/[0.06] dark:bg-white/[0.03]"
                   >
-                    {entry}
-                  </Link>
-                ),
-              )}
-              {page < totalPages && (
-                <Link href={pageHref(page + 1)} rel="next" aria-label="Próxima página" className={paginationLink}>
-                  <ArrowRight aria-hidden="true" size={16} />
+                    {([
+                      {value: 'ambos', label: 'Ambos'},
+                      {value: 'venda', label: 'Venda'},
+                      {value: 'locacao', label: 'Locação'},
+                    ] as const).map((option) => {
+                      const active = deal === option.value
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => updateSingleParam('negocio', option.value, 'ambos')}
+                          className={
+                            'cursor-pointer py-1.5 text-xs font-semibold transition-all ' +
+                            (active
+                              ? 'bg-piramide text-white shadow-xs'
+                              : 'text-earth hover:text-espresso')
+                          }
+                        >
+                          {option.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {deal !== 'locacao' && (
+                  <div className="border-t border-rule pt-4">
+                    <Slider
+                      label="Valor de compra"
+                      min={saleBounds.min}
+                      max={saleBounds.max}
+                      step={100_000}
+                      minStepsBetweenThumbs={1}
+                      value={saleRange}
+                      onValueChange={(vals) => setSaleRange([vals[0], vals[1]])}
+                      onValueCommit={(vals) => commitRangeParams('vendaMin', 'vendaMax', vals, saleBounds)}
+                      showValue
+                      showTooltip
+                      histogramData={saleHistogram}
+                      histogramHeight={26}
+                      formatTooltip={formatCompactCurrency}
+                      formatValue={([low, high]) =>
+                        low === saleBounds.min && high === saleBounds.max
+                          ? 'Qualquer'
+                          : `${formatCompactCurrency(low)} – ${formatCompactCurrency(high)}`
+                      }
+                    />
+                  </div>
+                )}
+
+                {deal !== 'venda' && (
+                  <div className="border-t border-rule pt-4">
+                    <Slider
+                      label="Valor de locação (/ mês)"
+                      min={rentBounds.min}
+                      max={rentBounds.max}
+                      step={500}
+                      minStepsBetweenThumbs={1}
+                      value={rentRange}
+                      onValueChange={(vals) => setRentRange([vals[0], vals[1]])}
+                      onValueCommit={(vals) => commitRangeParams('locacaoMin', 'locacaoMax', vals, rentBounds)}
+                      showValue
+                      showTooltip
+                      histogramData={rentHistogram}
+                      histogramHeight={24}
+                      formatTooltip={formatCompactCurrency}
+                      formatValue={([low, high]) =>
+                        low === rentBounds.min && high === rentBounds.max
+                          ? 'Qualquer'
+                          : `${formatCompactCurrency(low)} – ${formatCompactCurrency(high)}`
+                      }
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2.5 border-t border-rule pt-4">
+                  <MultiSelect
+                    label="Cidade"
+                    placeholder="Todas as cidades"
+                    icon={Building2}
+                    values={selectedCities}
+                    options={cities.map(({id, name}) => ({value: id, label: name}))}
+                    onChange={(values) => updateFilter('cidade', values)}
+                  />
+                  <MultiSelect
+                    label="Bairro"
+                    placeholder="Todos os bairros"
+                    icon={MapPin}
+                    values={selectedNeighborhoods}
+                    options={neighborhoods.map(({id, label}) => ({value: id, label}))}
+                    onChange={(values) => updateFilter('bairro', values)}
+                  />
+                  <MultiSelect
+                    label="Tipo de imóvel"
+                    placeholder="Todos os tipos"
+                    icon={House}
+                    values={selectedTypes}
+                    options={types.map((type) => ({value: type, label: type}))}
+                    onChange={(values) => updateFilter('tipo', values)}
+                  />
+                  {!!suiteCounts.length && (
+                    <MultiSelect
+                      label="Suítes"
+                      placeholder="Qualquer quantidade"
+                      icon={BedDouble}
+                      values={selectedSuites}
+                      options={suiteCounts.map((count) => ({value: String(count), label: count + (count === 1 ? ' suíte' : ' suítes')}))}
+                      onChange={(values) => updateFilter('suites', values)}
+                    />
+                  )}
+                </div>
+              </form>
+            </aside>
+
+            <div className="flex min-w-0 flex-col">
+              <div id="resultados" className="mb-4 flex scroll-mt-4 flex-wrap items-center justify-between gap-3">
+                <span aria-live="polite" className="text-xs font-medium text-earth sm:text-sm">
+                  {results.length} {results.length === 1 ? 'imóvel encontrado' : 'imóveis encontrados'}
+                </span>
+                <SortDropdown
+                  value={sort}
+                  onChange={(next) => updateSingleParam('ordem', next, 'recente')}
+                />
+              </div>
+              {cardsGrid}
+              {pagination}
+            </div>
+          </div>
+        ) : (
+          <>
+            <form role="search" aria-label="Filtrar imóveis" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3.4fr)] xl:grid-cols-[minmax(16rem,1.1fr)_minmax(0,3.4fr)]" onSubmit={(event) => event.preventDefault()}>
+              <div className={glassField}>
+                <label className="flex min-w-0 flex-1 items-center gap-3">
+                  <Search aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">Buscar imóveis</span>
+                    <input
+                      className="mt-0.5 block w-full min-w-0 bg-transparent text-sm font-medium text-espresso placeholder:font-normal placeholder:text-earth focus:outline-none"
+                      type="text"
+                      placeholder="Nome, condomínio ou código"
+                      value={query}
+                      onChange={(event) => updateSearch(event.target.value)}
+                    />
+                  </span>
+                </label>
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => updateSearch('')}
+                    aria-label="Limpar busca"
+                    className="grid size-6 shrink-0 cursor-pointer place-items-center rounded-full text-earth transition-colors hover:bg-espresso/10 hover:text-espresso"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              <details className="min-[801px]:[&:not([open])::details-content]:[content-visibility:visible]" open>
+                <summary className="flex h-11 cursor-pointer items-center gap-2 text-sm font-medium text-espresso min-[801px]:hidden"><SlidersHorizontal size={16} /> Filtros</summary>
+                <div className={'grid grid-cols-1 gap-2 sm:gap-3 ' + (fixedLocation ? suiteCounts.length ? 'sm:grid-cols-2' : 'sm:grid-cols-1' : suiteCounts.length ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3')}>
+                  {!fixedLocation && <>
+                    <MultiSelect
+                      label="Cidade"
+                      placeholder="Todas as cidades"
+                      icon={Building2}
+                      values={selectedCities}
+                      options={cities.map(({id, name}) => ({value: id, label: name}))}
+                      onChange={(values) => updateFilter('cidade', values)}
+                    />
+                    <MultiSelect
+                      label="Bairro"
+                      placeholder="Todos os bairros"
+                      icon={MapPin}
+                      values={selectedNeighborhoods}
+                      options={neighborhoods.map(({id, label}) => ({value: id, label}))}
+                      onChange={(values) => updateFilter('bairro', values)}
+                    />
+                  </>}
+                  <MultiSelect
+                    label="Tipo de imóvel"
+                    placeholder="Todos os tipos"
+                    icon={House}
+                    values={selectedTypes}
+                    options={types.map((type) => ({value: type, label: type}))}
+                    onChange={(values) => updateFilter('tipo', values)}
+                  />
+                  {!!suiteCounts.length && (
+                    <MultiSelect
+                      label="Suítes"
+                      placeholder="Qualquer quantidade"
+                      icon={BedDouble}
+                      values={selectedSuites}
+                      options={suiteCounts.map((count) => ({value: String(count), label: count + (count === 1 ? ' suíte' : ' suítes')}))}
+                      onChange={(values) => updateFilter('suites', values)}
+                    />
+                  )}
+                </div>
+              </details>
+            </form>
+            <div id={full ? 'resultados' : undefined} className="flex min-h-9 scroll-mt-4 items-center justify-between text-xs text-earth">
+              <span aria-live="polite">{results.length} {results.length === 1 ? 'imóvel' : 'imóveis'}</span>
+              {hasAnyFilter && <button type="button" className="cursor-pointer py-2 font-medium text-piramide transition-opacity hover:opacity-80" onClick={clear}>Limpar filtros</button>}
+            </div>
+            {cardsGrid}
+            {!full && (showAllLink || items.length > homeLimit) && (
+              <div className="mt-6 flex justify-end">
+                <Link href="/imoveis" className="group/explore inline-flex min-h-11 w-fit items-center gap-2.5 text-right text-sm text-espresso transition-colors hover:text-piramide motion-reduce:transition-none sm:text-base">
+                  Ver todos os imóveis <ArrowUpRight aria-hidden="true" size={18} className="shrink-0 motion-safe:transition-transform motion-safe:group-hover/explore:translate-x-0.5 motion-safe:group-hover/explore:-translate-y-0.5" />
                 </Link>
-              )}
-            </nav>
-          )
-        })()}
-      </> : <div className="border border-rule p-7 text-earth">Nenhum imóvel disponível no momento.</div>}
+              </div>
+            )}
+            {pagination}
+          </>
+        )
+      ) : (
+        <div className="border border-rule p-7 text-earth">Nenhum imóvel disponível no momento.</div>
+      )}
     </section>
   )
 }
