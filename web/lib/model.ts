@@ -6,6 +6,7 @@ export type Photo = {
   hotspot?: {x: number; y: number; width: number; height: number}
 }
 
+export type HomeBanner = {_key: string; title: string; image: Photo; href: string; newTab?: boolean}
 export type MarqueeItem = {_key: string; title: string; description: string}
 export type HomeStat = {_key: string; label: string; value: number; prefix?: string | null; suffix?: string | null}
 export type PropertyTypeOption = {id: string; name: string; image?: Photo | null}
@@ -39,12 +40,15 @@ export type PropertyConditions = {
   acceptsFinancing?: boolean
 }
 
+export type Condominium = {id: string; name: string; slug: string; cover: Photo; description: string; address?: string; features?: string[]; seo?: Seo; city: {id: string; name: string} | null; neighborhood: {id: string; name: string} | null}
+
 export type PropertyCard = {
   id: string
   title: string
   refCode?: string | null
   slug: string
   propertyType: string
+  condominium?: {id: string; name: string; slug: string} | null
   condominiumName?: string | null
   availability?: Availability | null
   price?: number | null

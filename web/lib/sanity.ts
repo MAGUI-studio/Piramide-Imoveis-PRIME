@@ -1,8 +1,9 @@
+import {selectHomeProperties} from './homeSelections'
 import type {SiteSettings} from './siteSettings'
 import {createClient, type QueryParams} from '@sanity/client'
 import {draftMode} from 'next/headers'
 import {cache} from 'react'
-import type {HomeStat, MarqueeItem, Photo, Property, PropertyCard, PropertyTypeOption, Seo} from './model'
+import type {Condominium, HomeBanner, HomeStat, MarqueeItem, Photo, Property, PropertyCard, PropertyTypeOption, Seo} from './model'
 
 const projectId = process.env.SANITY_PROJECT_ID
 export const dataset = process.env.SANITY_DATASET || 'production'
@@ -21,7 +22,8 @@ async function read<T>(query: string, params: QueryParams = {}, preview = false)
 }
 
 const cardFields = `
-  "id": _id, title, refCode, "slug": slug.current, propertyType, condominiumName,
+  "id": _id, title, refCode, "slug": slug.current, propertyType, "condominiumName": coalesce(condominium->name, condominiumName),
+  "condominium": condominium->{"id": _id, name, "slug": slug.current},
   availability, price, conditions, summary, attributes, cover, specifications,
   "createdAt": _createdAt,
   "city": neighborhood->city->{"id": _id, name},
@@ -30,12 +32,21 @@ const cardFields = `
 const mediaFields = 'gallery, "clip": clip.asset->url'
 const listing = '_type == "property" && defined(slug.current) && defined(cover.asset)'
 type CatalogProperty = PropertyCard & {alternate?: Photo | null; coverOriginalFilename?: string | null}
-type Home = {hero: PropertyCard | null; featured: PropertyCard[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
+type Home = {banners: HomeBanner[]; heroSlides?: (PropertyCard | null)[] | null; homeSelection?: (CatalogProperty | null)[] | null; hero: PropertyCard | null; featured: CatalogProperty[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
 const homeQuery = `{
+  "banners": coalesce(*[_id == "primeHome"][0].banners[defined(image.asset) && defined(href)]{_key,title,image,href,newTab}, []),
+  "heroSlides": *[_id == "primeHome"][0].heroSlides[]->{${cardFields}},
+  "homeSelection": *[_id == "primeHome"][0].homeSelection[]->{
+    ${cardFields},
+    "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
+  },
   "hero": *[_id == "primeHome"][0].hero->{
     ${cardFields}
   },
-  "featured": *[_id == "primeHome"][0].featured[]->{${cardFields}},
+  "featured": *[_id == "primeHome"][0].featured[]->{
+    ${cardFields},
+    "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]
+  },
   "catalog": *[${listing}] | order(select(availability == "sold" => 1, 0) asc, coalesce(firstPublishedAt, _createdAt) desc, title asc, _id asc) {
     ${cardFields},
     "coverOriginalFilename": cover.asset->originalFilename,
@@ -46,7 +57,7 @@ const homeQuery = `{
   "homeSeo": *[_id == "primeHome"][0].homeSeo,
   "catalogSeo": *[_id == "primeHome"][0].catalogSeo,
   "stats": coalesce(*[_id == "primeHome"][0].stats[defined(label) && defined(value)]{_key, label, value, prefix, suffix}, []),
-  "marquee": coalesce(*[_id == "primeMarquee"][0].items[defined(title) && defined(description)]{_key, title, description}, [])
+  "marquee": coalesce(*[_id == "primeHome"][0].marquee, *[_id == "primeMarquee"][0].items, [])[defined(title) && defined(description)]{_key, title, description}
 }`
 const propertyQuery = `{
   "property": *[${listing} && slug.current == $slug][0]{
@@ -64,14 +75,19 @@ const propertyQuery = `{
 }`
 
 export const getHome = cache(async (preview: boolean): Promise<Home> => {
-  return await read<Home>(homeQuery, {}, preview) || {hero: null, featured: [], catalog: [], propertyTypes: [], whatsapp: null, marquee: [], stats: []}
+  return await read<Home>(homeQuery, {}, preview) || {banners: [], hero: null, featured: [], catalog: [], propertyTypes: [], whatsapp: null, marquee: [], stats: []}
 })
 
 export const getProperty = cache(async (slug: string, preview: boolean) => {
   return await read<{property: Property | null; whatsapp: string | null}>(propertyQuery, {slug}, preview)
 })
 
+export function getExploreProperties(data: Home) {
+  return selectHomeProperties(data.homeSelection ?? data.catalog, 5)
+}
+
 export function getOpeningProperties(data: Home) {
+  if (data.heroSlides != null) return selectHomeProperties(data.heroSlides, 3)
   const unique = new Map<string, PropertyCard>()
   const pool = [data.hero, ...(data.featured || []), ...data.catalog]
   for (const entry of pool) {
@@ -114,4 +130,16 @@ export const getSiteSettings = cache(async (preview: boolean): Promise<SiteSetti
     catalogCta{eyebrow, title, description, buttonLabel, secondaryLabel, image},
     propertyCta{eyebrow, title, description, buttonLabel, secondaryLabel, image}
   }`, {}, preview) || {}
+})
+
+export const getCondominiums = cache(async (preview: boolean): Promise<Condominium[]> => {
+  return await read<Condominium[]>(`*[_type == "condominium" && defined(slug.current) && defined(cover.asset)] | order(name asc){
+    "id": _id, name, "slug": slug.current, cover, description, address, features, seo,
+    "city": neighborhood->city->{"id": _id, name},
+    "neighborhood": neighborhood->{"id": _id, name}
+  }`, {}, preview) || []
+})
+
+export const getCondominiumDirectory = cache(async (preview: boolean) => {
+  return await read<{title?: string; description?: string; featuredIds: string[]}>(`*[_id == "primeCondominiumDirectory"][0]{title,description,"featuredIds": coalesce(featured[]->_id, [])}`, {}, preview) || {featuredIds: []}
 })
