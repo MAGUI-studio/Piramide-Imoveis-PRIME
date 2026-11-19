@@ -2,9 +2,9 @@
 
 import {useEffect, useId, useRef, useState} from 'react'
 import {Check, ChevronDown, MapPin, Search} from 'lucide-react'
+import {glassField} from '../lib/classes'
 
 const normalize = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR')
-const filterField = 'flex min-h-15 items-center gap-3 border-b border-espresso/25 bg-transparent px-1 transition-colors hover:border-espresso/55 focus-within:border-piramide sm:px-2'
 
 type SelectOption = {value: string; label: string}
 
@@ -69,7 +69,7 @@ export function MultiSelect({
         aria-expanded={open}
         aria-controls={open ? id : undefined}
         onClick={() => open ? close() : setOpen(true)}
-        className={filterField + ' w-full cursor-pointer text-left aria-expanded:border-piramide'}
+        className={glassField + ' w-full cursor-pointer text-left aria-expanded:border-piramide/70 aria-expanded:ring-1 aria-expanded:ring-piramide/25'}
       >
         <Icon aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
         <span className="min-w-0 flex-1">
@@ -81,8 +81,11 @@ export function MultiSelect({
       </button>
 
       {open && (
-        <div id={id} className="absolute inset-x-0 top-full z-30 mt-2 border border-espresso/15 bg-paper p-2 shadow-lg motion-safe:animate-enter">
-          <label className="flex items-center gap-2 border-b border-espresso/20 px-2.5 text-piramide focus-within:border-piramide">
+        <div
+          id={id}
+          className="absolute inset-x-0 top-full z-30 mt-2 border border-[#1b1916]/[0.08] bg-white/75 p-2 shadow-[0_16px_40px_rgba(27,25,22,0.10),inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl backdrop-saturate-150 motion-safe:animate-enter dark:border-white/[0.08] dark:bg-[#0e0e12]/72 dark:shadow-[0_20px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.05)]"
+        >
+          <label className="flex items-center gap-2 border border-[#1b1916]/[0.08] bg-[#1b1916]/[0.03] px-2.5 text-piramide transition-colors focus-within:border-piramide/70 dark:border-white/[0.08] dark:bg-white/[0.04]">
             <Search aria-hidden="true" size={16} className="shrink-0" />
             <span className="sr-only">Pesquisar opções de {label.toLowerCase()}</span>
             <input
@@ -100,7 +103,7 @@ export function MultiSelect({
             {matching.map(({value, label: optionLabel}) => {
               const checked = values.includes(value)
               return (
-                <label key={value} className="flex min-h-10 cursor-pointer items-center gap-2.5 px-2.5 py-2 text-sm text-espresso hover:bg-espresso/5 focus-within:bg-piramide/10">
+                <label key={value} className="flex min-h-10 cursor-pointer items-center gap-2.5 px-2.5 py-2 text-sm text-espresso transition-colors hover:bg-[#1b1916]/[0.06] focus-within:bg-piramide/10 dark:hover:bg-white/[0.08]">
                   <span className="relative grid size-4 shrink-0 place-items-center">
                     <input
                       type="checkbox"
@@ -116,7 +119,7 @@ export function MultiSelect({
             })}
             {!matching.length && <p role="status" className="px-2.5 py-3 text-xs text-earth">Nenhuma opção encontrada.</p>}
           </fieldset>
-          {!!selected.length && <div className="mt-2 flex items-center justify-between gap-2 border-t border-espresso/10 px-2.5 pt-2 text-xs">
+          {!!selected.length && <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#1b1916]/10 px-2.5 pt-2 text-xs dark:border-white/[0.10]">
             <span className="text-earth">{selected.length} {selected.length === 1 ? 'selecionado' : 'selecionados'}</span>
             <button type="button" className="cursor-pointer py-1 font-semibold text-piramide hover:underline" onClick={() => {
               input.current?.focus()

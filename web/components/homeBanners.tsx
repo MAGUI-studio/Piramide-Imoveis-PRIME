@@ -2,6 +2,7 @@
 
 import {useEffect, useState} from 'react'
 import {ArrowLeft, ArrowRight, Pause, Play} from 'lucide-react'
+import {wrap} from '../lib/classes'
 import type {Picture} from '../lib/image'
 import {Frame} from './media'
 
@@ -44,10 +45,11 @@ export function HomeBanners({items}: {items: Banner[]}) {
     setIndex((next + count) % count)
   }
 
-  return <section aria-label="Novidades e campanhas" aria-roledescription={count > 1 ? 'carrossel' : undefined} className="w-full bg-coal" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => {if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)}}>
+  return <section aria-label="Novidades e campanhas" aria-roledescription={count > 1 ? 'carrossel' : undefined} className={wrap} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => {if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)}}>
+    <div className="w-full overflow-hidden bg-coal">
     <div className="relative aspect-[3/1] overflow-hidden">
       {items.map((item, position) => <a key={item.id} href={item.href} target={item.newTab ? '_blank' : undefined} rel={item.newTab ? 'noopener noreferrer' : undefined} aria-label={item.title + (item.newTab ? ' (abre em nova aba)' : '')} aria-hidden={position !== active} tabIndex={position === active ? 0 : -1} className={'absolute inset-0 block focus-visible:-outline-offset-4 focus-visible:outline-white motion-safe:transition-opacity motion-safe:duration-700 ' + (position === active ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0')}>
-        <Frame photo={item.image} className="size-full object-cover" sizes="100vw" />
+        <Frame photo={item.image} className="size-full object-cover" sizes="(min-width: 1712px) 1632px, calc(100vw - 2rem)" />
       </a>)}
     </div>
     {count > 1 && <div className="flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 text-white">
@@ -57,5 +59,6 @@ export function HomeBanners({items}: {items: Banner[]}) {
       {!reducedMotion && <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? 'Retomar rotação dos banners' : 'Pausar rotação dos banners'} className={control}>{paused ? <Play size={15} aria-hidden="true" /> : <Pause size={15} aria-hidden="true" />}</button>}
       <span className="sr-only" role="status" aria-live={paused || focused ? 'polite' : 'off'}>{active + 1} de {count}: {items[active].title}</span>
     </div>}
+    </div>
   </section>
 }

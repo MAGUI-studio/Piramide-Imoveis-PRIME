@@ -16,6 +16,7 @@ import { WhatsAppWidget } from '../components/whatsappWidget'
 import { JsonLd } from '../components/jsonLd'
 import { eyebrow, heading, previewBanner, textLink, wrap } from '../lib/classes'
 import { catalogPictures, picture } from '../lib/image'
+import {orderLifestyleItems} from '../lib/lifestyleOrder'
 import { locationOf, whatsappLink } from '../lib/model'
 import { getCondominiums, getHome, getExploreProperties, getOpeningProperties, getSiteSettings, isPreview } from '../lib/sanity'
 import { homeDescription, homeStructuredData, homeTitle, pageMetadata } from '../lib/seo'
@@ -72,16 +73,16 @@ export default async function Home() {
     lifestyleMap.set('Condomínio', {
       type: 'Condomínio',
       count: data.catalog.filter((item) => item.condominium && condominiums.some((condo) => condo.id === item.condominium?.id)).length,
-      image: picture(typePhotos.get('condomínio') ?? condominiums[0].cover, 3 / 4, 900),
+      image: picture(typePhotos.get('condomínio') ?? condominiums[0].cover, 1.15, 1200),
     })
   }
-  const lifestyle = [...lifestyleMap.values()].sort((a, b) => b.count - a.count)
+  const lifestyle = orderLifestyleItems([...lifestyleMap.values()], data.propertyTypeOrder)
   return <>
     {!preview && <JsonLd data={homeStructuredData(settings.organization || undefined)} />}
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
     <main id="conteudo" className="bg-paper text-espresso">
       {hero ? <div id="inicio" className="relative"><h1 className="sr-only">{homeTitle}</h1><Hero items={[hero, ...otherSlides]} /></div> :
-        <section id={data.catalog.length ? 'inicio' : 'empreendimentos'} className={wrap + ' py-[clamp(85px,12vw,170px)]'}>
+        <section id={data.catalog.length ? 'inicio' : 'imoveis'} className={wrap + ' py-[clamp(85px,12vw,170px)]'}>
           <h1 className={heading + ' text-[clamp(3.5rem,7vw,8rem)]'}>Imóveis de alto padrão</h1>
           <p className="mt-6 text-earth">{data.catalog.length ? 'Conheça nossa seleção de imóveis e encontre seu próximo endereço.' : 'Nenhum imóvel disponível no momento.'}</p>
         </section>}
@@ -96,7 +97,7 @@ export default async function Home() {
             <p className={eyebrow + ' mb-1.5 text-[.68rem] text-piramide'}>Seleção exclusiva</p>
             <h2 className={heading + ' text-[clamp(1.85rem,3.4vw,3.25rem)]'} id="titulo-destaques">Em destaque</h2>
           </div>
-          <a className={textLink + ' border-piramide text-piramide hover:opacity-80'} href="#empreendimentos">Ver o catálogo <ArrowUpRight size={16} /></a>
+          <a className={textLink + ' border-piramide text-piramide hover:opacity-80'} href="#imoveis">Ver o catálogo <ArrowUpRight size={16} /></a>
         </div>
         <div className="grid gap-x-6 gap-y-8 md:grid-cols-2 lg:gap-x-8">
           {featured.map((item) => <Reveal className="min-w-0" key={item.id}>

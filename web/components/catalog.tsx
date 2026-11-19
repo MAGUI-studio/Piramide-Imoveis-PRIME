@@ -4,9 +4,9 @@ import Link from 'next/link'
 import {useSearchParams} from 'next/navigation'
 import {MultiSelect} from './multiSelect'
 import {ArrowLeft, ArrowRight, ArrowUpRight, BedDouble, Building2, CarFront, House, MapPin, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
-import {availabilityLabel, cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
+import {cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
-import {button, eyebrow, heading, homeSectionHeading, riseIn, wrap} from '../lib/classes'
+import {button, eyebrow, glassField, heading, homeSectionHeading, riseIn, wrap} from '../lib/classes'
 import {Frame} from './media'
 import {Reveal, Words} from './motion'
 
@@ -15,9 +15,8 @@ const collator = new Intl.Collator('pt-BR', {sensitivity: 'base'})
 const normalize = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR')
 const homeLimit = 5
 const paginationLink = 'inline-flex min-h-11 items-center gap-2 px-3 text-sm font-semibold text-piramide transition-colors hover:bg-piramide/10'
-const filterField = 'flex min-h-15 items-center gap-3 border-b border-espresso/25 bg-transparent px-1 transition-colors hover:border-espresso/55 focus-within:border-piramide sm:px-2'
 
-export function Catalog({items, full = false, scopeTitle, fixedLocation = false, showAllLink = false, basePath = '/empreendimentos'}: {items: CatalogItem[]; full?: boolean; scopeTitle?: string; fixedLocation?: boolean; showAllLink?: boolean; basePath?: string}) {
+export function Catalog({items, full = false, scopeTitle, fixedLocation = false, showAllLink = false, basePath = '/imoveis'}: {items: CatalogItem[]; full?: boolean; scopeTitle?: string; fixedLocation?: boolean; showAllLink?: boolean; basePath?: string}) {
   const params = useSearchParams()
   const query = params.get('busca') || ''
   const selectedCondominium = params.get('condominio') || ''
@@ -99,7 +98,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
   }
 
   return (
-    <section id="empreendimentos" className={wrap + ' scroll-mt-4 ' + (full ? (fixedLocation ? 'pt-10 pb-14 sm:pt-14 sm:pb-20' : 'pt-[clamp(44px,6vw,98px)] pb-[clamp(55px,8vw,95px)]') : 'pt-6 pb-10 sm:pt-8 sm:pb-12')}>
+    <section id="imoveis" className={wrap + ' scroll-mt-4 ' + (full ? (fixedLocation ? 'pt-10 pb-14 sm:pt-14 sm:pb-20' : 'pt-6 pb-8 sm:pt-8 sm:pb-12') : 'pt-6 pb-10 sm:pt-8 sm:pb-12')}>
       <Reveal className="group mb-4 sm:mb-5">
         <p className={eyebrow + ' mb-1.5 text-[.68rem] text-piramide ' + riseIn}>Portfólio Pirâmide Imóveis Prime</p>
         <Title className={homeSectionHeading}><Words key={title} text={title} start={100} /></Title>
@@ -107,7 +106,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
       </Reveal>
       {items.length ? <>
         <form role="search" aria-label="Filtrar imóveis" className="grid items-start gap-3 min-[1100px]:grid-cols-[minmax(14rem,1fr)_minmax(0,3.4fr)] xl:grid-cols-[minmax(16rem,1.1fr)_minmax(0,3.4fr)]" onSubmit={(event) => event.preventDefault()}>
-          <div className={filterField}>
+          <div className={glassField}>
             <label className="flex min-w-0 flex-1 items-center gap-3">
               <Search aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
               <span className="min-w-0 flex-1">
@@ -202,22 +201,21 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
 
             const sizes = full ? '(max-width: 639px) 100vw, 50vw' : '(max-width: 800px) 100vw, ' + desktopImageWidth
             const cardHeight = isLead
-              ? 'min-h-[24rem] sm:min-h-[30rem]'
+              ? 'min-h-[30rem] sm:min-h-[36rem]'
               : isStacked
-                ? 'min-h-[19rem]'
-                : 'min-h-[20rem] xl:min-h-[24rem]'
+                ? 'min-h-[25rem] sm:min-h-[26rem]'
+                : 'min-h-[26rem] xl:min-h-[28rem]'
             const titleSize = isLead
               ? 'text-[clamp(1.65rem,2.75vw,3.25rem)]'
               : 'text-[clamp(1.35rem,1.8vw,2rem)]'
             const titleStyle = isLead ? heading : 'font-sans font-semibold leading-tight tracking-tight'
             const location = locationOf(item)
-            const status = availabilityLabel(item.availability)
             const area = cardAreaOf(item) || cardAttributesOf(item).find((value) => /^[\d.,]+\s*m²$/i.test(value.trim()))
 
             return (
               <Reveal key={item.id} className={gridClass + ' min-w-0 motion-safe:opacity-0 motion-safe:data-[entered=true]:opacity-100 motion-safe:data-[entered=true]:animate-enter'}>
                 <Link
-                  className={'group relative isolate flex h-full min-w-0 items-end overflow-hidden bg-coal px-5 pt-28 pb-5 sm:px-6 sm:pt-32 sm:pb-6 ' + cardHeight + (isLead ? ' xl:px-8 xl:pt-36 xl:pb-8' : '')}
+                  className={'group relative isolate flex h-full min-w-0 items-end overflow-hidden bg-coal px-5 pt-28 pb-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] ring-1 ring-inset ring-black/[0.04] transition-shadow duration-300 after:pointer-events-none after:absolute after:inset-0 after:z-10 after:ring-1 after:ring-inset after:ring-white/[0.06] after:transition-colors after:duration-300 hover:after:ring-white/[0.12] sm:px-6 sm:pt-32 sm:pb-6 dark:shadow-[0_12px_30px_rgba(0,0,0,0.35)] dark:ring-white/[0.05] ' + cardHeight + (isLead ? ' xl:px-8 xl:pt-36 xl:pb-8' : '')}
                   href={'/' + item.slug}
                 >
                   <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
@@ -227,31 +225,20 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
                     </div>}
                     <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#080808_0%,#080808f5_30%,#080808c9_50%,#0808084d_75%,#08080814_100%)]" />
                   </div>
-                  {(status || item.conditions?.exclusive) && (
-                    <div className="absolute top-4 left-5 flex flex-wrap gap-1.5 sm:top-5 sm:left-6">
-                      {status && (
-                        <span className={'px-2 py-0.5 text-[10px] font-bold tracking-[.12em] text-white uppercase ' + (item.availability === 'sold' ? 'bg-zinc-900/90' : 'bg-amber-600/95')}>
-                          {status}
-                        </span>
-                      )}
-                      {item.conditions?.exclusive && (
-                        <span className="bg-piramide/95 px-2 py-0.5 text-[10px] font-bold tracking-[.12em] text-white uppercase">
-                          Exclusivo
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <div className="w-full text-white">
-                    {item.propertyType && <p className="mb-2 text-xs font-medium tracking-wide text-white/80">{item.propertyType}</p>}
+                  <div className={'absolute right-5 bottom-5 left-5 text-white sm:right-6 sm:bottom-6 sm:left-6 ' + (isLead ? 'xl:right-8 xl:bottom-8 xl:left-8' : '')}>
                     <h3 className={titleStyle + ' min-w-0 line-clamp-2 ' + titleSize} title={item.title}>{item.title}</h3>
                     {location && <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-white/90"><MapPin aria-hidden="true" size={15} className="mt-0.5 shrink-0" /><span>{location}</span></p>}
-                    {item.summary && <p className="mt-2 line-clamp-2 max-w-[52ch] text-sm leading-relaxed text-white/80">{item.summary}</p>}
-                    <ul aria-label="Características do imóvel" className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-white [&>li]:inline-flex [&>li]:items-center [&>li]:gap-2 [&>li]:whitespace-nowrap [&>li]:tabular-nums [&>li:not(:first-child)]:before:me-1 [&>li:not(:first-child)]:before:size-1 [&>li:not(:first-child)]:before:rounded-full [&>li:not(:first-child)]:before:bg-white/50 [&_svg]:shrink-0 [&_svg]:text-white/80">
-                      {area && <li><Ruler size={16} strokeWidth={1.7} aria-hidden="true" /><span>{area}</span></li>}
-                      {!!item.specifications?.suites && <li><BedDouble size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.suites} {item.specifications.suites === 1 ? 'suíte' : 'suítes'}</span></li>}
-                      {!!item.specifications?.parking && <li><CarFront size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.parking} {item.specifications.parking === 1 ? 'vaga' : 'vagas'}</span></li>}
-                    </ul>
-                    <p className="mt-4 border-t border-white/20 pt-3 text-[clamp(1.15rem,1.6vw,1.65rem)] leading-snug font-semibold tracking-tight text-white tabular-nums">
+                    <div className="grid grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity] duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-visible:grid-rows-[1fr] group-focus-visible:opacity-100 motion-reduce:transition-none">
+                      <div className="min-h-0 overflow-hidden">
+                        {item.summary && <p className="mt-4 line-clamp-2 max-w-[52ch] text-sm leading-relaxed text-white/80">{item.summary}</p>}
+                        <ul aria-label="Características do imóvel" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-white [&>li]:inline-flex [&>li]:items-center [&>li]:gap-2 [&>li]:whitespace-nowrap [&>li]:tabular-nums [&>li:not(:first-child)]:before:me-1 [&>li:not(:first-child)]:before:size-1 [&>li:not(:first-child)]:before:rounded-full [&>li:not(:first-child)]:before:bg-white/50 [&_svg]:shrink-0 [&_svg]:text-white/80">
+                          {area && <li><Ruler size={16} strokeWidth={1.7} aria-hidden="true" /><span>{area}</span></li>}
+                          {!!item.specifications?.suites && <li><BedDouble size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.suites} {item.specifications.suites === 1 ? 'suíte' : 'suítes'}</span></li>}
+                          {!!item.specifications?.parking && <li><CarFront size={16} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.parking} {item.specifications.parking === 1 ? 'vaga' : 'vagas'}</span></li>}
+                        </ul>
+                      </div>
+                    </div>
+                    <p className="mt-5 border-t border-white/20 pt-3 text-[clamp(1.15rem,1.6vw,1.65rem)] leading-snug font-semibold tracking-tight text-white tabular-nums">
                       {propertyPrice(item.price)}
                     </p>
                   </div>
@@ -262,7 +249,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
         </div> : <div className="border border-rule p-7 text-earth"><p>Nenhum imóvel encontrado com esses filtros.</p><button type="button" className={button + ' mt-4 cursor-pointer border-piramide text-piramide hover:bg-piramide/10'} onClick={clear}>Limpar filtros</button></div>}
         {!full && (showAllLink || items.length > homeLimit) && (
           <div className="mt-6 flex justify-end">
-            <Link href="/empreendimentos" className="group/explore inline-flex min-h-11 w-fit items-center gap-2.5 text-right text-sm text-espresso transition-colors hover:text-piramide motion-reduce:transition-none sm:text-base">
+            <Link href="/imoveis" className="group/explore inline-flex min-h-11 w-fit items-center gap-2.5 text-right text-sm text-espresso transition-colors hover:text-piramide motion-reduce:transition-none sm:text-base">
               Ver todos os imóveis <ArrowUpRight aria-hidden="true" size={18} className="shrink-0 motion-safe:transition-transform motion-safe:group-hover/explore:translate-x-0.5 motion-safe:group-hover/explore:-translate-y-0.5" />
             </Link>
           </div>
