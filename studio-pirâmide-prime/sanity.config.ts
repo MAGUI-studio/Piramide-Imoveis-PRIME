@@ -6,7 +6,7 @@ import {schemaTypes} from './schema'
 import {withPublicationFields} from './publish'
 
 const previewUrl = process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:3000'
-const singletonTypes = ['primeHome', 'primeMarquee', 'primeSiteSettings']
+const singletonTypes = ['primeHome', 'primeMarquee', 'primeSiteSettings', 'primeCondominiumDirectory']
 
 export default defineConfig({
   name: 'piramide-prime',
@@ -31,12 +31,16 @@ export default defineConfig({
         void ensureDefaultPropertyTypes(context.getClient({apiVersion: '2026-02-01'}))
         return S.list().title('Pirâmide Imóveis Prime').items([
           S.listItem().title('Configurações do site').child(S.document().schemaType('primeSiteSettings').documentId('primeSiteSettings')),
-          S.listItem().title('Home').child(S.document().schemaType('primeHome').documentId('primeHome')),
-          S.listItem().title('Faixa informativa do rodapé').child(S.document().schemaType('primeMarquee').documentId('primeMarquee')),
-          S.documentTypeListItem('property'),
+          S.divider(),
+          S.documentTypeListItem('city').title('Cidades'),
+          S.documentTypeListItem('neighborhood').title('Bairros'),
           S.documentTypeListItem('propertyTypeOption').title('Tipos de imóvel'),
-          S.documentTypeListItem('city'),
-          S.documentTypeListItem('neighborhood'),
+          S.divider(),
+          S.documentTypeListItem('condominium').title('Condomínios'),
+          S.documentTypeListItem('property').title('Imóveis'),
+          S.divider(),
+          S.listItem().title('Página inicial').child(S.document().schemaType('primeHome').documentId('primeHome')),
+          S.listItem().title('Página de condomínios').child(S.document().schemaType('primeCondominiumDirectory').documentId('primeCondominiumDirectory')),
         ])
       },
     }),
@@ -49,14 +53,16 @@ export default defineConfig({
       resolve: {
         mainDocuments: [
           {route: '/', filter: '_id == "primeHome"'},
+          {route: '/condominios/:slug', filter: '_type == "condominium" && slug.current == $slug'},
           {route: '/:slug', filter: '_type == "property" && slug.current == $slug'},
         ],
         locations: {
-          primeHome: {locations: [{title: 'Home', href: '/'}]},
+          primeHome: {locations: [{title: 'Página inicial', href: '/'}]},
+          condominium: defineLocations({select: {title: 'name', slug: 'slug.current'}, resolve: (doc) => ({locations: doc?.slug ? [{title: doc.title || 'Condomínio', href: '/condominios/' + doc.slug}] : []})}),
           property: defineLocations({
             select: {title: 'title', slug: 'slug.current'},
             resolve: (doc) => ({
-              locations: doc?.slug ? [{title: doc.title || 'Empreendimento', href: '/' + doc.slug}] : [],
+              locations: doc?.slug ? [{title: doc.title || 'Imóvel', href: '/' + doc.slug}] : [],
             }),
           }),
         },

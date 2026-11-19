@@ -6,7 +6,7 @@ type Asset = {_id: string; url: string; originalFilename?: string; description?:
 
 export function WatermarkedImageInput(props: ObjectInputProps<ImageValue>) {
   const client = useClient({apiVersion: '2026-02-01'})
-  const isProperty = useFormValue(['_type']) === 'property'
+  const isProperty = ['property', 'condominium'].includes(String(useFormValue(['_type'])))
   const latest = useRef(props)
   latest.current = props
   const request = useRef(0)

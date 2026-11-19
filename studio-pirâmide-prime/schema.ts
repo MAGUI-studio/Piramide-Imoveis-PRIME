@@ -3,12 +3,13 @@ import {defaultPropertyTypes, PropertyTypeInput} from './PropertyTypeInput'
 import {WatermarkedImageInput} from './WatermarkedImageInput'
 import {WatermarkedPhotoArrayInput} from './WatermarkedPhotoArrayInput'
 import {siteSettings} from './siteSettings'
+import {withEditorialGuidance} from './editorial'
 import {watermarkVersion} from './watermark'
 
 const apiVersion = '2026-02-01'
 const templates = [
   {title: 'Fotos', value: 'editorial'},
-  {title: 'Videos', value: 'immersive'},
+  {title: 'Vídeos', value: 'immersive'},
   {title: 'Padrão', value: 'mosaic'},
 ]
 const availabilities = [
@@ -19,7 +20,7 @@ const availabilities = [
 const types = ['Casa/Mansão', 'Apartamento/Cobertura', 'Condomínio', 'Loteamento', 'Terreno', 'Comercial']
 const floorProfiles = ['Térrea', 'Sobrado', 'Triplex', 'Andar alto', '1 por andar', 'Duplex', 'Cobertura']
 const sunOrientations = ['Sol da manhã', 'Sol da tarde', 'Face norte', 'Sol o dia todo']
-const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon', 'empreendimentos'])
+const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon', 'empreendimentos', 'condominios'])
 
 type AssetValue = {asset?: {_ref?: string}}
 function validateAsset(maxMb: number, formats: string[]): CustomValidator<AssetValue> {
@@ -40,7 +41,7 @@ const photo = defineType({
   name: 'primePhoto',
   title: 'Foto',
   type: 'image',
-  description: 'JPEG, PNG ou WebP com até 2 MB. Nas fotos dos empreendimentos, a marca d’água é aplicada automaticamente.',
+  description: 'JPEG, PNG ou WebP com até 2 MB. Nas fotos dos imóveis e condomínios, a marca d’água é aplicada automaticamente.',
   components: {input: WatermarkedImageInput},
   options: {hotspot: true, accept: imageFormats.join(',')},
   fields: [
@@ -58,7 +59,7 @@ const photo = defineType({
     if (!value) return true
     const valid = await validateAsset(2, imageFormats)(value, context)
     if (valid !== true) return valid
-    if (context.document?._type !== 'property') return true
+    if (!['property', 'condominium'].includes(String(context.document?._type))) return true
     const assetId = (value as AssetValue).asset?._ref
     const description = await context.getClient({apiVersion}).fetch<string | null>(
       '*[_id == $id][0].description', {id: assetId},
@@ -114,6 +115,31 @@ function uniqueName(type: string, byCity = false): CustomValidator<string | unde
     return !duplicate || 'Já existe um cadastro com este nome nesta lista.'
   }
 }
+
+const condominium = defineType({
+  name: 'condominium', title: 'Condomínios', type: 'document',
+  fields: [
+    defineField({name: 'name', title: 'Nome do condomínio', type: 'string', validation: (rule) => rule.required().max(100).custom(uniqueName('condominium'))}),
+    defineField({name: 'slug', title: 'Endereço', type: 'slug', options: {source: 'name', maxLength: 96}, validation: (rule) => rule.required().custom((value) => !value?.current || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.current) || 'Use letras minúsculas, números e hífens.')}),
+    defineField({name: 'cover', title: 'Foto de capa com marca d’água', type: 'primePhoto', validation: (rule) => rule.required()}),
+    defineField({name: 'description', title: 'Apresentação do condomínio', type: 'text', rows: 5, validation: (rule) => rule.required().max(3000)}),
+    defineField({name: 'neighborhood', title: 'Bairro e cidade', type: 'reference', to: [{type: 'neighborhood'}], validation: (rule) => rule.required()}),
+    defineField({name: 'address', title: 'Endereço', type: 'string', validation: (rule) => rule.max(200)}),
+    defineField({name: 'features', title: 'Infraestrutura, lazer e segurança', type: 'array', of: [{type: 'string'}], validation: (rule) => rule.unique().max(30)}),
+    defineField({name: 'seo', title: 'SEO e compartilhamento', type: 'primeSeo'}),
+  ],
+  preview: {select: {title: 'name', subtitle: 'neighborhood.name', media: 'cover'}},
+} satisfies DocumentDefinition)
+
+const condominiumDirectory = defineType({
+  name: 'primeCondominiumDirectory', title: 'Página de condomínios', type: 'document',
+  fields: [
+    defineField({name: 'title', title: 'Título da página', type: 'string', validation: (rule) => rule.max(100)}),
+    defineField({name: 'description', title: 'Apresentação', type: 'text', rows: 3, validation: (rule) => rule.max(300)}),
+    defineField({name: 'featured', title: 'Condomínios em destaque', type: 'array', description: 'Escolha até 3 condomínios publicados. Arraste para definir a ordem dos cards maiores no topo. Eles não se repetem na grade abaixo.', of: [defineArrayMember({type: 'reference', to: [{type: 'condominium'}]})], validation: (rule) => rule.max(3).unique()}),
+  ],
+  preview: {prepare: () => ({title: 'Página de condomínios'})},
+} satisfies DocumentDefinition)
 
 const propertyTypeOption = defineType({
   name: 'propertyTypeOption',
@@ -179,14 +205,14 @@ async function isUnique(slug: string, {document, getClient}: SlugValidationConte
 }
 
 const property = defineType({
-  name: 'property', title: 'Empreendimentos', type: 'document',
+  name: 'property', title: 'Imóveis', type: 'document',
   groups: [
-    {name: 'details', title: 'Informações', default: true},
+    {name: 'details', title: 'Dados do imóvel', default: true},
     {name: 'location', title: 'Localização'},
-    {name: 'commercial', title: 'Comercial'},
+    {name: 'commercial', title: 'Valores e condições'},
     {name: 'media', title: 'Fotos e vídeos'},
-    {name: 'design', title: 'Página'},
-    {name: 'seo', title: 'SEO'},
+    {name: 'design', title: 'Página do imóvel'},
+    {name: 'seo', title: 'SEO e compartilhamento'},
   ],
   fields: [
     defineField({name: 'seo', title: 'SEO da ficha', type: 'primeSeo', group: 'seo'}),
@@ -273,9 +299,11 @@ const property = defineType({
         }),
       ],
     }),
+    defineField({name: 'condominium', title: 'Condomínio', type: 'reference', group: 'details', to: [{type: 'condominium'}], description: 'Cadastre em Condomínios e selecione aqui. Mantenha o tipo do imóvel como Casa/Mansão, Apartamento/Cobertura, Terreno etc.'}),
     defineField({
       name: 'condominiumName', title: 'Condomínio ou edifício', type: 'string', group: 'details',
-      description: 'Opcional. Ex.: Reserva do Paratehy, Alphaville, Jardim do Golfe.',
+      hidden: ({document}) => !!document?.condominium,
+      description: 'Nome legado ou de edifício. Para listar o imóvel em um condomínio, selecione o cadastro no campo Condomínio.',
       validation: (rule) => rule.max(100),
     }),
     defineField({
@@ -463,19 +491,56 @@ const property = defineType({
   },
 })
 
+const marqueeItems = defineField({
+    name: 'items', title: 'Mensagens', type: 'array',
+    description: 'Mensagens exibidas na faixa animada da Home, na ordem desta lista.',
+    of: [defineArrayMember({
+      name: 'marqueeItem', title: 'Mensagem', type: 'object',
+      fields: [
+        defineField({name: 'title', title: 'Título', type: 'string', validation: (rule) => rule.required().max(60)}),
+        defineField({name: 'description', title: 'Descrição', type: 'string', validation: (rule) => rule.required().max(120)}),
+      ],
+      preview: {select: {title: 'title', subtitle: 'description'}},
+    })],
+    validation: (rule) => rule.max(4),
+  })
+
 const home = defineType({
-  name: 'primeHome', title: 'Home', type: 'document',
-  groups: [{name: 'content', title: 'Conteúdo', default: true}, {name: 'seo', title: 'SEO'}],
+  name: 'primeHome', title: 'Página inicial', type: 'document',
+  groups: [{name: 'content', title: 'Conteúdo', default: true}, {name: 'seo', title: 'SEO e compartilhamento'}, {name: 'footer', title: 'Rodapé'}, {name: 'banners', title: 'Banners'}],
   fields: [
-    defineField({name: 'homeSeo', title: 'SEO da página inicial', type: 'primeSeo', group: 'seo'}),
-    defineField({name: 'catalogSeo', title: 'SEO do catálogo de empreendimentos', type: 'primeSeo', group: 'seo'}),
-    defineField({name: 'hero', title: 'Empreendimento de abertura', type: 'reference', group: 'content', weak: true, to: [{type: 'property'}]}),
     defineField({
-      name: 'featured', title: 'Destaques em ordem de exibição', type: 'array', group: 'content',
+      name: 'banners', title: 'Banners de campanhas e eventos', type: 'array', group: 'banners',
+      description: 'Arraste para definir a ordem. Um banner fica estático; dois ou mais alternam automaticamente. Sem banners, esta seção fica oculta. Prefira artes horizontais na proporção 3:1 (ex.: 2400 × 800 px), com textos dentro da área central.',
+      of: [defineArrayMember({name: 'homeBanner', title: 'Banner', type: 'object', fields: [
+        defineField({name: 'title', title: 'Nome da campanha', type: 'string', validation: (rule) => rule.required().max(100)}),
+        defineField({name: 'image', title: 'Imagem do banner (sem marca d’água)', type: 'primePhoto', validation: (rule) => rule.required()}),
+        defineField({name: 'href', title: 'Link ao clicar', type: 'url', description: 'Link completo https:// ou caminho interno, como /empreendimentos.', validation: (rule) => rule.required().uri({allowRelative: true, scheme: ['http', 'https']})}),
+        defineField({name: 'newTab', title: 'Abrir em nova aba', type: 'boolean', initialValue: true}),
+      ], preview: {select: {title: 'title', subtitle: 'href', media: 'image'}}})],
+    }),
+    defineField({...marqueeItems, name: 'marquee', title: 'Faixa informativa do rodapé', group: 'footer'}),
+    defineField({name: 'homeSeo', title: 'SEO da página inicial', type: 'primeSeo', group: 'seo'}),
+    defineField({name: 'catalogSeo', title: 'SEO do catálogo de imóveis', type: 'primeSeo', group: 'seo'}),
+    defineField({name: 'hero', title: 'Imóvel de abertura (legado)', type: 'reference', group: 'content', hidden: true, readOnly: true, weak: true, to: [{type: 'property'}]}),
+    defineField({
+      name: 'heroSlides', title: 'Imóveis do hero', type: 'array', group: 'content',
+      description: 'Selecione no máximo 3 imóveis para a abertura da página. Arraste para definir a ordem. Publique os imóveis e esta configuração.',
+      of: [defineArrayMember({type: 'reference', to: [{type: 'property'}], options: {filter: 'defined(slug.current) && defined(cover.asset)'}})],
+      validation: (rule) => rule.max(3).unique(),
+    }),
+    defineField({
+      name: 'homeSelection', title: 'Imóveis de Explore os imóveis', type: 'array', group: 'content',
+      description: 'Selecione no máximo 5 imóveis para esta seção da página inicial. Arraste para definir a ordem dos cards. A seleção é independente do hero.',
+      of: [defineArrayMember({type: 'reference', to: [{type: 'property'}], options: {filter: 'defined(slug.current) && defined(cover.asset)'}})],
+      validation: (rule) => rule.max(5).unique(),
+    }),
+    defineField({
+      name: 'featured', title: 'Imóveis da seção Em destaque', type: 'array', group: 'content',
       of: [defineArrayMember({type: 'reference', weak: true, to: [{type: 'property'}]})],
       validation: (rule) => rule.unique().custom((items) => {
         const refs = (items || []).map((item) => (item as {_ref?: string})._ref)
-        return new Set(refs).size === refs.length || 'Selecione cada empreendimento uma única vez.'
+        return new Set(refs).size === refs.length || 'Selecione cada imóvel uma única vez.'
       }),
     }),
     defineField({
@@ -522,25 +587,13 @@ const home = defineType({
       validation: (rule) => rule.max(6),
     }),
   ],
-  preview: {prepare: () => ({title: 'Home'})},
+  preview: {prepare: () => ({title: 'Página inicial'})},
 })
 
 const marquee = defineType({
   name: 'primeMarquee', title: 'Faixa informativa do rodapé', type: 'document',
-  fields: [defineField({
-    name: 'items', title: 'Mensagens', type: 'array',
-    description: 'Mensagens exibidas na faixa animada da Home, na ordem desta lista.',
-    of: [defineArrayMember({
-      name: 'marqueeItem', title: 'Mensagem', type: 'object',
-      fields: [
-        defineField({name: 'title', title: 'Título', type: 'string', validation: (rule) => rule.required().max(60)}),
-        defineField({name: 'description', title: 'Descrição', type: 'string', validation: (rule) => rule.required().max(120)}),
-      ],
-      preview: {select: {title: 'title', subtitle: 'description'}},
-    })],
-    validation: (rule) => rule.max(4),
-  })],
+  fields: [marqueeItems],
   preview: {prepare: () => ({title: 'Faixa informativa do rodapé'})},
 })
 
-export const schemaTypes = [photo, seo, propertyTypeOption, city, neighborhood, property, home, marquee, siteSettings]
+export const schemaTypes = [photo, seo, condominium, condominiumDirectory, propertyTypeOption, city, neighborhood, property, home, marquee, siteSettings].map(withEditorialGuidance)

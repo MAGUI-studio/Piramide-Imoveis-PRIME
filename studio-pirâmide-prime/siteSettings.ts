@@ -72,7 +72,7 @@ export const siteSettings = defineType({
     ]}),
     defineField({name: 'statsIntro', title: 'Apresentação dos indicadores', type: 'object', group: 'commercial',
       description: 'Os valores e rótulos dos indicadores continuam na Home. Sem indicadores, a seção não aparece.', fields: introFields}),
-    cta('homeCta', 'Chamada final da Home'), cta('catalogCta', 'Chamada final do catálogo'), cta('propertyCta', 'Chamada final das fichas'),
+    cta('homeCta', 'Chamada final da página inicial'), cta('catalogCta', 'Chamada final do catálogo'), cta('propertyCta', 'Chamada final das fichas'),
   ],
   preview: {prepare: () => ({title: 'Configurações do site'})},
 })
