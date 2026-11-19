@@ -151,14 +151,14 @@ export function Header({contact = null, portalUrl = null, socialLinks = []}: Hea
                 alt=""
                 width={1000}
                 height={512}
-                className="h-12 w-auto object-contain sm:h-14 lg:h-16 dark:hidden"
+                className="h-16 w-auto object-contain dark:hidden"
               />
               <img
                 src="/logos/piramide/logo_white.png"
                 alt=""
                 width={1000}
                 height={512}
-                className="hidden h-12 w-auto object-contain sm:h-14 lg:h-16 dark:block"
+                className="hidden h-16 w-auto object-contain dark:block"
               />
             </Link>
 
@@ -281,7 +281,14 @@ export function Header({contact = null, portalUrl = null, socialLinks = []}: Hea
           style={{transform: isMobileOpen ? 'translateX(0)' : 'translateX(100%)'}}
           className="fixed inset-y-0 right-0 flex h-dvh w-full max-w-sm flex-col overflow-hidden overscroll-contain bg-white p-6 text-zinc-900 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transition-none dark:border-l dark:border-white/[0.08] dark:bg-[#0c0c0e] dark:text-[#f5f2ec]"
         >
-          <div className="flex shrink-0 items-center justify-between border-b border-zinc-200 pb-4 dark:border-white/10">
+          <img
+            src="/logos/piramide/icon.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-10 -bottom-4 z-0 w-[26rem] max-w-none select-none object-contain opacity-[0.08] grayscale dark:opacity-[0.07] dark:brightness-200 dark:grayscale"
+          />
+
+          <div className="relative z-10 flex shrink-0 items-center justify-between border-b border-zinc-200 pb-4 dark:border-white/10">
             <Link
               href="/"
               tabIndex={isMobileOpen ? 0 : -1}
@@ -293,14 +300,14 @@ export function Header({contact = null, portalUrl = null, socialLinks = []}: Hea
                 alt=""
                 width={1000}
                 height={512}
-                className="h-10 w-auto object-contain dark:hidden"
+                className="h-18 w-auto object-contain sm:h-20 dark:hidden"
               />
               <img
                 src="/logos/piramide/logo_white.png"
                 alt=""
                 width={1000}
                 height={512}
-                className="hidden h-10 w-auto object-contain dark:block"
+                className="hidden h-18 w-auto object-contain sm:h-20 dark:block"
               />
             </Link>
             <button
@@ -314,7 +321,7 @@ export function Header({contact = null, portalUrl = null, socialLinks = []}: Hea
             </button>
           </div>
 
-          <form onSubmit={handleSearchSubmit} role="search" className="relative my-4 w-full shrink-0">
+          <form onSubmit={handleSearchSubmit} role="search" className="relative z-10 my-4 w-full shrink-0">
             <input
               type="text"
               tabIndex={isMobileOpen ? 0 : -1}
@@ -326,7 +333,7 @@ export function Header({contact = null, portalUrl = null, socialLinks = []}: Hea
             <Search aria-hidden="true" className="pointer-events-none absolute top-3.5 left-3 size-4 text-zinc-500 dark:text-zinc-400" />
           </form>
 
-          <nav aria-label="Menu mobile" className="flex-1 space-y-1">
+          <nav aria-label="Menu mobile" className="relative z-10 flex-1 space-y-1">
             {navLinks.map((item) => {
               const active = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
               return (
@@ -358,7 +365,7 @@ export function Header({contact = null, portalUrl = null, socialLinks = []}: Hea
           </nav>
 
           {contact && (
-            <div className="shrink-0 pt-4">
+            <div className="relative z-10 shrink-0 pt-4">
               <a
                 href={contact}
                 target="_blank"
@@ -377,7 +384,7 @@ export function Header({contact = null, portalUrl = null, socialLinks = []}: Hea
           )}
 
           {socialLinks.length > 0 && (
-            <div className="mt-4 flex shrink-0 items-center justify-between border-t border-zinc-200 pt-4 dark:border-white/10">
+            <div className="relative z-10 mt-4 flex shrink-0 items-center justify-between border-t border-zinc-200 pt-4 dark:border-white/10">
               <span className="text-xs font-bold tracking-wider text-zinc-500 uppercase dark:text-zinc-400">
                 Redes Sociais
               </span>
