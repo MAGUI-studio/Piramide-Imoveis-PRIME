@@ -59,3 +59,19 @@ export function ScrollArea({children, actions}: {children: ReactNode; actions: R
     </ScrollAreaPrimitive.Root>
   )
 }
+
+export function VerticalScrollArea({children, className = ''}: {children: ReactNode; className?: string}) {
+  return (
+    <ScrollAreaPrimitive.Root className="relative overflow-hidden">
+      <ScrollAreaPrimitive.Viewport className={'w-full ' + className}>
+        {children}
+      </ScrollAreaPrimitive.Viewport>
+      <ScrollAreaPrimitive.Scrollbar
+        orientation="vertical"
+        className="flex w-2 touch-none select-none p-0.5 transition-colors"
+      >
+        <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-piramide/45 transition-colors hover:bg-piramide/75" />
+      </ScrollAreaPrimitive.Scrollbar>
+    </ScrollAreaPrimitive.Root>
+  )
+}

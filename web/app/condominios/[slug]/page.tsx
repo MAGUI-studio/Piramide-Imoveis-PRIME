@@ -6,6 +6,7 @@ import {ArrowDown, ArrowUpRight, Check, MapPin} from 'lucide-react'
 import {Catalog} from '../../../components/catalog'
 import {CatalogCta} from '../../../components/catalogCta'
 import {Frame} from '../../../components/media'
+import {VerticalScrollArea} from '../../../components/scrollArea'
 import {WhatsAppWidget} from '../../../components/whatsappWidget'
 import {eyebrow, homeSectionHeading, previewBanner, wrap} from '../../../lib/classes'
 import {catalogPictures, picture} from '../../../lib/image'
@@ -45,23 +46,49 @@ export default async function CondominiumPage({params}: Props) {
           <h1 id="condominium-title" className="max-w-[13ch] text-[clamp(3.3rem,8.5vw,9rem)] leading-[.98] font-medium tracking-[-.055em] text-balance">{condo.name}</h1>
           <div className="mt-8 flex flex-col gap-6 pt-6 sm:mt-10 sm:flex-row sm:items-end sm:justify-between">
             <p className="flex max-w-[48ch] items-start gap-2.5 text-sm leading-relaxed text-white/85"><MapPin size={17} strokeWidth={1.5} className="mt-0.5 shrink-0" aria-hidden="true" />{[condo.address, condo.neighborhood?.name, condo.city?.name].filter(Boolean).join(', ')}</p>
-            <a href="#empreendimentos" className="group inline-flex min-h-12 w-fit shrink-0 items-center gap-8 border border-white/50 px-5 py-3 text-sm font-medium transition-colors hover:bg-white hover:text-coal focus-visible:outline-white">Explorar imóveis <ArrowDown size={17} strokeWidth={1.5} aria-hidden="true" className="motion-safe:transition-transform motion-safe:group-hover:translate-y-1" /></a>
+            <a href="#imoveis" className="group inline-flex min-h-12 w-fit shrink-0 items-center gap-8 border border-white/50 px-5 py-3 text-sm font-medium transition-colors hover:bg-white hover:text-coal focus-visible:outline-white">Explorar imóveis <ArrowDown size={17} strokeWidth={1.5} aria-hidden="true" className="motion-safe:transition-transform motion-safe:group-hover:translate-y-1" /></a>
           </div>
         </div>
       </section>
       <section aria-labelledby="condominium-about" className={wrap + ' pt-14 pb-4 sm:pt-20 sm:pb-6 lg:pt-24 lg:pb-8'}>
-        <div className="mx-auto max-w-[56rem] text-center">
-          <p className={eyebrow + ' mb-5 text-piramide'}>A essência deste endereço</p>
-          <h2 id="condominium-about" className={homeSectionHeading + ' mx-auto max-w-[24ch]'}>Um lugar para chamar de seu.</h2>
-          <p className="mt-7 whitespace-pre-line text-base leading-[1.9] text-earth sm:mt-9 sm:text-lg sm:leading-[1.9]">{condo.description}</p>
-          <a href="#empreendimentos" className="mt-8 inline-flex min-h-11 items-center gap-3 pb-1 text-sm font-medium text-piramide transition-colors hover:opacity-75">{items.length ? items.length + (items.length === 1 ? ' imóvel neste condomínio' : ' imóveis neste condomínio') : 'Consultar imóveis neste condomínio'}<ArrowUpRight size={17} aria-hidden="true" /></a>
-        </div>
-        {!!condo.features?.length && <div className="mt-14 bg-piramide/[.045] px-5 py-8 sm:mt-16 sm:px-10 sm:py-10">
-          <div className="mb-8 text-center"><p className={eyebrow + ' mb-3 text-piramide'}>Infraestrutura, lazer e segurança</p><h2 className="text-2xl font-medium tracking-tight sm:text-3xl">O cuidado em cada detalhe</h2></div>
-          <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
-            {condo.features.map((feature) => <li key={feature} className="flex items-center gap-4"><span className="grid size-10 shrink-0 place-items-center rounded-full bg-piramide/10 text-piramide"><Check size={18} strokeWidth={1.5} aria-hidden="true" /></span><span className="text-sm leading-relaxed font-medium sm:text-base">{feature}</span></li>)}
-          </ul>
-        </div>}
+        {condo.features?.length ? (
+          <div className="grid items-start gap-10 lg:grid-cols-2 lg:items-center lg:gap-14">
+            <div className="min-w-0">
+              <p className={eyebrow + ' mb-4 text-piramide'}>A essência deste endereço</p>
+              <h2 id="condominium-about" className={homeSectionHeading + ' max-w-[20ch]'}>Um lugar para chamar de seu.</h2>
+              <p className="mt-6 whitespace-pre-line text-base leading-[1.85] text-earth sm:mt-7 sm:text-lg sm:leading-[1.85]">{condo.description}</p>
+              <a href="#imoveis" className="mt-7 inline-flex min-h-11 items-center gap-3 pb-1 text-sm font-medium text-piramide transition-colors hover:opacity-75">
+                {items.length ? items.length + (items.length === 1 ? ' imóvel neste condomínio' : ' imóveis neste condomínio') : 'Consultar imóveis neste condomínio'}
+                <ArrowUpRight size={17} aria-hidden="true" />
+              </a>
+            </div>
+            <div className="min-w-0 border border-rule bg-piramide/[.045] p-6 sm:p-8">
+              <div className="mb-6 border-b border-rule pb-5">
+                <p className={eyebrow + ' mb-2 text-piramide'}>Infraestrutura, lazer e segurança</p>
+                <h2 className="text-xl font-medium tracking-tight sm:text-2xl">O cuidado em cada detalhe</h2>
+              </div>
+              <VerticalScrollArea className="max-h-64 pr-3 sm:max-h-72">
+                <ul className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+                  {condo.features.map((feature) => (
+                    <li key={feature} className="flex items-center gap-3.5">
+                      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-piramide/10 text-piramide">
+                        <Check size={16} strokeWidth={1.6} aria-hidden="true" />
+                      </span>
+                      <span className="text-sm leading-snug font-medium sm:text-[0.9375rem]">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </VerticalScrollArea>
+            </div>
+          </div>
+        ) : (
+          <div className="mx-auto max-w-[56rem] text-center">
+            <p className={eyebrow + ' mb-5 text-piramide'}>A essência deste endereço</p>
+            <h2 id="condominium-about" className={homeSectionHeading + ' mx-auto max-w-[24ch]'}>Um lugar para chamar de seu.</h2>
+            <p className="mt-7 whitespace-pre-line text-base leading-[1.9] text-earth sm:mt-9 sm:text-lg sm:leading-[1.9]">{condo.description}</p>
+            <a href="#imoveis" className="mt-8 inline-flex min-h-11 items-center gap-3 pb-1 text-sm font-medium text-piramide transition-colors hover:opacity-75">{items.length ? items.length + (items.length === 1 ? ' imóvel neste condomínio' : ' imóveis neste condomínio') : 'Consultar imóveis neste condomínio'}<ArrowUpRight size={17} aria-hidden="true" /></a>
+          </div>
+        )}
       </section>
       <Suspense fallback={<p className={wrap + ' py-12'} role="status">Carregando imóveis…</p>}><Catalog items={items.map(catalogPictures)} full fixedLocation scopeTitle={'Imóveis em ' + condo.name} basePath={'/condominios/' + condo.slug} /></Suspense>
     </main>

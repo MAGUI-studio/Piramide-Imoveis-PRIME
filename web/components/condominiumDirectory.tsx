@@ -5,6 +5,7 @@ import {useSearchParams} from 'next/navigation'
 import {ArrowLeft, ArrowRight, ArrowUpRight, Building2, MapPin, Search, X} from 'lucide-react'
 import type {Condominium} from '../lib/model'
 import type {Picture} from '../lib/image'
+import {glassField} from '../lib/classes'
 import {Frame} from './media'
 import {MultiSelect} from './multiSelect'
 
@@ -16,12 +17,42 @@ const pageSize = 8
 function CondominiumCard({condo, featured = false}: {condo: Entry; featured?: boolean}) {
   return <article className="min-w-0">
     <Link href={'/condominios/' + condo.slug} className="group/card block">
-      <div className={'relative isolate overflow-hidden bg-coal ' + (featured ? 'flex min-h-[24rem] flex-col justify-end p-6 text-white lg:min-h-[27rem]' : 'aspect-[1.35]')}>
+      <div
+        className={
+          'relative isolate overflow-hidden bg-coal ' +
+          (featured
+            ? 'flex min-h-[28rem] flex-col justify-end p-6 text-white shadow-[0_8px_24px_rgba(15,23,42,0.05)] ring-1 ring-inset ring-black/[0.04] transition-shadow duration-300 after:pointer-events-none after:absolute after:inset-0 after:z-10 after:ring-1 after:ring-inset after:ring-white/[0.06] after:transition-colors after:duration-300 group-hover/card:after:ring-white/[0.12] sm:min-h-[30rem] lg:min-h-[32rem] dark:shadow-[0_12px_30px_rgba(0,0,0,0.35)] dark:ring-white/[0.05]'
+            : 'aspect-[1.35]')
+        }
+      >
         <Frame photo={condo.image} sizes={featured ? '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw' : '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw'} className="absolute inset-0 -z-10 size-full object-cover motion-safe:transition-transform motion-safe:duration-700 group-hover/card:scale-104 group-focus-visible/card:scale-104" />
-        <div className={'absolute inset-0 -z-10 ' + (featured ? 'bg-[linear-gradient(180deg,#10131115_25%,#101311df_100%)]' : 'bg-black/10')} />
+        <div className={'absolute inset-0 -z-10 ' + (featured ? 'bg-[linear-gradient(180deg,#0c0c0e18_15%,#0c0c0ec2_62%,#0c0c0ef2_100%)]' : 'bg-black/10')} />
         <span className="absolute top-4 left-4 bg-black/35 px-2.5 py-1.5 text-[10px] font-medium text-white backdrop-blur-md">{condo.count} {condo.count === 1 ? 'imóvel' : 'imóveis'}</span>
         <span className="absolute top-4 right-4 grid size-9 place-items-center rounded-full bg-white/20 text-white opacity-0 backdrop-blur-md motion-safe:translate-x-[-.35rem] motion-safe:translate-y-[.35rem] transition-[opacity,translate,background-color,color] duration-300 ease-out motion-safe:group-hover/card:translate-x-0 motion-safe:group-hover/card:translate-y-0 motion-safe:group-focus-visible/card:translate-x-0 motion-safe:group-focus-visible/card:translate-y-0 group-hover/card:bg-white group-hover/card:text-coal group-hover/card:opacity-100 group-focus-visible/card:opacity-100 motion-reduce:transition-none"><ArrowUpRight size={18} strokeWidth={1.5} aria-hidden="true" /></span>
-        {featured && <div><p className="mb-3 flex items-center gap-2 text-[11px] text-white/80"><MapPin size={13} aria-hidden="true" />{[condo.neighborhood?.name, condo.city?.name].filter(Boolean).join(', ')}</p><h3 className="text-[clamp(1.6rem,2.3vw,2.5rem)] leading-[1.1] font-medium tracking-tight text-balance">{condo.name}</h3><span className="mt-5 inline-flex items-center gap-2 text-xs text-white/80">Conhecer condomínio <ArrowUpRight size={14} aria-hidden="true" className="motion-safe:transition-[translate] motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover/card:translate-x-1 motion-safe:group-hover/card:-translate-y-1 motion-safe:group-focus-visible/card:translate-x-1 motion-safe:group-focus-visible/card:-translate-y-1" /></span></div>}
+        {featured && (
+          <div>
+            <p className="mb-3 flex items-center gap-2 text-[11px] text-white/80">
+              <MapPin size={13} aria-hidden="true" />
+              {[condo.neighborhood?.name, condo.city?.name].filter(Boolean).join(', ')}
+            </p>
+            <h3 className="text-[clamp(1.6rem,2.3vw,2.5rem)] leading-[1.1] font-medium tracking-tight text-balance">
+              {condo.name}
+            </h3>
+            {condo.description && (
+              <p className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-white/80">
+                {condo.description}
+              </p>
+            )}
+            <span className="mt-5 inline-flex items-center gap-2 text-xs text-white/85">
+              Conhecer condomínio{' '}
+              <ArrowUpRight
+                size={14}
+                aria-hidden="true"
+                className="motion-safe:transition-[translate] motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover/card:translate-x-1 motion-safe:group-hover/card:-translate-y-1 motion-safe:group-focus-visible/card:translate-x-1 motion-safe:group-focus-visible/card:-translate-y-1"
+              />
+            </span>
+          </div>
+        )}
       </div>
       {!featured && <div className="pt-4"><p className="mb-2 truncate text-[11px] text-earth">{[condo.neighborhood?.name, condo.city?.name].filter(Boolean).join(', ')}</p><h3 className="line-clamp-2 text-lg leading-snug font-medium tracking-tight transition-colors group-hover/card:text-piramide">{condo.name}</h3><p className="mt-2 line-clamp-2 text-xs leading-relaxed text-earth">{condo.description}</p><span className="mt-3 inline-flex min-h-8 items-center gap-2 text-xs font-medium text-piramide">Explorar condomínio <ArrowUpRight size={13} aria-hidden="true" className="motion-safe:transition-[translate] motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover/card:translate-x-1 motion-safe:group-hover/card:-translate-y-1 motion-safe:group-focus-visible/card:translate-x-1 motion-safe:group-focus-visible/card:-translate-y-1" /></span></div>}
     </Link>
@@ -67,8 +98,8 @@ export function CondominiumDirectory({items, featuredIds = []}: {items: Entry[];
   const pageLink = 'inline-flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 text-sm transition-colors hover:bg-piramide/10 hover:text-piramide'
 
   return <>
-    <form role="search" aria-label="Filtrar condomínios" onSubmit={(event) => event.preventDefault()} className="relative z-20 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
-      <div className="flex min-h-15 items-center gap-3 border-b border-espresso/25 px-2 focus-within:border-piramide sm:col-span-2 lg:col-span-1"><Search size={17} strokeWidth={1.5} className="shrink-0 text-piramide" aria-hidden="true" /><label className="min-w-0 flex-1"><span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">Buscar condomínio</span><input type="search" value={query} onChange={(event) => update('busca', [event.target.value])} placeholder="Nome ou localização" className="mt-0.5 w-full min-w-0 appearance-none bg-transparent text-sm text-espresso outline-none placeholder:text-earth [&::-webkit-search-cancel-button]:appearance-none" /></label>{query && <button type="button" onClick={() => update('busca', [])} aria-label="Limpar busca" className="grid size-8 cursor-pointer place-items-center text-earth hover:text-piramide"><X size={15} /></button>}</div>
+    <form role="search" aria-label="Filtrar condomínios" onSubmit={(event) => event.preventDefault()} className="relative z-20 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
+      <div className={glassField + ' sm:col-span-2 lg:col-span-1'}><Search size={17} strokeWidth={1.5} className="shrink-0 text-piramide" aria-hidden="true" /><label className="min-w-0 flex-1"><span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">Buscar condomínio</span><input type="search" value={query} onChange={(event) => update('busca', [event.target.value])} placeholder="Nome ou localização" className="mt-0.5 w-full min-w-0 appearance-none bg-transparent text-sm text-espresso outline-none placeholder:text-earth [&::-webkit-search-cancel-button]:appearance-none" /></label>{query && <button type="button" onClick={() => update('busca', [])} aria-label="Limpar busca" className="grid size-8 cursor-pointer place-items-center text-earth hover:text-piramide"><X size={15} /></button>}</div>
       <MultiSelect label="Cidade" placeholder="Todas as cidades" icon={Building2} values={selectedCities} options={cities.map((city) => ({value: city.id, label: city.name}))} onChange={(values) => update('cidade', values)} />
       <MultiSelect label="Bairro" placeholder="Todos os bairros" icon={MapPin} values={selectedNeighborhoods} options={neighborhoods.map((neighborhood) => ({value: neighborhood.id, label: neighborhood.name}))} onChange={(values) => update('bairro', values)} />
     </form>

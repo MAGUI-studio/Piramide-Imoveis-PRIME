@@ -32,7 +32,7 @@ export default async function Condominios() {
         <Suspense fallback={<p role="status" className="py-8 text-earth">Carregando condomínios…</p>}>
           <CondominiumDirectory featuredIds={directory.featuredIds} items={condominiums.map((condo) => ({...condo, image: picture(condo.cover, 1.8, 2000), count: catalog.filter((item) => item.condominium?.id === condo.id).length}))} />
         </Suspense>
-        <Link href="/empreendimentos" className="mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-piramide hover:underline">Ver todos os imóveis <ArrowUpRight size={16} aria-hidden="true" /></Link>
+        <Link href="/imoveis" className="mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-piramide hover:underline">Ver todos os imóveis <ArrowUpRight size={16} aria-hidden="true" /></Link>
       </section>
     </main>
     <CatalogCta contact={contact} />
