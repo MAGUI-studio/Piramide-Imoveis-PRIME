@@ -68,6 +68,7 @@ const guidance: Record<string, string | Guidance> = {
   'property.address.approximate': {title: 'Localização aproximada no mapa', description: 'Ative quando o ponto indica apenas a região ou uma referência próxima. A página avisará que a localização é aproximada. Deixe desativado quando o ponto for o endereço exato.'},
   'property.availability': 'Situação comercial atual: Disponível, Reservado ou Vendido. Reservado e Vendido recebem identificação nos cards; marcar Vendido não remove automaticamente o imóvel do site.',
   'property.price': 'Preço total de venda, em reais. Digite apenas o valor, sem R$. Ex.: 1850000. Se ficar vazio, o site mostra Valor sob consulta.',
+  'property.rentPrice': 'Valor mensal de locação, em reais. Digite apenas o valor, sem R$. Ex.: 12000. Opcional; quando preenchido, o site exibe "/ mês" ao lado do valor.',
   'property.condoFee': 'Valor mensal da taxa de condomínio, em reais. Informe 0 para indicar isenção ou deixe vazio para não exibir essa informação.',
   'property.iptu': 'Valor anual do IPTU, em reais. Não informe o valor de uma parcela mensal. Use 0 para indicar isenção ou deixe vazio para não exibir.',
   'property.conditions': 'Ative apenas as condições confirmadas para esta negociação. As opções desativadas não são apresentadas como benefícios na página.',
@@ -178,7 +179,7 @@ for (const [section, location] of [['homeCta', 'da página inicial'], ['catalogC
 const fieldOrder: Record<string, string[]> = {
   neighborhood: ['city', 'name'],
   condominium: ['name', 'neighborhood', 'address', 'description', 'cover', 'features', 'slug', 'seo'],
-  property: ['title', 'refCode', 'propertyType', 'condominium', 'condominiumName', 'summary', 'description', 'architect', 'specifications', 'customFacts', 'features', 'condoFeatures', 'attributes', 'neighborhood', 'address', 'availability', 'price', 'condoFee', 'iptu', 'conditions', 'externalListingUrl', 'cover', 'gallery', 'videoGallery', 'clip', 'tour', 'externalVideoUrl', 'virtualTourUrl', 'template', 'slug', 'sectionPhoto', 'detailsPhoto', 'mediaPhoto', 'mediaVideoPhoto', 'videoTourPhoto', 'faq', 'firstPublishedSlug', 'firstPublishedAt', 'seo', 'noIndex'],
+  property: ['title', 'refCode', 'propertyType', 'condominium', 'condominiumName', 'summary', 'description', 'architect', 'specifications', 'customFacts', 'features', 'condoFeatures', 'attributes', 'neighborhood', 'address', 'availability', 'price', 'rentPrice', 'condoFee', 'iptu', 'conditions', 'externalListingUrl', 'cover', 'gallery', 'videoGallery', 'clip', 'tour', 'externalVideoUrl', 'virtualTourUrl', 'template', 'slug', 'sectionPhoto', 'detailsPhoto', 'mediaPhoto', 'mediaVideoPhoto', 'videoTourPhoto', 'faq', 'firstPublishedSlug', 'firstPublishedAt', 'seo', 'noIndex'],
   primeHome: ['heroSlides', 'propertyTypeOrder', 'featured', 'homeSelection', 'stats', 'banners', 'marquee', 'hero', 'whatsapp', 'homeSeo', 'catalogSeo'],
 }
 

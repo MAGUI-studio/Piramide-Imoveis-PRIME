@@ -375,7 +375,12 @@ const property = defineType({
     }),
     defineField({
       name: 'price', title: 'Preço de venda (R$)', type: 'number', group: 'commercial',
-      description: 'Deixe em branco para exibir "Valor sob consulta".',
+      description: 'Deixe em branco caso o imóvel seja apenas para locação ou sob consulta.',
+      validation: (rule) => rule.greaterThan(0).precision(2),
+    }),
+    defineField({
+      name: 'rentPrice', title: 'Valor de locação mensal (R$)', type: 'number', group: 'commercial',
+      description: 'Opcional. Preencha quando o imóvel estiver disponível para aluguel mensal (exibido com "/ mês").',
       validation: (rule) => rule.greaterThan(0).precision(2),
     }),
     defineField({name: 'condoFee', title: 'Condomínio mensal (R$)', type: 'number', group: 'commercial', validation: (rule) => rule.min(0).precision(2)}),
