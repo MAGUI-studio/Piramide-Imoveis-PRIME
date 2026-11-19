@@ -20,7 +20,7 @@ const availabilities = [
 const types = ['Casa/Mansão', 'Apartamento/Cobertura', 'Condomínio', 'Loteamento', 'Terreno', 'Comercial']
 const floorProfiles = ['Térrea', 'Sobrado', 'Triplex', 'Andar alto', '1 por andar', 'Duplex', 'Cobertura']
 const sunOrientations = ['Sol da manhã', 'Sol da tarde', 'Face norte', 'Sol o dia todo']
-const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon', 'empreendimentos', 'condominios'])
+const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon', 'imoveis', 'empreendimentos', 'condominios'])
 
 type AssetValue = {asset?: {_ref?: string}}
 function validateAsset(maxMb: number, formats: string[]): CustomValidator<AssetValue> {
@@ -315,12 +315,13 @@ const property = defineType({
       name: 'specifications', title: 'Ficha técnica e metragens', type: 'object', group: 'details',
       options: {columns: 2},
       fields: [
+        defineField({name: 'totalArea', title: 'Área total (m²)', type: 'number', validation: (rule) => rule.greaterThan(0)}),
         defineField({name: 'area', title: 'Área construída / privativa (m²)', type: 'number', validation: (rule) => rule.greaterThan(0)}),
         defineField({name: 'landArea', title: 'Área do terreno / lote (m²)', type: 'number', validation: (rule) => rule.greaterThan(0)}),
         defineField({name: 'bedrooms', title: 'Dormitórios', type: 'number', validation: (rule) => rule.integer().min(0)}),
         defineField({name: 'suites', title: 'Suítes', type: 'number', validation: (rule) => rule.integer().min(0)}),
         defineField({name: 'bathrooms', title: 'Banheiros', type: 'number', validation: (rule) => rule.integer().min(0)}),
-        defineField({name: 'lavabos', title: 'Lavabos', type: 'number', validation: (rule) => rule.integer().min(0)}),
+        defineField({name: 'lavabos', title: 'Lavabos (legado)', type: 'number', hidden: true, readOnly: true, validation: (rule) => rule.integer().min(0)}),
         defineField({name: 'parking', title: 'Vagas de garagem', type: 'number', validation: (rule) => rule.integer().min(0)}),
         defineField({
           name: 'coveredParking', title: 'Vagas cobertas', type: 'number',
@@ -335,6 +336,13 @@ const property = defineType({
         defineField({name: 'hasHobbyBox', title: 'Hobby box / Depósito privativo', type: 'boolean', initialValue: false}),
         defineField({name: 'hasEvCharger', title: 'Ponto para carro elétrico', type: 'boolean', initialValue: false}),
       ],
+    }),
+    defineField({
+      name: 'customFacts', title: 'Dados adicionais da ficha técnica', type: 'array', group: 'details',
+      of: [defineArrayMember({name: 'customPropertyFact', title: 'Dado adicional', type: 'object', fields: [
+        defineField({name: 'label', title: 'Nome do dado', type: 'string', validation: (rule) => rule.required().min(1).max(60).custom((value) => !value || !!value.trim() || 'Informe o nome do dado.')}),
+        defineField({name: 'value', title: 'Valor do dado', type: 'string', validation: (rule) => rule.required().min(1).max(160).custom((value) => !value || !!value.trim() || 'Informe o valor do dado.')}),
+      ], preview: {select: {title: 'label', subtitle: 'value'}}})],
     }),
     defineField({name: 'summary', title: 'Resumo do card', type: 'text', rows: 2, group: 'details', validation: (rule) => rule.required().max(175)}),
     defineField({name: 'description', title: 'Descrição da ficha', type: 'text', rows: 8, group: 'details', validation: (rule) => rule.required()}),
@@ -515,7 +523,7 @@ const home = defineType({
       of: [defineArrayMember({name: 'homeBanner', title: 'Banner', type: 'object', fields: [
         defineField({name: 'title', title: 'Nome da campanha', type: 'string', validation: (rule) => rule.required().max(100)}),
         defineField({name: 'image', title: 'Imagem do banner (sem marca d’água)', type: 'primePhoto', validation: (rule) => rule.required()}),
-        defineField({name: 'href', title: 'Link ao clicar', type: 'url', description: 'Link completo https:// ou caminho interno, como /empreendimentos.', validation: (rule) => rule.required().uri({allowRelative: true, scheme: ['http', 'https']})}),
+        defineField({name: 'href', title: 'Link ao clicar', type: 'url', description: 'Link completo https:// ou caminho interno, como /imoveis.', validation: (rule) => rule.required().uri({allowRelative: true, scheme: ['http', 'https']})}),
         defineField({name: 'newTab', title: 'Abrir em nova aba', type: 'boolean', initialValue: true}),
       ], preview: {select: {title: 'title', subtitle: 'href', media: 'image'}}})],
     }),
@@ -528,6 +536,11 @@ const home = defineType({
       description: 'Selecione no máximo 3 imóveis para a abertura da página. Arraste para definir a ordem. Publique os imóveis e esta configuração.',
       of: [defineArrayMember({type: 'reference', to: [{type: 'property'}], options: {filter: 'defined(slug.current) && defined(cover.asset)'}})],
       validation: (rule) => rule.max(3).unique(),
+    }),
+    defineField({
+      name: 'propertyTypeOrder', title: 'Ordem dos tipos em Qual imóvel você procura?', type: 'array', group: 'content',
+      of: [defineArrayMember({type: 'reference', to: [{type: 'propertyTypeOption'}], options: {filter: 'lower(name) != "condomínio"'}})],
+      validation: (rule) => rule.unique(),
     }),
     defineField({
       name: 'homeSelection', title: 'Imóveis de Explore os imóveis', type: 'array', group: 'content',

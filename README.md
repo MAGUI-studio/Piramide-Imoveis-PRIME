@@ -23,7 +23,7 @@ O catálogo, as fichas e os destaques vêm do dataset configurado, inclusive em 
 ## Fluxo editorial
 
 1. Abra o Studio com uma conta com acesso ao projeto. Cadastre e publique uma cidade e os bairros correspondentes.
-2. Crie um empreendimento, gere o slug, selecione o bairro, preencha os dados e escolha **Fotos**, **Videos** ou **Padrão**. Publique para exibir o card na home e a ficha no endereço `/[slug]`.
+2. Crie um imóvel, gere o slug, selecione o bairro, preencha os dados e escolha **Fotos**, **Videos** ou **Padrão**. Publique para exibir o card na home e a ficha no endereço `/[slug]`.
 3. Em **Página inicial**, selecione até 3 imóveis em **Imóveis do hero** e até 5 em **Imóveis de Explore os imóveis**. Arraste as referências para definir a ordem e publique. As listas são independentes; se forem esvaziadas, as seções ficam ocultas sem completar automaticamente com outros imóveis. O número comercial fica em **Configurações do site → Institucional**.
 4. Envie imagens JPEG, PNG ou WebP de até 2 MB e MP4 de até 12 MB para clipes ou 40 MB para tours. Use MP4 H.264 e fotos com descrições e enquadramentos revisados. Exporte o clipe de abertura curto e adequado para repetição.
 5. Use **Prévia** para revisar rascunhos. O template pode ser alterado após a publicação com o mesmo endereço.
@@ -67,7 +67,7 @@ Em cada imóvel, selecione o campo **Condomínio** e mantenha **Tipo de imóvel*
 
 O card Condomínio da Home leva a `/condominios`. Essa lista usa a capa e a apresentação dos cadastros publicados. Cada card abre `/condominios/[slug]`, com informações do condomínio e seu catálogo de imóveis, refinável por tipo e demais filtros. Um condomínio publicado sem imóveis mostra sua apresentação e o estado vazio do catálogo. A foto do card da Home continua configurável em **Tipos de imóvel → Condomínio**; sem ela, usa a capa de um condomínio.
 
-Os outros cards da Home abrem `/empreendimentos?tipo=...`. Os títulos do catálogo acompanham os filtros; paginação preserva os parâmetros e, dentro de um condomínio, permanece na mesma página do condomínio.
+Os outros cards da Home abrem `/imoveis?tipo=...`. Os títulos do catálogo acompanham os filtros; paginação preserva os parâmetros e, dentro de um condomínio, permanece na mesma página do condomínio.
 
 ### Destaques da página de condomínios
 
@@ -94,3 +94,13 @@ A sequência recomendada de cadastro acompanha o menu: **Configurações do site
 Os campos têm instruções específicas de preenchimento, exemplos e indicação de uso no site. O campo **Condomínio ao qual o imóvel pertence** escolhe o cadastro do lugar; **Tipo de imóvel** identifica a unidade à venda. O nome livre de edifício fica oculto quando há um condomínio selecionado. SEO e compartilhamento aparecem ao final dos campos e das abas.
 
 As instruções e a ordem dos campos são centralizadas em `studio-pirâmide-prime/editorial.ts`, sem alterar nomes internos, dados existentes ou regras de publicação. Para conferir a cobertura das instruções, a posição de SEO e os limites editoriais, execute `node --test tests/editorial.test.mjs` a partir da pasta do Studio.
+
+### Ordem dos tipos na página inicial
+
+Em **Página inicial → Conteúdo → Ordem dos tipos em Qual imóvel você procura?**, arraste as categorias e publique para ordenar os cards. **Condomínio** fica sempre em primeiro e não entra nessa lista. Categorias não selecionadas continuam ao final, na ordem padrão; categorias sem imóveis não são exibidas. O script `scripts/initialize-home-type-order.ts` preenche apenas configurações ausentes com os tipos atuais.
+
+### Ficha técnica dos imóveis
+
+Em **Imóveis → Dados do imóvel → Ficha técnica e metragens**, preencha **Área total (m²)** conforme a documentação. Ela é independente da área construída/privativa e do terreno, sem soma automática. Lavabos saiu da edição e da exibição; valores anteriores continuam preservados internamente.
+
+Em **Dados adicionais da ficha técnica**, adicione o nome da característica e o valor (ex.: Tipo de piso / Porcelanato). Arraste para ordenar. Os dados aparecem após os campos fixos, com um ícone de confirmação, nos modelos Fotos, Vídeos e Padrão. Não há necessidade de alterar o código para criar novas características. Evite repetir informações que já tenham um campo fixo.
