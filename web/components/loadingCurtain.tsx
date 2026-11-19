@@ -54,11 +54,11 @@ export function LoadingCurtain({embedded = false, onComplete}: {embedded?: boole
           }
         >
           <img
-            src="/logos/piramide/logo_white.svg"
+            src="/logos/piramide/logo_white.png"
             alt="Pirâmide Imóveis"
             width={380}
             height={100}
-            className="h-auto max-h-20 w-auto object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] sm:h-22 md:h-26 lg:h-30"
+            className="h-28 w-auto object-contain drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] sm:h-36 md:h-44 lg:h-52"
           />
         </div>
       </div>
