@@ -4,7 +4,7 @@ import {bannerHref} from '../lib/banner.ts'
 
 test('supports public campaign links and internal navigation', () => {
   assert.equal(bannerHref('https://parqueuna.piramideimoveissjc.com.br/pt'), 'https://parqueuna.piramideimoveissjc.com.br/pt')
-  assert.equal(bannerHref('/empreendimentos?tipo=Terreno'), '/empreendimentos?tipo=Terreno')
+  assert.equal(bannerHref('/imoveis?tipo=Terreno'), '/imoveis?tipo=Terreno')
 })
 
 test('ignores unsafe protocols and malformed links', () => {
