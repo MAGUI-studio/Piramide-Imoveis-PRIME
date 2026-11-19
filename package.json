@@ -9,6 +9,7 @@
     "dev": "pnpm --parallel --filter web --filter studio dev",
     "build": "pnpm --filter web build",
     "check": "pnpm -r check",
+    "test": "node --experimental-strip-types --test web/tests/*.test.mjs studio-pirâmide-prime/tests/*.test.mjs",
     "prepare": "husky"
   },
   "devDependencies": {

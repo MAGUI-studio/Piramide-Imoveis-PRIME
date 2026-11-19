@@ -4,6 +4,7 @@ import {useEffect, useRef, useState} from 'react'
 import {ArrowUp, MessageCircle, ShieldCheck, X} from 'lucide-react'
 
 import {whatsappLink} from '../lib/model'
+import {cookieConsentEvent, hasCookieConsent} from '../lib/cookieConsent'
 import {privacyController, type Organization, type PrivacySettings} from '../lib/siteSettings'
 
 const privacyEvent = 'open-privacy-policy'
@@ -26,13 +27,7 @@ export function SiteUtilities({privacy = {}, organization = {}}: {privacy?: Priv
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    let accepted = document.cookie.split('; ').includes('cookie-consent=accepted')
-    try {
-      accepted ||= localStorage.getItem('cookie_consent') === 'accepted'
-    } catch {
-      // The cookie can still record acceptance when local storage is unavailable.
-    }
-    if (accepted) {
+    if (hasCookieConsent()) {
       setCookieNotice('dismissed')
       return
     }
@@ -91,6 +86,7 @@ export function SiteUtilities({privacy = {}, organization = {}}: {privacy?: Priv
       // The cookie still records the acceptance when local storage is unavailable.
     }
     setCookieNotice('dismissed')
+    window.dispatchEvent(new Event(cookieConsentEvent))
   }
 
   return (

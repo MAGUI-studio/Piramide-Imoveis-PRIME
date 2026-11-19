@@ -2,6 +2,8 @@
 
 Vitrine imobiliária em Next.js e Sanity Studio independente. O Studio aponta inicialmente para o projeto pessoal `fc83c82x`, dataset `production`.
 
+O histórico da homologação, as configurações efetivas, os erros resolvidos e o roteiro de migração para **um novo deploy na Vercel e no Sanity do cliente** estão em [Deploy: homologação e produção](docs/DEPLOY.md). A homologação atual usa as contas pessoais, com site em `https://prime.magui.studio`.
+
 ## Desenvolvimento
 
 Requisitos: Node.js 22.12 ou superior e pnpm 11.25.
@@ -16,6 +18,7 @@ pnpm dev
 - Site: http://localhost:3000
 - Studio: http://localhost:3333
 - Tipos: `pnpm check`
+- Testes: `pnpm test`
 - Builds: `pnpm build` e `pnpm --filter studio build`
 
 O catálogo, as fichas e os destaques vêm do dataset configurado, inclusive em desenvolvimento. A vitrine de um dataset vazio começa a exibir imóveis após a primeira publicação no Studio.
@@ -30,15 +33,17 @@ O catálogo, as fichas e os destaques vêm do dataset configurado, inclusive em 
 
 ## Vercel e Studio
 
-O Google Analytics usa `NEXT_PUBLIC_GA_ID` (ex.: `G-XXXXXXXXXX`). Configure em `web/.env.local` no desenvolvimento e nas variáveis do projeto web na Vercel, com redeploy após alterações. Sem o ID, nenhum script do Analytics é carregado. O modo de prévia editorial não carrega o Analytics. A configuração acompanha navegação pelo Google tag; mantenha a medição otimizada de mudanças de página habilitada no fluxo GA4.
+O Google Analytics usa `NEXT_PUBLIC_GA_ID` (ex.: `G-XXXXXXXXXX`). Configure em `web/.env.local` no desenvolvimento e nas variáveis do projeto web na Vercel, com redeploy após alterações. O Analytics só carrega após o aceite no aviso de cookies, incluindo aceites salvos em visitas anteriores. Sem o ID ou no modo de prévia editorial, nenhum script é carregado. A configuração acompanha navegação pelo Google tag; mantenha a medição otimizada de mudanças de página habilitada no fluxo GA4.
 
 A arte padrão é `web/public/utils/SEO/og-image.png`; Open Graph e Twitter usam sua versão otimizada `og-image.jpg` (1200 × 630). Ao trocar a arte, regenere também o JPEG. A prioridade é a imagem de SEO cadastrada no Sanity, depois a capa do imóvel ou condomínio nas respectivas fichas e, por último, a arte padrão. A home e as páginas gerais usam a arte padrão quando não há imagem de SEO cadastrada. As imagens de compartilhamento do Sanity também são solicitadas em JPEG.
 
 1. Importe o repositório na Vercel. Use **web** como Root Directory, habilite a inclusão dos arquivos externos a essa pasta e selecione o preset Next.js.
 2. Configure `SANITY_PROJECT_ID`, `SANITY_DATASET` e `NEXT_PUBLIC_SITE_URL`. Use `https://prime.piramideimoveissjc.com.br` como URL final e adicione o domínio no projeto da Vercel.
 3. Para prévia, crie no Sanity um token de leitura com acesso a rascunhos e configure `SANITY_API_READ_TOKEN` somente no servidor, tanto em produção quanto nos ambientes de prévia desejados. Um dataset privado também exige esse token para as consultas públicas do servidor. Adicione no Sanity os origins do Studio e do site utilizados, com credenciais, incluindo os endereços locais para desenvolvimento. Abra a prévia no navegador com cookies permitidos. Em previews protegidos da Vercel, use a configuração de bypass de proteção do Presentation Tool se necessário.
-4. Para hospedar o Studio, configure suas variáveis `SANITY_STUDIO_*` e use `pnpm --filter studio deploy` com a conta que administra o projeto. A variável `SANITY_STUDIO_PREVIEW_URL` deve apontar para a instância web que o Studio abrirá.
+4. Para hospedar o Studio, configure suas variáveis `SANITY_STUDIO_*` e use `pnpm --filter studio run deploy` com a conta que administra o projeto. A variável `SANITY_STUDIO_PREVIEW_URL` deve apontar para a instância web que o Studio abrirá. O Studio está configurado para `https://piramide-prime.sanity.studio/`.
 5. Smoke test de produção: abra a home, uma ficha de cada template e `/sitemap.xml`. Em seguida confira rascunho, publicação e despublicação pelo Studio. O site consulta o Sanity por requisição, sem webhook de revalidação.
+
+Na Vercel, habilite `ENABLE_EXPERIMENTAL_COREPACK=1` e use `corepack pnpm install --frozen-lockfile` na instalação e `corepack pnpm build` no build, respeitando a versão de pnpm fixada na raiz. Em homologação, configure `NEXT_PUBLIC_SITE_URL` com o endereço real de teste (atualmente `https://prime.magui.studio`), e a mesma origem em `SANITY_STUDIO_PREVIEW_URL` no ambiente que publica o Studio.
 
 ## Projeto definitivo
 
