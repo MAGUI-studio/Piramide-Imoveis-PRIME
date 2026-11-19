@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import {Suspense} from 'react'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Catalog } from '../components/catalog'
@@ -71,7 +72,7 @@ export default async function Home() {
   if (condominiums.length) {
     lifestyleMap.set('Condomínio', {
       type: 'Condomínio',
-      count: data.catalog.filter((item) => item.condominium && condominiums.some((condo) => condo.id === item.condominium?.id)).length,
+      count: condominiums.reduce((total, condo) => total + condo.propertyCount, 0),
       image: picture(typePhotos.get('condomínio') ?? condominiums[0].cover, 1.15, 1200),
     })
   }
@@ -90,17 +91,17 @@ export default async function Home() {
         const href = bannerHref(banner.href)
         return href ? [{id: banner._key, title: banner.title, href, newTab: banner.newTab, image: picture(banner.image, 3, 2400)}] : []
       })} />
-      {!!featured.length && <section id="destaques" className={wrap + ' pt-8 pb-6 sm:pt-10 sm:pb-8'} aria-labelledby="titulo-destaques">
+      {!!featured.length && <section id="imoveis-em-destaque" className={wrap + ' pt-8 pb-6 sm:pt-10 sm:pb-8'} aria-labelledby="titulo-destaques">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-4 sm:mb-6">
           <div>
             <p className={eyebrow + ' mb-1.5 text-[.68rem] text-piramide'}>Seleção exclusiva</p>
             <h2 className={heading + ' text-[clamp(1.85rem,3.4vw,3.25rem)]'} id="titulo-destaques">Em destaque</h2>
           </div>
-          <a className={textLink + ' border-piramide text-piramide hover:opacity-80'} href="#imoveis">Ver o catálogo <ArrowUpRight size={16} /></a>
+          <a className={textLink + ' border-piramide text-piramide hover:opacity-80'} href="/imoveis">Ver o catálogo <ArrowUpRight size={16} /></a>
         </div>
         <div className="grid gap-x-6 gap-y-8 md:grid-cols-2 lg:gap-x-8">
           {featured.map((item) => <Reveal className="min-w-0" key={item.id}>
-            <Link className="group/featured flex h-full flex-col" href={'/' + item.slug}>
+            <Link className="group/featured flex h-full flex-col" href={'/imoveis/' + encodeURIComponent(item.slug)}>
               <div className="relative aspect-[1.45] overflow-hidden bg-coal">
                 <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover/featured:scale-104 motion-safe:group-focus-visible/featured:scale-104" photo={picture(item.cover, 1.45, 1400)} sizes="(max-width: 767px) 100vw, 50vw" />
                 {item.alternate && (
@@ -125,11 +126,11 @@ export default async function Home() {
           </Reveal>)}
         </div>
       </section>}
-      {!!explore.length && <Catalog items={explore.map(catalogPictures)} showAllLink />}
+      {!!explore.length && <Suspense fallback={<p role="status" className={wrap + ' py-12 text-earth'}>Carregando imóveis…</p>}><Catalog items={explore.map(catalogPictures)} showAllLink /></Suspense>}
       {!!explore.length && <SectionDivider />}
       <HomeStats stats={data.stats} intro={settings.statsIntro} />
     </main>
-    <ScrollSpy containerId="conteudo" finalSectionIds={['diferenciais', 'contato']} />
+    <ScrollSpy containerId="conteudo" finalSectionIds={['por-que-escolher-a-piramide', 'contato']} />
     {hero && <FinalCta contact={contact} marquee={data.marquee} />}
     <WhatsAppWidget phone={data.whatsapp} />
   </>

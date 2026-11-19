@@ -2,21 +2,21 @@ import type {Metadata} from 'next'
 import type {ReactNode} from 'react'
 import {notFound} from 'next/navigation'
 import {ArrowUpRight, ChevronDown} from 'lucide-react'
-import {CinemaDetails, PropertyPurchase} from '../../components/cinemaDetails'
-import {CinemaIcon} from '../../components/cinemaIcon'
-import {Frame, Gallery, ImmersiveCover, OpenGalleryTrigger, WatchVideo} from '../../components/media'
-import {PropertyLocation, propertyLocationOf} from '../../components/propertyLocation'
-import {PropertyContact, PropertyFAQ, propertyVideos, StoryBackdrop, VideoFrame, type StoryVideo} from '../../components/propertyStory'
-import {WhatsAppWidget} from '../../components/whatsappWidget'
-import {JsonLd} from '../../components/jsonLd'
-import {SimilarProperties} from '../../components/similarProperties'
-import {similarPropertiesOf} from '../../lib/similarProperties'
-import {eyebrow, glassAction, heading, previewBanner, sweepButton, sweepFill, wrap} from '../../lib/classes'
-import {picture, type Picture} from '../../lib/image'
-import {availabilityLabel, cardAttributesOf, locationOf, whatsappLink, type Property} from '../../lib/model'
-import {technicalFactsOf} from '../../lib/technicalFacts'
-import {getHome, getProperty, isPreview} from '../../lib/sanity'
-import {breadcrumbs, catalogPath, pageMetadata, propertySearchCopy} from '../../lib/seo'
+import {CinemaDetails, PropertyPurchase} from '../../../components/cinemaDetails'
+import {CinemaIcon} from '../../../components/cinemaIcon'
+import {Frame, Gallery, ImmersiveCover, OpenGalleryTrigger, WatchVideo} from '../../../components/media'
+import {PropertyLocation, propertyLocationOf} from '../../../components/propertyLocation'
+import {PropertyContact, PropertyFAQ, propertyVideos, StoryBackdrop, VideoFrame, type StoryVideo} from '../../../components/propertyStory'
+import {WhatsAppWidget} from '../../../components/whatsappWidget'
+import {JsonLd} from '../../../components/jsonLd'
+import {SimilarProperties} from '../../../components/similarProperties'
+import {similarPropertiesOf} from '../../../lib/similarProperties'
+import {eyebrow, glassAction, heading, previewBanner, sweepButton, sweepFill, wrap} from '../../../lib/classes'
+import {picture, type Picture} from '../../../lib/image'
+import {availabilityLabel, cardAttributesOf, locationOf, whatsappLink, type Property} from '../../../lib/model'
+import {technicalFactsOf} from '../../../lib/technicalFacts'
+import {getCatalog, getProperty, isPreview} from '../../../lib/sanity'
+import {breadcrumbs, catalogPath, pageMetadata, propertySearchCopy} from '../../../lib/seo'
 
 type Props = {params: Promise<{slug: string}>}
 const article = 'pb-[clamp(3rem,6vw,5rem)]'
@@ -29,7 +29,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
   const property = data?.property
   if (!property) return {title: {absolute: 'Página não encontrada | Pirâmide Imóveis Prime'}, robots: {index: false, follow: true}}
   return pageMetadata({
-    path: '/' + encodeURIComponent(property.slug),
+    path: '/imoveis/' + encodeURIComponent(property.slug),
     ...propertySearchCopy(property),
     seo: property.seo, photo: property.cover, noIndex: preview || property.noIndex === true,
   })
@@ -149,7 +149,7 @@ function StandardPresentation({property, photo}: {property: Property; photo: Pic
 
   return (
     <section
-      id="sobre"
+      id="sobre-o-imovel"
       aria-labelledby="standard-about"
       className="relative isolate scroll-mt-6 overflow-hidden bg-coal text-white"
     >
@@ -170,7 +170,7 @@ function StandardPresentation({property, photo}: {property: Property; photo: Pic
         </div>
 
         {groups.length > 0 && (
-          <div id="diferenciais" className={'mt-12 grid scroll-mt-6 gap-10 border-t border-white/15 pt-10 ' + (groups.length > 1 ? 'lg:grid-cols-2 lg:gap-14' : '')}>
+          <div id="caracteristicas-do-imovel" className={'mt-12 grid scroll-mt-6 gap-10 border-t border-white/15 pt-10 ' + (groups.length > 1 ? 'lg:grid-cols-2 lg:gap-14' : '')}>
             {groups.map(({eyebrow: groupEyebrow, title, items}) => (
               <div key={title}>
                 <p className={eyebrow + ' text-[.65rem] text-piramide'}>{groupEyebrow}</p>
@@ -402,13 +402,13 @@ export default async function PropertyPage({params}: Props) {
 
   const contact = whatsappLink(data.whatsapp, data.property.title, data.property.refCode)
   const location = propertyLocationOf(data.property)
-  const similar = similarPropertiesOf(data.property, (await getHome(preview)).catalog)
+  const similar = similarPropertiesOf(data.property, await getCatalog(preview))
   return (
     <div className="bg-paper text-ink">
       {!preview && !data.property.noIndex && <JsonLd data={breadcrumbs([
         {name: 'Início', path: '/'},
         {name: 'Imóveis', path: catalogPath},
-        {name: data.property.title, path: '/' + encodeURIComponent(data.property.slug)},
+        {name: data.property.title, path: '/imoveis/' + encodeURIComponent(data.property.slug)},
       ])} />}
       {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
       <main id="conteudo" className={data.property.template === 'immersive' ? 'rounded-none **:rounded-none!' : undefined}>

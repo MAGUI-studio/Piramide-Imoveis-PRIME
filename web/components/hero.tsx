@@ -191,7 +191,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
               aria-hidden={index !== slide.current}>
               <div ref={(node) => {photoLayers.current[index] = node}} className="size-full overflow-hidden motion-safe:will-change-[clip-path]">
                 <div ref={(node) => {photoImages.current[index] = node}} className="size-full motion-safe:will-change-transform">
-                  <Frame photo={photo} className="size-full object-cover" priority={index === 0} sizes="(min-width: 1760px) 1760px, 100vw" />
+                  <Frame photo={photo} className="size-full object-cover" priority={index === 0} sizes="(min-width: 2080px) 2080px, 100vw" />
                 </div>
               </div>
             </div>
@@ -216,13 +216,13 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
             ))}
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3.5">
-            <Link className={sweepButton + sweepRegular + ' ' + sweepOnCover} href={'/' + leftActive.slug}>
+            <Link className={sweepButton + sweepRegular + ' ' + sweepOnCover} href={'/imoveis/' + encodeURIComponent(leftActive.slug)}>
               <span aria-hidden="true" className={sweepFill} />
               <span className={sweepContent}>
                 Ver imóvel <ArrowUpRight size={18} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </Link>
-            <a className="group/explore inline-flex w-fit items-center gap-2.5 text-sm text-ivory transition-colors hover:text-white sm:text-base motion-reduce:transition-none" href="#imoveis">
+            <a className="group/explore inline-flex w-fit items-center gap-2.5 text-sm text-ivory transition-colors hover:text-white sm:text-base motion-reduce:transition-none" href="/imoveis">
               Explorar imóveis <ArrowDown size={18} className="transition-transform duration-300 ease-out group-hover/explore:translate-y-1 motion-reduce:transition-none" />
             </a>
           </div>

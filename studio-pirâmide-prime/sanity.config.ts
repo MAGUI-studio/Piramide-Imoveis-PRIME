@@ -54,7 +54,7 @@ export default defineConfig({
         mainDocuments: [
           {route: '/', filter: '_id == "primeHome"'},
           {route: '/condominios/:slug', filter: '_type == "condominium" && slug.current == $slug'},
-          {route: '/:slug', filter: '_type == "property" && slug.current == $slug'},
+          {route: '/imoveis/:slug', filter: '_type == "property" && slug.current == $slug'},
         ],
         locations: {
           primeHome: {locations: [{title: 'Página inicial', href: '/'}]},
@@ -62,7 +62,7 @@ export default defineConfig({
           property: defineLocations({
             select: {title: 'title', slug: 'slug.current'},
             resolve: (doc) => ({
-              locations: doc?.slug ? [{title: doc.title || 'Imóvel', href: '/' + doc.slug}] : [],
+              locations: doc?.slug ? [{title: doc.title || 'Imóvel', href: '/imoveis/' + encodeURIComponent(doc.slug)}] : [],
             }),
           }),
         },

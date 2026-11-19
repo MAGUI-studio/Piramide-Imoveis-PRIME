@@ -447,7 +447,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
           <Reveal key={item.id} className={gridClass + ' min-w-0 motion-safe:opacity-0 motion-safe:data-[entered=true]:opacity-100 motion-safe:data-[entered=true]:animate-enter'}>
             <Link
               className={'group relative isolate flex h-full min-w-0 items-end overflow-hidden bg-coal px-5 pt-28 pb-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] ring-1 ring-inset ring-black/[0.04] transition-shadow duration-300 after:pointer-events-none after:absolute after:inset-0 after:z-10 after:ring-1 after:ring-inset after:ring-white/[0.06] after:transition-colors after:duration-300 hover:after:ring-white/[0.12] sm:px-6 sm:pt-32 sm:pb-6 dark:shadow-[0_12px_30px_rgba(0,0,0,0.35)] dark:ring-white/[0.05] ' + cardHeight + (isLead ? ' xl:px-8 xl:pt-36 xl:pb-8' : '')}
-              href={'/' + item.slug}
+              href={'/imoveis/' + encodeURIComponent(item.slug)}
             >
               <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
                 <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-104 motion-safe:group-focus-visible:scale-104" photo={item.image} sizes={sizes} />
