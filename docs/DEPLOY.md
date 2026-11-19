@@ -28,7 +28,7 @@ O ambiente `Production` da Vercel também é uma classificação interna: o depl
 - `web`: aplicação Next.js, hospedada na Vercel.
 - `studio-pirâmide-prime`: Sanity Studio independente, publicado pelo Sanity CLI.
 - O banco de conteúdo e os arquivos ficam no Sanity; publicar o site ou o Studio não copia o dataset.
-- O site consulta conteúdo por requisição, sem webhook de revalidação.
+- Conteúdo publicado usa API CDN do Sanity e cache de dados Next.js com revalidação de 60 segundos. A prévia consulta a API sem cache; ainda não há webhook de revalidação. Ver seção 12.
 - O projeto declara Node `>=22`; o README pede 22.12 ou superior. Node 22.x foi a recomendação inicial; o painel da Vercel mostrou 26.x. A versão final efetivamente utilizada na homologação não foi registrada. Conferir o painel antes de repetir em produção e validar o build na versão escolhida.
 - Não trocar a versão do pnpm apenas para fazer o deploy: usar a versão fixada no repositório pelo Corepack.
 
@@ -252,6 +252,10 @@ Validar primeiro o endereço temporário da nova Vercel e depois:
 
 ## 10. Validação e corte
 
+As fichas de imóveis usam exclusivamente `/imoveis/[slug]`, inclusive as vinculadas a condomínios. As páginas dos condomínios continuam em `/condominios/[slug]`. Por decisão do responsável, a antiga rota de imóveis na raiz foi removida **sem redirecionamento**; links antigos precisam ser substituídos em campanhas, favoritos e campos de links internos cadastrados no Sanity. O deploy do site e a republicação do Studio devem acompanhar essa mudança para atualizar também o Presentation Tool. Nenhum slug ou documento precisa ser migrado no dataset.
+
+Auditoria local de links em 19/11/2026: 78 URLs internas e 1.516 referências verificadas, sem erros HTTP ou âncoras ausentes após a correção. Os botões da home que apontavam para uma seção opcional `#imoveis` agora abrem `/imoveis`. Também foram verificados 25 arquivos locais referenciados, sem erros ou diferenças de maiúsculas/minúsculas nos caminhos públicos. Essa checagem não valida disponibilidade de sites externos nem garante que links cadastrados futuramente no Sanity sejam válidos.
+
 Executar antes de entregar:
 
 ```powershell
@@ -289,6 +293,37 @@ Validações locais da revisão de 19/11/2026: TypeScript dos dois projetos, 19 
 - Antes de alterar/importar um dataset de destino já usado, exportá-lo. Restauração de conteúdo exige um plano próprio; evitar sobrescrever edições feitas após a entrada em produção.
 - Se o corte de DNS falhar, restaurar os registros anteriores anotados antes da troca, considerando o tempo de propagação.
 - Após aceite de produção, combinar retenção dos backups, remoção de acessos temporários e encerramento dos endereços pessoais. Não apagar o Sanity pessoal antes de confirmar a migração de todos os assets e referências.
+
+## 12. Consumo, cache e campanhas
+
+Otimizações implementadas no PRIME após a análise de consumo:
+
+- **Dados publicados:** cliente Sanity com `useCdn: true`, perspectiva `published`, `cache: force-cache`, `next.revalidate: 60` e tag `sanity-content`. O cache de dados é compartilhado entre requisições na instância/plataforma Next.js; React `cache()` continua deduplicando chamadas dentro da mesma renderização.
+- **Prévia e autenticação:** o cliente base mantém `useCdn: false`; rascunhos usam `no-store`, sem as opções de cache público. A validação do link de prévia também continua na API direta. Não colocar HTML de usuários em modo editorial num cache público.
+- **Prazo de publicação:** 60 segundos é o intervalo de revalidação do cache de dados, não uma garantia de atualização em exatamente um minuto. O primeiro acesso após o vencimento pode receber o valor anterior e disparar uma atualização em segundo plano. O CDN Sanity pode adicionar atraso; falhas no upstream também podem prolongar o uso do resultado anterior. A aba Prévia não usa esse cache. Uma mudança urgente pode exigir um fluxo de invalidação por webhook a implementar depois; redeploy não deve ser tratado como garantia de limpeza de todo cache de dados.
+- **Consultas menores:** catálogo e semelhantes não buscam a home inteira; ficha de condomínio busca apenas esse condomínio e seus imóveis; diretório recebe contagens calculadas no GROQ em vez do catálogo completo; sitemap busca apenas slugs e datas necessárias. A home mantém os dados necessários às seleções, tipos e fallbacks editoriais legados.
+- **Sitemap:** revalidação de 60 segundos, em vez de renderização obrigatória em todos os acessos.
+- **Vídeos:** capa estática; players diretos sem `src` antes de interação, com `preload=none`. Embeds da visita inline ficam atrás de um botão; players em modal são montados ao abrir. Clicar num capítulo ou abrir um modal já é interação e pode iniciar carregamento/reprodução. Sem novos MP4s locais ou serviços de streaming adicionados.
+- **Imagens:** mantida a entrega direta do CDN Sanity com tamanhos responsivos, compressão e lazy loading existentes. A arte social padrão continua JPEG de aproximadamente 94 KB.
+
+Além do cache de **dados**, o build local validado pré-gerou a home, a lista de condomínios, a página 404 e o sitemap com revalidação de um minuto. As fichas e o catálogo com filtros continuam dinâmicos, reaproveitando os dados cacheados. Draft Mode é tratado pelo Next.js; não foram adicionados cabeçalhos de cache público genéricos a respostas editoriais. Conferir o resumo do build real da Vercel com as variáveis do ambiente de destino, pois a classificação das rotas pode variar. A tag foi preparada para uma futura invalidação autenticada; não há endpoint de invalidação exposto nesta versão.
+
+Nenhuma configuração nova de ambiente é necessária para ativar essas otimizações após o deploy. Medir a economia no Usage dos projetos reais; sem histórico de tráfego e fatura discriminada, não estimar redução em dólares nem prometer ausência de excedentes.
+
+Validação local desta otimização: 22 testes passaram (incluindo consultas GROQ executadas sobre fixtures e ausência de fonte de vídeo no HTML inicial), TypeScript passou e o build Webpack passou. Em `next start`, home, catálogo, diretório, ficha de condomínio, ficha de imóvel e sitemap retornaram HTTP 200. Home, diretório e sitemap retornaram `x-nextjs-cache: HIT`, e foram encontrados registros persistentes de consultas ao API CDN. Uma requisição com cookie de Draft Mode retornou `Cache-Control` privado/sem armazenamento; a validação editorial completa com login, token e rascunhos deve ser repetida no ambiente publicado. Testes locais não representam medição financeira nem teste de campanha.
+
+### Antes de iniciar uma campanha
+
+1. Na conta Vercel responsável, abrir Usage e Billing/Spend Management. Registrar a linha de base e separar transferência, requisições, execução de funções e cache; filtrar pelo projeto e pelo período da campanha.
+2. Definir com o cliente o orçamento e os destinatários dos alertas. Um orçamento/alerta sozinho não limita gastos. A pausa automática de produção deve ser escolhida explicitamente, pois deixa o site indisponível e pode ocorrer com atraso; não foi habilitada por este trabalho.
+3. No Sanity do ambiente, conferir o plano, as franquias e o uso de API, API CDN, armazenamento e largura de banda de assets. Configurar alertas oferecidos pelo plano e revisar durante a campanha.
+4. Medir no navegador quanto uma visita típica transfere sem play e com play. Conferir que vídeos não baixam antes do clique e que imagens usam larguras compatíveis com a tela. Não usar só a contagem de visitantes do Analytics como prova de consumo: há robôs e visitantes sem consentimento.
+5. Preparar vídeos comprimidos para o uso real; os limites de upload do Studio são limites máximos de arquivo, não metas de tamanho. Para volume alto de reprodução, avaliar streaming adaptativo e comparar custo de entrega, sem presumir que mover arquivos de um provedor a outro elimina o custo.
+6. Conferir publicação, despublicação e mudança de preço após o ciclo de cache; conferir a prévia imediatamente. Não usar um item real de produção como teste sem uma janela editorial combinada.
+
+Vercel e Sanity cobram recursos diferentes: um arquivo entregue diretamente por `cdn.sanity.io` consome entrega no Sanity; mover vídeos para lá não os torna gratuitos. Arquivos na CDN Vercel ainda podem consumir transferência ao visitante mesmo num cache hit.
+
+Referências desta seção: [cache de fetch no Next.js](https://nextjs.org/docs/app/api-reference/functions/fetch), [camadas de cache Sanity/Next.js](https://www.sanity.io/docs/nextjs/caching-and-revalidation-in-nextjs), [transferência Vercel](https://vercel.com/docs/manage-cdn-usage) e [Spend Management](https://vercel.com/docs/spend-management).
 
 ## Referências oficiais
 

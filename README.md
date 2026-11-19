@@ -26,7 +26,7 @@ O catálogo, as fichas e os destaques vêm do dataset configurado, inclusive em 
 ## Fluxo editorial
 
 1. Abra o Studio com uma conta com acesso ao projeto. Cadastre e publique uma cidade e os bairros correspondentes.
-2. Crie um imóvel, gere o slug, selecione o bairro, preencha os dados e escolha **Fotos**, **Videos** ou **Padrão**. Publique para exibir o card na home e a ficha no endereço `/[slug]`.
+2. Crie um imóvel, gere o slug, selecione o bairro, preencha os dados e escolha **Fotos**, **Videos** ou **Padrão**. Publique para exibir o card na home e a ficha no endereço `/imoveis/[slug]`. Esse é o endereço único dos imóveis, inclusive os vinculados a condomínios. Os endereços antigos na raiz não possuem rota nem redirecionamento.
 3. Em **Página inicial**, selecione até 3 imóveis em **Imóveis do hero** e até 5 em **Imóveis de Explore os imóveis**. Arraste as referências para definir a ordem e publique. As listas são independentes; se forem esvaziadas, as seções ficam ocultas sem completar automaticamente com outros imóveis. O número comercial fica em **Configurações do site → Institucional**.
 4. Envie imagens JPEG, PNG ou WebP de até 2 MB e MP4 de até 12 MB para clipes ou 40 MB para tours. Use MP4 H.264 e fotos com descrições e enquadramentos revisados. Exporte o clipe de abertura curto e adequado para repetição.
 5. Use **Prévia** para revisar rascunhos. O template pode ser alterado após a publicação com o mesmo endereço.
@@ -41,9 +41,11 @@ A arte padrão é `web/public/utils/SEO/og-image.png`; Open Graph e Twitter usam
 2. Configure `SANITY_PROJECT_ID`, `SANITY_DATASET` e `NEXT_PUBLIC_SITE_URL`. Use `https://prime.piramideimoveissjc.com.br` como URL final e adicione o domínio no projeto da Vercel.
 3. Para prévia, crie no Sanity um token de leitura com acesso a rascunhos e configure `SANITY_API_READ_TOKEN` somente no servidor, tanto em produção quanto nos ambientes de prévia desejados. Um dataset privado também exige esse token para as consultas públicas do servidor. Adicione no Sanity os origins do Studio e do site utilizados, com credenciais, incluindo os endereços locais para desenvolvimento. Abra a prévia no navegador com cookies permitidos. Em previews protegidos da Vercel, use a configuração de bypass de proteção do Presentation Tool se necessário.
 4. Para hospedar o Studio, configure suas variáveis `SANITY_STUDIO_*` e use `pnpm --filter studio run deploy` com a conta que administra o projeto. A variável `SANITY_STUDIO_PREVIEW_URL` deve apontar para a instância web que o Studio abrirá. O Studio está configurado para `https://piramide-prime.sanity.studio/`.
-5. Smoke test de produção: abra a home, uma ficha de cada template e `/sitemap.xml`. Em seguida confira rascunho, publicação e despublicação pelo Studio. O site consulta o Sanity por requisição, sem webhook de revalidação.
+5. Smoke test de produção: abra a home, uma ficha de cada template e `/sitemap.xml`. Em seguida confira rascunho, publicação e despublicação pelo Studio. O conteúdo público usa o API CDN do Sanity e cache compartilhado do Next.js com revalidação de 60 segundos; a prévia editorial consulta a API sem cache. Não há webhook de revalidação. Após uma publicação, o próximo acesso depois do vencimento dispara a atualização em segundo plano; o prazo não é um limite rígido de 60 segundos. O sitemap também usa revalidação de 60 segundos.
 
 Na Vercel, habilite `ENABLE_EXPERIMENTAL_COREPACK=1` e use `corepack pnpm install --frozen-lockfile` na instalação e `corepack pnpm build` no build, respeitando a versão de pnpm fixada na raiz. Em homologação, configure `NEXT_PUBLIC_SITE_URL` com o endereço real de teste (atualmente `https://prime.magui.studio`), e a mesma origem em `SANITY_STUDIO_PREVIEW_URL` no ambiente que publica o Studio.
+
+As páginas internas usam consultas específicas para catálogo, condomínio, contagem e SEO, sem buscar a home completa. Vídeos e embeds só conectam ao arquivo/player após a interação; os modais carregam ao abrir. As mídias são entregues diretamente pelo CDN do Sanity, sem proxy pela Vercel. Isso reduz transferências desnecessárias, mas reproduções e imagens continuam consumindo a franquia de mídia do Sanity. Consulte os cuidados de custo e campanha em [Deploy](docs/DEPLOY.md#12-consumo-cache-e-campanhas).
 
 ## Projeto definitivo
 
@@ -94,7 +96,7 @@ A aba **Rodapé** reúne a **Faixa informativa do rodapé**, com até quatro men
 
 Em **Página inicial → Banners**, adicione campanhas com nome, imagem, descrição da imagem, link e a opção de abrir em nova aba. Arraste os itens para definir a ordem e publique. A arte fica sem marca d’água; prefira formato horizontal 3:1, como 2400 × 800 px. O banner atual do Parque Una foi importado com seu link original.
 
-Sem itens, a seção fica oculta. Um banner fica estático; dois ou mais alternam a cada 6,5 segundos com controles de navegação e pausa. A rotação pausa durante interação e em abas em segundo plano, e fica desativada com a preferência de movimento reduzido. A configuração substitui a imagem antes fixa entre a seleção de tipos e a seção Em destaque.
+Sem itens, a seção fica oculta. Um banner fica estático; dois ou mais alternam a cada 6,5 segundos, com seletor de slides sobre a parte inferior da imagem, no estilo do hero, sem setas ou botão de pausa. A rotação pausa durante interação e em abas em segundo plano, e fica desativada com a preferência de movimento reduzido. A configuração substitui a imagem antes fixa entre a seleção de tipos e a seção Em destaque.
 
 ### Organização editorial do Studio
 
