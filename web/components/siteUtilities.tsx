@@ -100,26 +100,26 @@ export function SiteUtilities({privacy = {}, organization = {}}: {privacy?: Priv
           {cookieNotice === 'visible' && privacy.cookieNotice && (
             <section
               aria-labelledby="cookie-notice-title"
-              className="pointer-events-auto relative mb-15 w-full overflow-hidden rounded-none border border-zinc-200 bg-white p-5 text-zinc-900 shadow-2xl motion-safe:animate-enter sm:mb-0 sm:max-w-[490px]"
+              className="pointer-events-auto relative mb-15 w-full overflow-hidden rounded-none border border-[#1b1916]/[0.08] bg-white/75 p-5 text-ink shadow-[0_16px_40px_rgba(27,25,22,0.10),inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl backdrop-saturate-150 motion-safe:animate-enter sm:mb-0 sm:max-w-[490px] dark:border-white/[0.08] dark:bg-[#0e0e12]/72 dark:text-[#f5f2ec] dark:shadow-[0_20px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.05)]"
             >
-              <ShieldCheck aria-hidden="true" className="pointer-events-none absolute -right-5 -bottom-5 size-40 -rotate-12 text-piramide/[0.07]" />
+              <ShieldCheck aria-hidden="true" className="pointer-events-none absolute -right-5 -bottom-5 size-40 -rotate-12 text-piramide/[0.08] dark:text-piramide/[0.12]" />
               <div className="relative space-y-3.5">
                 <div className="flex items-start justify-between gap-3">
-                  <h2 id="cookie-notice-title" className="inline-flex items-center gap-1.5 border border-piramide/20 bg-piramide/10 px-2 py-0.5 text-[10px] font-black tracking-wider text-piramide uppercase">
+                  <h2 id="cookie-notice-title" className="inline-flex items-center gap-1.5 border border-piramide/25 bg-piramide/10 px-2 py-0.5 text-[10px] font-black tracking-wider text-piramide uppercase dark:border-piramide/35 dark:bg-piramide/15">
                     <ShieldCheck aria-hidden="true" size={14} /> LGPD &amp; Cookies
                   </h2>
-                  <button type="button" onClick={() => setCookieNotice('dismissed')} aria-label="Fechar aviso" className="-mt-1.5 -mr-1.5 shrink-0 cursor-pointer p-1 text-zinc-400 transition-colors hover:text-zinc-700">
+                  <button type="button" onClick={() => setCookieNotice('dismissed')} aria-label="Fechar aviso" className="-mt-1.5 -mr-1.5 shrink-0 cursor-pointer p-1 text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-[#f5f2ec]">
                     <X aria-hidden="true" size={16} />
                   </button>
                 </div>
-                <p className="text-xs leading-relaxed font-light text-zinc-600">
+                <p className="text-xs leading-relaxed font-light text-zinc-700 dark:text-[#c8c2b8]">
                   {privacy.cookieNotice}
                 </p>
                 <div className="flex flex-col gap-2.5 pt-1 sm:flex-row sm:items-center sm:gap-4">
                   <button type="button" onClick={acceptCookies} className="w-full cursor-pointer bg-piramide px-4 py-2 text-center text-xs font-bold tracking-wider whitespace-nowrap text-white uppercase transition-all hover:bg-piramide/90 hover:shadow-md sm:w-auto">
                     Concordar e Continuar
                   </button>
-                  {privacy.title && <button type="button" onClick={openPrivacy} className="w-full cursor-pointer py-1 text-center text-xs font-medium whitespace-nowrap text-zinc-500 underline underline-offset-4 transition-colors hover:text-piramide sm:w-auto sm:py-0 sm:text-left">
+                  {privacy.title && <button type="button" onClick={openPrivacy} className="w-full cursor-pointer py-1 text-center text-xs font-medium whitespace-nowrap text-zinc-600 underline underline-offset-4 transition-colors hover:text-piramide sm:w-auto sm:py-0 sm:text-left dark:text-[#a69f95] dark:hover:text-piramide">
                     Termos de Privacidade (LGPD)
                   </button>}
                 </div>
@@ -131,9 +131,9 @@ export function SiteUtilities({privacy = {}, organization = {}}: {privacy?: Priv
               type="button"
               onClick={() => window.scrollTo({top: 0, behavior: 'auto'})}
               aria-label="Voltar ao topo da página"
-              className="group pointer-events-auto ml-2 flex size-11 cursor-pointer items-center justify-center rounded-none border border-zinc-200 bg-white/90 text-zinc-800 shadow-lg backdrop-blur-md transition-all hover:bg-white motion-safe:animate-enter sm:ml-0 sm:size-12"
+              className="group pointer-events-auto ml-2 flex size-11 cursor-pointer items-center justify-center rounded-none border border-[#1b1916]/[0.08] bg-white/75 text-zinc-800 shadow-lg backdrop-blur-xl backdrop-saturate-150 transition-all hover:bg-white/95 motion-safe:animate-enter sm:ml-0 sm:size-12 dark:border-white/[0.08] dark:bg-[#0e0e12]/72 dark:text-[#f5f2ec] dark:hover:bg-[#141418]/90"
             >
-              <ArrowUp aria-hidden="true" size={18} strokeWidth={2.5} className="text-zinc-600 group-hover:text-piramide motion-safe:transition-transform motion-safe:group-hover:-translate-y-0.5" />
+              <ArrowUp aria-hidden="true" size={18} strokeWidth={2.5} className="text-zinc-700 group-hover:text-piramide motion-safe:transition-transform motion-safe:group-hover:-translate-y-0.5 dark:text-[#d4cfc7]" />
             </button>
           )}
         </div>
@@ -146,36 +146,36 @@ export function SiteUtilities({privacy = {}, organization = {}}: {privacy?: Priv
         onClick={(event) => {
           if (event.target === event.currentTarget) event.currentTarget.close()
         }}
-        className="fixed inset-0 m-auto max-h-[85dvh] w-[calc(100%-2rem)] max-w-2xl overflow-hidden rounded-none border border-zinc-200 bg-white text-zinc-900 shadow-2xl [color-scheme:light] backdrop:bg-black/75 backdrop:backdrop-blur-sm open:flex open:flex-col"
+        className="fixed inset-0 m-auto max-h-[85dvh] w-[calc(100%-2rem)] max-w-2xl overflow-hidden rounded-none border border-[#1b1916]/12 bg-white/92 text-zinc-900 shadow-2xl backdrop-blur-xl backdrop:bg-black/75 backdrop:backdrop-blur-sm open:flex open:flex-col dark:border-white/[0.12] dark:bg-[#0e0e12]/92 dark:text-[#f5f2ec]"
       >
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-200 bg-zinc-50/70 p-6 sm:p-7">
+        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-zinc-200 bg-zinc-50/70 p-6 sm:p-7 dark:border-white/10 dark:bg-[#141418]/80">
           <div className="space-y-1.5">
             <p className="inline-flex items-center gap-1.5 border border-piramide/20 bg-piramide/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wider text-piramide uppercase">
               <ShieldCheck aria-hidden="true" size={14} /> LGPD &amp; Transparência
             </p>
             <h2 id="privacy-modal-title" className="text-lg font-bold sm:text-xl">{privacy.title}</h2>
-            <p className="text-xs font-light text-zinc-500">{privacy.subtitle}</p>
+            <p className="text-xs font-light text-zinc-500 dark:text-[#9c968e]">{privacy.subtitle}</p>
           </div>
-          <button type="button" onClick={() => dialogRef.current?.close()} aria-label="Fechar" className="shrink-0 cursor-pointer p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-900">
+          <button type="button" onClick={() => dialogRef.current?.close()} aria-label="Fechar" className="shrink-0 cursor-pointer p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/10 dark:hover:text-[#f5f2ec]">
             <X aria-hidden="true" size={20} />
           </button>
         </header>
 
-        <div className="min-h-0 space-y-6 overflow-y-auto overscroll-contain p-6 text-xs leading-relaxed font-light text-zinc-600 sm:p-8 sm:text-sm">
+        <div className="min-h-0 space-y-6 overflow-y-auto overscroll-contain p-6 text-xs leading-relaxed font-light text-zinc-600 sm:p-8 sm:text-sm dark:text-[#c8c2b8]">
           {controller && <p className="whitespace-pre-line">{controller}</p>}
           {privacySections.map(({_key, title, body}) => (
             <section key={_key} className="space-y-2">
-              <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-zinc-900 uppercase">
+              <h3 className="flex items-center gap-2 text-xs font-bold tracking-wider text-zinc-900 uppercase dark:text-[#f5f2ec]">
                 <span aria-hidden="true" className="size-1.5 rounded-full bg-piramide" />
                 {title}
               </h3>
-              <p className="whitespace-pre-line border-l border-zinc-200 pl-3.5">{body}</p>
+              <p className="whitespace-pre-line border-l border-zinc-200 pl-3.5 dark:border-white/10">{body}</p>
             </section>
           ))}
         </div>
 
-        <footer className="flex shrink-0 flex-col items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/70 p-4 sm:flex-row sm:p-6">
-          <button type="button" onClick={() => dialogRef.current?.close()} className="w-full cursor-pointer border border-zinc-300 px-5 py-2.5 text-xs font-bold tracking-wider text-zinc-700 uppercase transition-colors hover:bg-zinc-100 sm:w-auto">
+        <footer className="flex shrink-0 flex-col items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/70 p-4 sm:flex-row sm:p-6 dark:border-white/10 dark:bg-[#141418]/80">
+          <button type="button" onClick={() => dialogRef.current?.close()} className="w-full cursor-pointer border border-zinc-300 px-5 py-2.5 text-xs font-bold tracking-wider text-zinc-700 uppercase transition-colors hover:bg-zinc-100 sm:w-auto dark:border-white/15 dark:text-[#d4cfc7] dark:hover:bg-white/10">
             Fechar
           </button>
           {contact && privacy.contactLabel && <a

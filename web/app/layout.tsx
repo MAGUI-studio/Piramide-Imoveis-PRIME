@@ -40,7 +40,7 @@ export default async function RootLayout({children}: {children: ReactNode}) {
     .filter(({href}) => !!safeExternalUrl(href))
     .map(({label, href, icon}) => ({label, href: safeExternalUrl(href)!, icon}))
   return (
-    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={montserrat.variable + ' bg-paper scroll-pt-32 motion-safe:scroll-smooth'}>
+    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth" className={montserrat.variable + ' bg-paper motion-safe:scroll-smooth'}>
       <body className="relative mx-auto w-full max-w-[110rem] bg-paper font-sans text-espresso transition-colors [&_a:focus-visible]:outline-2 [&_button:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-piramide">
         <ThemeProvider>
           <LoadingCurtain />

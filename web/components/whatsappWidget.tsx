@@ -52,9 +52,9 @@ export function WhatsAppWidget({phone}: {phone: string | null}) {
               id={panelId}
               role="region"
               aria-label="Atendimento pelo WhatsApp"
-              className="absolute right-0 bottom-full mb-3 w-72 max-w-[calc(100vw-2rem)] origin-bottom-right rounded-none border border-zinc-200 bg-white/95 p-3 text-ink shadow-xl backdrop-blur-xl sm:w-80 motion-safe:animate-enter dark:border-white/10 dark:bg-[#181818]/95 dark:text-zinc-100"
+              className="absolute right-0 bottom-full mb-3 w-72 max-w-[calc(100vw-2rem)] origin-bottom-right rounded-none border border-[#1b1916]/[0.08] bg-white/75 p-3 text-ink shadow-[0_16px_40px_rgba(27,25,22,0.10),inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl backdrop-saturate-150 sm:w-80 motion-safe:animate-enter dark:border-white/[0.08] dark:bg-[#0e0e12]/72 dark:text-[#f5f2ec] dark:shadow-[0_20px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.05)]"
             >
-              <div className="mb-2 flex items-center justify-between border-b border-zinc-200 px-3 py-2 dark:border-white/10">
+              <div className="mb-2 flex items-center justify-between border-b border-[#1b1916]/10 px-3 py-2 dark:border-white/[0.10]">
                 <div className="flex items-center gap-2">
                   <span className="relative flex size-2">
                     <span className="absolute inline-flex size-full motion-safe:animate-ping rounded-full bg-emerald-400 opacity-75" />

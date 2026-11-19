@@ -7,9 +7,9 @@ import {organizationAddress, safeExternalUrl} from '../lib/siteSettings'
 import {PrivacyLink} from './siteUtilities'
 import {socialIconPaths} from './socialIconPaths'
 
-const footerHeading = 'font-mono text-xs font-bold tracking-widest text-white uppercase'
+const footerHeading = 'font-mono text-xs font-bold tracking-widest text-[#f5f2ec] uppercase'
 const footerLink =
-  'group inline-flex w-fit items-center text-sm font-light text-zinc-400 transition-colors duration-200 hover:text-white'
+  'group inline-flex w-fit items-center text-sm font-light text-[#9c968e] transition-colors duration-200 hover:text-[#f5f2ec]'
 const footerLinkAccent =
   'h-px w-0 bg-piramide transition-all duration-300 ease-out group-hover:mr-2.5 group-hover:w-3.5 motion-reduce:transition-none'
 
@@ -24,7 +24,7 @@ export async function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="relative w-full overflow-hidden bg-[#161616] text-zinc-400 transition-colors">
+    <footer className="relative w-full overflow-hidden bg-[#070708] text-[#9c968e] transition-colors">
       <div className="relative w-full pt-12 pb-28 sm:pt-16 sm:pb-28">
         <div
           aria-hidden="true"
@@ -33,9 +33,9 @@ export async function Footer() {
 
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 -bottom-4 flex justify-center overflow-hidden select-none"
+          className="pointer-events-none absolute inset-x-0 -bottom-2 flex justify-center overflow-hidden px-3 select-none sm:-bottom-4"
         >
-          <span className="font-sans text-7xl leading-none font-black tracking-tighter whitespace-nowrap text-white/[0.03] uppercase sm:text-9xl lg:text-[140px]">
+          <span className="font-sans text-[clamp(1.75rem,9.2vw,8.75rem)] leading-none font-black tracking-tighter whitespace-nowrap text-white/[0.03] uppercase">
             PIRÂMIDE IMÓVEIS
           </span>
         </div>
@@ -80,12 +80,12 @@ export async function Footer() {
                 className="inline-flex items-center transition-opacity hover:opacity-90"
               >
                 <img
-                  src="/logos/piramide/logo_white.svg"
+                  src="/logos/piramide/logo_white.png"
                   alt=""
                   width={1000}
                   height={512}
                   loading="lazy"
-                  className="h-14 w-auto object-contain sm:h-16"
+                  className="h-24 w-auto object-contain sm:h-28 lg:h-32"
                 />
               </Link>
 
@@ -96,10 +96,10 @@ export async function Footer() {
               )}
 
               {organization.creci && (
-                <div className="inline-flex items-center gap-2 border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs">
+                <div className="inline-flex items-center gap-2 border border-white/[0.08] bg-[#111114] px-3 py-1.5 text-xs">
                   <span className="font-mono font-bold text-piramide">CRECI {organization.creci}</span>
-                  <span className="text-zinc-700">•</span>
-                  <span className="font-medium text-zinc-300">Imobiliária Oficial</span>
+                  <span className="text-white/20">•</span>
+                  <span className="font-medium text-[#e5e0d8]">Imobiliária Oficial</span>
                 </div>
               )}
             </div>
@@ -114,7 +114,7 @@ export async function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/empreendimentos" className={footerLink}>
+                  <Link href="/imoveis" className={footerLink}>
                     <span aria-hidden="true" className={footerLinkAccent} />
                     <span>Imóveis</span>
                   </Link>
@@ -195,8 +195,8 @@ export async function Footer() {
                 )}
 
                 {branches.length > 0 && (
-                  <div className="space-y-2 border-t border-zinc-800 pt-3">
-                    <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
+                  <div className="space-y-2 border-t border-white/[0.06] pt-3">
+                    <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold tracking-wider text-[#9c968e] uppercase">
                       <Building2 aria-hidden="true" className="size-3.5 text-piramide" />
                       <span>Outras Unidades:</span>
                     </span>
@@ -207,10 +207,10 @@ export async function Footer() {
                             href={safeExternalUrl(href)!}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex w-full items-center justify-between border border-zinc-800 bg-zinc-900 px-2.5 py-2 font-mono text-[11px] text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+                            className="inline-flex w-full items-center justify-between border border-white/[0.08] bg-[#111114] px-2.5 py-2 font-mono text-[11px] text-[#d4cfc7] transition-colors hover:border-white/15 hover:bg-[#17171b] hover:text-[#f5f2ec]"
                           >
                             <span>{label}</span>
-                            <ArrowUpRight aria-hidden="true" className="size-3.5 shrink-0 text-zinc-500" />
+                            <ArrowUpRight aria-hidden="true" className="size-3.5 shrink-0 text-[#9c968e]" />
                           </a>
                         </li>
                       ))}
