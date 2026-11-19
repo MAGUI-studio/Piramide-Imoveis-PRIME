@@ -26,7 +26,7 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
 
   return (
     <aside className="flex min-w-0 flex-wrap items-end gap-x-10 gap-y-4 pb-2 lg:gap-x-14" aria-labelledby="property-purchase">
-      <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
+      <div className="flex flex-col items-start gap-y-4 sm:flex-row sm:flex-wrap sm:items-end sm:gap-x-8">
         {(hasSale || !hasRent) && (
           <div>
             <h2 id="property-purchase" className={label}>{hasSale ? 'Valor de venda' : 'Valor'}</h2>
@@ -34,7 +34,7 @@ export function PropertyPurchase({property, link}: {property: Property; link?: s
           </div>
         )}
         {hasRent && (
-          <div className={hasSale ? 'border-s border-rule ps-6 sm:ps-8' : undefined}>
+          <div>
             <h2 id={hasSale ? undefined : 'property-purchase'} className={label}>Valor de locação</h2>
             <p className="mt-1.5 text-[clamp(1.45rem,2.55vw,2.35rem)] leading-tight font-semibold tracking-tight tabular-nums">
               {currency.format(property.rentPrice!)}
