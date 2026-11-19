@@ -71,11 +71,12 @@ export function ImmersiveCover({
   const startPlayback = useCallback(() => {
     const player = video.current
     if (!player) return
+    if (!player.getAttribute('src') && src) player.src = src
     setStage('player')
     void player.play().catch(() => {
       // The play button remains available if the browser requires another gesture.
     })
-  }, [])
+  }, [src])
 
   useEffect(() => {
     const sync = () => setNativeFullscreen(document.fullscreenElement === container.current)
@@ -132,7 +133,7 @@ export function ImmersiveCover({
       {src && !failed && (
         <video
           ref={video}
-          src={src}
+          src={stage === 'cover' ? undefined : src || undefined}
           aria-label="Clipe de abertura"
           aria-hidden={stage !== 'player'}
           preload="none"
@@ -494,6 +495,8 @@ function PropertyVideoPlayer({src, label, poster, autoplay = false, playerRef, c
   const [fullscreen, setFullscreen] = useState(false)
   const [time, setTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [requestedSrc, setRequestedSrc] = useState<string | null>(null)
+  const activeSrc = autoplay || requestedSrc === src ? src : undefined
 
   useEffect(() => {
     const sync = () => setFullscreen(document.fullscreenElement === frame.current)
@@ -504,6 +507,10 @@ function PropertyVideoPlayer({src, label, poster, autoplay = false, playerRef, c
   function togglePlayback() {
     const node = video.current
     if (!node) return
+    if (!node.getAttribute('src')) {
+      node.src = src
+      setRequestedSrc(src)
+    }
     if (node.paused) void node.play().catch(() => {})
     else node.pause()
   }
@@ -525,11 +532,11 @@ function PropertyVideoPlayer({src, label, poster, autoplay = false, playerRef, c
             ref={video}
             className={mediaContents + ' cursor-pointer [&:fullscreen]:object-contain'}
             aria-label={label}
-            src={src}
+            src={activeSrc}
             poster={poster}
             autoPlay={autoplay}
             playsInline
-            preload="metadata"
+            preload="none"
             controlsList="nodownload noremoteplayback"
             disablePictureInPicture
             disableRemotePlayback
@@ -595,11 +602,11 @@ function PropertyVideoPlayer({src, label, poster, autoplay = false, playerRef, c
         ref={video}
         className="absolute inset-0 size-full object-contain"
         aria-label={label}
-        src={src}
+        src={activeSrc}
         poster={poster}
         autoPlay={autoplay}
         playsInline
-        preload="metadata"
+        preload="none"
         controlsList="nodownload noremoteplayback"
         disablePictureInPicture
         disableRemotePlayback
@@ -678,7 +685,12 @@ export function InlineVideoTour({videos, virtualTour}: {videos: StoryVideo[]; vi
         </div>
       )}
       <div className={'row-start-1 min-w-0 ' + (videos.length > 1 ? 'lg:col-start-2 lg:row-start-1' : '')}>
-        {embed ? (
+        {embed && !autoplay ? (
+            <button type="button" onClick={() => choose(current)} aria-label={'Reproduzir ' + current.title} className="relative isolate grid aspect-video w-full cursor-pointer place-items-center bg-black">
+              <Frame className="absolute inset-0 -z-10 size-full object-cover" photo={current.poster} />
+              <span className={dialogButton}><Play aria-hidden="true" size={20} /></span>
+            </button>
+          ) : embed ? (
             <iframe key={embed} className="block aspect-video w-full bg-black" src={embed} title={current.title} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen />
           ) : direct ? (
             <PropertyVideoPlayer key={current.url} playerRef={player} className="relative" src={current.url} label={current.title} poster={current.poster.src} autoplay={autoplay} inline />

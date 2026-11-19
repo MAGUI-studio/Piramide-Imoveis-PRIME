@@ -7,14 +7,14 @@ import {WhatsAppWidget} from '../../components/whatsappWidget'
 import {homeSectionHeading, previewBanner, wrap} from '../../lib/classes'
 import {catalogPictures} from '../../lib/image'
 import {catalogPageSize, whatsappLink} from '../../lib/model'
-import {getHome, isPreview} from '../../lib/sanity'
+import {getCatalog, getCatalogSeo, getSiteSettings, isPreview} from '../../lib/sanity'
 import {breadcrumbs, catalogDescription, catalogPath, catalogTitle, pageMetadata} from '../../lib/seo'
 
 export async function generateMetadata({searchParams}: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }): Promise<Metadata> {
   const preview = await isPreview()
-  const {catalog, catalogSeo} = await getHome(preview)
+  const [catalog, catalogSeo] = await Promise.all([getCatalog(preview), getCatalogSeo(preview)])
   const params = await searchParams
   const filtered = ['busca', 'cidade', 'bairro', 'tipo', 'suites', 'condominio', 'negocio', 'vendaMin', 'vendaMax', 'locacaoMin', 'locacaoMax', 'ordem'].some((key) => !!params[key])
   const requested = Array.isArray(params.pagina) ? params.pagina[0] : params.pagina
@@ -30,7 +30,8 @@ export async function generateMetadata({searchParams}: {
 
 export default async function Imoveis() {
   const preview = await isPreview()
-  const {catalog, whatsapp} = await getHome(preview)
+  const [catalog, settings] = await Promise.all([getCatalog(preview), getSiteSettings(preview)])
+  const whatsapp = settings.organization?.commercialPhone ?? null
   const contact = whatsappLink(whatsapp)
 
   return <>

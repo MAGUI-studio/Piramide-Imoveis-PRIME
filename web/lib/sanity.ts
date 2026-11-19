@@ -12,12 +12,15 @@ export const client = projectId ? createClient({
   useCdn: false,
   token: process.env.SANITY_API_READ_TOKEN,
 }) : null
+const publishedClient = client?.withConfig({useCdn: true, perspective: 'published'})
 
 async function read<T>(query: string, params: QueryParams = {}, preview = false) {
   if (!client) return null
-  return client.fetch<T>(query, params, {
-    perspective: preview ? 'drafts' : 'published',
-    cache: 'no-store',
+  if (preview) return client.fetch<T>(query, params, {perspective: 'drafts', cache: 'no-store'})
+  return publishedClient!.fetch<T>(query, params, {
+    perspective: 'published',
+    cache: 'force-cache',
+    next: {revalidate: 60, tags: ['sanity-content']},
   })
 }
 
@@ -31,6 +34,17 @@ const cardFields = `
 `
 const mediaFields = 'gallery, "clip": clip.asset->url'
 const listing = '_type == "property" && defined(slug.current) && defined(cover.asset)'
+const catalogOrder = 'order(select(availability == "sold" => 1, 0) asc, coalesce(firstPublishedAt, _createdAt) desc, title asc, _id asc)'
+const catalogFields = `${cardFields}, "alternate": gallery[defined(asset) && asset._ref != ^.cover.asset._ref][0]`
+
+export const getCatalog = cache(async (preview: boolean, condominiumId = '') => {
+  return await read<CatalogProperty[]>(`*[${listing} && ($condominiumId == "" || condominium._ref == $condominiumId)] | ${catalogOrder}{${catalogFields}}`, {condominiumId}, preview) || []
+})
+
+export const getCatalogSeo = cache(async (preview: boolean) => {
+  return await read<Seo | null>('*[_id == "primeHome"][0].catalogSeo', {}, preview)
+})
+
 type CatalogProperty = PropertyCard & {alternate?: Photo | null; coverOriginalFilename?: string | null}
 type Home = {propertyTypeOrder?: (string | null)[]; banners: HomeBanner[]; heroSlides?: (PropertyCard | null)[] | null; homeSelection?: (CatalogProperty | null)[] | null; hero: PropertyCard | null; featured: CatalogProperty[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
 const homeQuery = `{
@@ -111,8 +125,13 @@ export async function getPublishedSlugs() {
   ) || []
 }
 
+export async function getPublishedCondominiumSlugs() {
+  return await read<{slug: string}[]>('*[_type == "condominium" && defined(slug.current) && defined(cover.asset)]{"slug": slug.current}') || []
+}
+
 export async function isPreview() {
-  return !!process.env.SANITY_API_READ_TOKEN && (await draftMode()).isEnabled
+  const mode = await draftMode()
+  return mode.isEnabled && !!process.env.SANITY_API_READ_TOKEN
 }
 
 export const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://prime.piramideimoveissjc.com.br').origin
@@ -134,12 +153,20 @@ export const getSiteSettings = cache(async (preview: boolean): Promise<SiteSetti
   }`, {}, preview) || {}
 })
 
-export const getCondominiums = cache(async (preview: boolean): Promise<Condominium[]> => {
-  return await read<Condominium[]>(`*[_type == "condominium" && defined(slug.current) && defined(cover.asset)] | order(name asc){
+const condominiumListing = '_type == "condominium" && defined(slug.current) && defined(cover.asset)'
+const condominiumFields = `
     "id": _id, name, "slug": slug.current, cover, description, address, features, seo,
     "city": neighborhood->city->{"id": _id, name},
     "neighborhood": neighborhood->{"id": _id, name}
+`
+export const getCondominiums = cache(async (preview: boolean): Promise<(Condominium & {propertyCount: number})[]> => {
+  return await read<(Condominium & {propertyCount: number})[]>(`*[${condominiumListing}] | order(name asc){
+    ${condominiumFields}, "propertyCount": count(*[${listing} && condominium._ref == ^._id])
   }`, {}, preview) || []
+})
+
+export const getCondominium = cache(async (slug: string, preview: boolean) => {
+  return await read<Condominium | null>(`*[${condominiumListing} && slug.current == $slug][0]{${condominiumFields}}`, {slug}, preview)
 })
 
 export const getCondominiumDirectory = cache(async (preview: boolean) => {

@@ -11,25 +11,25 @@ import {WhatsAppWidget} from '../../../components/whatsappWidget'
 import {eyebrow, homeSectionHeading, previewBanner, wrap} from '../../../lib/classes'
 import {catalogPictures, picture} from '../../../lib/image'
 import {whatsappLink} from '../../../lib/model'
-import {getCondominiums, getHome, isPreview} from '../../../lib/sanity'
+import {getCatalog, getCondominium, getSiteSettings, isPreview} from '../../../lib/sanity'
 import {pageMetadata} from '../../../lib/seo'
 
 type Props = {params: Promise<{slug: string}>}
 export async function generateMetadata({params}: Props): Promise<Metadata> {
   const preview = await isPreview()
   const {slug} = await params
-  const condo = (await getCondominiums(preview)).find((item) => item.slug === slug)
+  const condo = await getCondominium(slug, preview)
   if (!condo) return {}
   return pageMetadata({path: '/condominios/' + slug, title: condo.name, description: condo.description, photo: condo.cover, seo: condo.seo, noIndex: preview})
 }
 export default async function CondominiumPage({params}: Props) {
   const preview = await isPreview()
   const {slug} = await params
-  const [condominiums, {catalog, whatsapp}] = await Promise.all([getCondominiums(preview), getHome(preview)])
-  const condo = condominiums.find((item) => item.slug === slug)
+  const [condo, settings] = await Promise.all([getCondominium(slug, preview), getSiteSettings(preview)])
   if (!condo) notFound()
+  const whatsapp = settings.organization?.commercialPhone ?? null
   const contact = whatsappLink(whatsapp)
-  const items = catalog.filter((item) => item.condominium?.id === condo.id)
+  const items = await getCatalog(preview, condo.id)
   return <>
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
     <main id="conteudo" className="bg-paper text-espresso">
