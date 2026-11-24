@@ -197,7 +197,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
             </div>
           ))}
         </div>
-        <div className="absolute inset-x-5 bottom-[calc(var(--hero-notch)+8.5rem)] z-3 text-white sm:inset-x-9 sm:bottom-[calc(var(--hero-notch)+7rem)] lg:inset-x-auto lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-10 lg:w-[min(74%,64rem)]"
+        <div className="absolute inset-x-5 bottom-[calc(var(--hero-notch)+8.5rem)] z-3 text-white sm:inset-x-9 sm:bottom-[calc(var(--hero-notch)+7rem)] lg:inset-x-auto lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-10 lg:w-[min(82%,80rem)]"
           aria-live={focused || !canAnimate ? 'polite' : 'off'}>
           <div className="grid items-end [grid-template-areas:'stack']">
             {items.map((item, idx) => (
@@ -210,7 +210,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
                 }
               >
                 <p className={eyebrow + ' text-[.68rem] text-white sm:text-xs'}>{item.location}</p>
-                <h2 className={heading + ' mt-2.5 line-clamp-2 pb-1.5 leading-[1.15] text-[clamp(2.15rem,4.6vw,4.75rem)]'}>{item.title}</h2>
+                <h2 className={heading + ' mt-2.5 line-clamp-3 pb-1.5 leading-[1.15] text-wrap text-[clamp(2.15rem,4.6vw,4.75rem)]'}>{item.title}</h2>
                 <p className="mt-3 max-w-[50ch] line-clamp-2 text-sm leading-relaxed text-white/90 sm:text-base lg:text-lg">{item.summary}</p>
               </div>
             ))}
