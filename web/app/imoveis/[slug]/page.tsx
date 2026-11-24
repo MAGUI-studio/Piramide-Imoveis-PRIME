@@ -155,16 +155,16 @@ function StandardPresentation({property, photo}: {property: Property; photo: Pic
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
         <Frame photo={photo} className="size-full object-cover" sizes="100vw" />
-        <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0b]/95 via-[#0a0a0b]/65 to-[#0a0a0b]/35" />
+        <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0b]/95 via-[#0a0a0b]/80 to-[#0a0a0b]/70" />
       </div>
 
       <div className={wrap + ' relative z-10 py-16 sm:py-24 lg:py-28'}>
-        <div className="max-w-3xl">
+        <div className="max-w-7xl">
           <p className={eyebrow + ' text-[.68rem] text-piramide'}>Apresentação</p>
           <h2 id="standard-about" className={heading + ' mt-3 text-[clamp(2.15rem,4vw,3.6rem)] text-white'}>
             Sobre o imóvel
           </h2>
-          <p className="mt-5 text-base leading-[1.85] whitespace-pre-line text-white/85 sm:text-lg">
+          <p className="mt-5 text-base leading-[1.85] whitespace-pre-line text-white/90 sm:text-lg">
             {property.description}
           </p>
         </div>
