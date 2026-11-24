@@ -170,7 +170,7 @@ export function ReelsSection({reels = []}: ReelsSectionProps) {
     <section
       id="videos-e-bastidores"
       aria-labelledby="titulo-videos-exclusivos"
-      className="relative w-full space-y-6 overflow-hidden border-y border-zinc-200 py-12 sm:py-16 dark:border-white/10"
+      className="relative w-full space-y-6 overflow-hidden py-12 sm:py-16"
     >
       <div className={wrap}>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
