@@ -1,12 +1,13 @@
 'use client'
 
-import {useState, useMemo, useRef, useEffect, useCallback} from 'react'
+import {useState, useMemo, useRef, useEffect, useCallback, useId} from 'react'
 import {useSearchParams} from 'next/navigation'
 import {
   ArrowLeft,
   ArrowRight,
   ArrowUpDown,
   Building2,
+  Check,
   ChevronDown,
   LayoutGrid,
   Play,
@@ -14,6 +15,7 @@ import {
   Video,
   VideoOff,
   X,
+  type LucideIcon,
 } from 'lucide-react'
 import {VideoModalPlayer} from './videoModalPlayer'
 import {glassField} from '../lib/classes'
@@ -26,6 +28,19 @@ interface VideosExplorerProps {
 const SORT_OPTIONS = ['newest', 'oldest', 'title-asc', 'title-desc'] as const
 type SortOption = (typeof SORT_OPTIONS)[number]
 
+const sortSelectOptions: {value: SortOption; label: string}[] = [
+  {value: 'newest', label: 'Mais recentes primeiro'},
+  {value: 'oldest', label: 'Mais antigos primeiro'},
+  {value: 'title-asc', label: 'Título (A - Z)'},
+  {value: 'title-desc', label: 'Título (Z - A)'},
+]
+
+const pageSizeSelectOptions: {value: string; label: string}[] = [
+  {value: '8', label: '8 vídeos'},
+  {value: '16', label: '16 vídeos'},
+  {value: '24', label: '24 vídeos'},
+]
+
 function parseSortOption(value: string | null): SortOption {
   return value && (SORT_OPTIONS as readonly string[]).includes(value)
     ? (value as SortOption)
@@ -35,6 +50,116 @@ function parseSortOption(value: string | null): SortOption {
 function parsePositiveInt(value: string | null, fallback: number) {
   if (!value || !/^[1-9]\d*$/.test(value)) return fallback
   return Number(value)
+}
+
+function GlassSelect<T extends string>({
+  label,
+  icon: Icon,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  icon: LucideIcon
+  value: T
+  options: {value: T; label: string}[]
+  onChange: (value: T) => void
+}) {
+  const id = useId()
+  const [open, setOpen] = useState(false)
+  const container = useRef<HTMLDivElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
+  const current = options.find((opt) => opt.value === value) ?? options[0]
+
+  useEffect(() => {
+    if (!open) return
+    function closeOutside(event: PointerEvent) {
+      if (!container.current?.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOutside)
+    return () => document.removeEventListener('pointerdown', closeOutside)
+  }, [open])
+
+  return (
+    <div
+      ref={container}
+      className="relative min-w-0"
+      onBlur={(event) => {
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) {
+          setOpen(false)
+        }
+      }}
+      onKeyDown={(event) => {
+        if (!open || event.key !== 'Escape') return
+        event.preventDefault()
+        event.stopPropagation()
+        setOpen(false)
+        trigger.current?.focus()
+      }}
+    >
+      <button
+        ref={trigger}
+        type="button"
+        aria-expanded={open}
+        aria-controls={open ? id : undefined}
+        onClick={() => setOpen((prev) => !prev)}
+        className={
+          glassField +
+          ' w-full cursor-pointer text-left aria-expanded:border-piramide/70 aria-expanded:ring-1 aria-expanded:ring-piramide/25'
+        }
+      >
+        <Icon aria-hidden="true" size={17} strokeWidth={1.6} className="shrink-0 text-piramide" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">
+            {label}
+          </span>
+          <span className="mt-0.5 block truncate text-sm font-medium text-espresso">
+            {current.label}
+          </span>
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          size={15}
+          className={'shrink-0 text-piramide motion-safe:transition-transform ' + (open ? 'rotate-180' : '')}
+        />
+      </button>
+
+      {open && (
+        <div
+          id={id}
+          role="listbox"
+          aria-label={label}
+          className="absolute inset-x-0 top-full z-30 mt-2 border border-[#1b1916]/[0.08] bg-white/80 p-1.5 shadow-[0_16px_40px_rgba(27,25,22,0.10),inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur-xl backdrop-saturate-150 motion-safe:animate-enter dark:border-white/[0.08] dark:bg-[#0e0e12]/80 dark:shadow-[0_20px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.05)]"
+        >
+          {options.map((opt) => {
+            const active = opt.value === value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  onChange(opt.value)
+                  setOpen(false)
+                  trigger.current?.focus()
+                }}
+                className={
+                  'flex min-h-10 w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 text-left text-sm transition-colors ' +
+                  (active
+                    ? 'bg-piramide/12 font-semibold text-piramide'
+                    : 'text-espresso hover:bg-[#1b1916]/[0.06] dark:hover:bg-white/[0.08]')
+                }
+              >
+                <span className="min-w-0 truncate">{opt.label}</span>
+                {active && <Check aria-hidden="true" size={14} className="shrink-0 text-piramide" />}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function VideosExplorer({reels = []}: VideosExplorerProps) {
@@ -142,8 +267,8 @@ export function VideosExplorer({reels = []}: VideosExplorerProps) {
     setCurrentPage(1)
   }
 
-  const handlePageSizeChange = (val: number) => {
-    setPageSize(val)
+  const handlePageSizeChange = (val: string) => {
+    setPageSize(Number(val))
     setCurrentPage(1)
   }
 
@@ -165,7 +290,7 @@ export function VideosExplorer({reels = []}: VideosExplorerProps) {
   }
 
   const pageBtn =
-    'inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 px-3 text-sm transition-colors hover:bg-piramide/10 hover:text-piramide disabled:cursor-not-allowed disabled:opacity-40'
+    'inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 px-3 text-sm transition-colors hover:bg-piramide/10 hover:text-piramide disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-current'
 
   return (
     <div ref={gridTopRef} className="w-full scroll-mt-24">
@@ -201,52 +326,21 @@ export function VideosExplorer({reels = []}: VideosExplorerProps) {
           )}
         </div>
 
-        <div className={glassField + ' relative'}>
-          <ArrowUpDown size={17} strokeWidth={1.5} className="shrink-0 text-piramide" aria-hidden="true" />
-          <label className="min-w-0 flex-1">
-            <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">
-              Ordenar por
-            </span>
-            <select
-              value={sortBy}
-              onChange={(e) => handleSortChange(e.target.value as SortOption)}
-              className="mt-0.5 w-full min-w-0 cursor-pointer appearance-none bg-transparent pr-6 text-sm text-espresso outline-none dark:bg-transparent [&>option]:bg-white [&>option]:text-zinc-900 dark:[&>option]:bg-zinc-950 dark:[&>option]:text-zinc-100"
-            >
-              <option value="newest">Mais recentes primeiro</option>
-              <option value="oldest">Mais antigos primeiro</option>
-              <option value="title-asc">Título (A - Z)</option>
-              <option value="title-desc">Título (Z - A)</option>
-            </select>
-          </label>
-          <ChevronDown
-            size={15}
-            className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-piramide"
-            aria-hidden="true"
-          />
-        </div>
+        <GlassSelect
+          label="Ordenar por"
+          icon={ArrowUpDown}
+          value={sortBy}
+          options={sortSelectOptions}
+          onChange={handleSortChange}
+        />
 
-        <div className={glassField + ' relative'}>
-          <LayoutGrid size={17} strokeWidth={1.5} className="shrink-0 text-piramide" aria-hidden="true" />
-          <label className="min-w-0 flex-1">
-            <span className="block text-[10px] font-semibold tracking-wider text-earth uppercase">
-              Exibir por página
-            </span>
-            <select
-              value={pageSize}
-              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="mt-0.5 w-full min-w-0 cursor-pointer appearance-none bg-transparent pr-6 text-sm text-espresso outline-none dark:bg-transparent [&>option]:bg-white [&>option]:text-zinc-900 dark:[&>option]:bg-zinc-950 dark:[&>option]:text-zinc-100"
-            >
-              <option value={8}>8 vídeos</option>
-              <option value={16}>16 vídeos</option>
-              <option value={24}>24 vídeos</option>
-            </select>
-          </label>
-          <ChevronDown
-            size={15}
-            className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-piramide"
-            aria-hidden="true"
-          />
-        </div>
+        <GlassSelect
+          label="Exibir por página"
+          icon={LayoutGrid}
+          value={String(pageSize)}
+          options={pageSizeSelectOptions}
+          onChange={handlePageSizeChange}
+        />
       </form>
 
       <div className="flex min-h-13 items-center justify-between gap-4 text-xs text-earth">
@@ -341,7 +435,7 @@ export function VideosExplorer({reels = []}: VideosExplorerProps) {
         </div>
       )}
 
-      {totalPages > 1 && (
+      {sortedReels.length > 0 && (
         <nav
           aria-label="Paginação dos vídeos"
           className="mt-9 flex flex-wrap items-center justify-center gap-2"
@@ -349,7 +443,7 @@ export function VideosExplorer({reels = []}: VideosExplorerProps) {
           <button
             type="button"
             onClick={() => handlePageChange(safeCurrentPage - 1)}
-            disabled={safeCurrentPage === 1}
+            disabled={safeCurrentPage <= 1}
             aria-label="Página anterior"
             className={pageBtn}
           >
@@ -368,12 +462,13 @@ export function VideosExplorer({reels = []}: VideosExplorerProps) {
                   key={pageNum}
                   type="button"
                   onClick={() => handlePageChange(pageNum)}
+                  disabled={totalPages === 1}
                   aria-label={'Página ' + pageNum}
                   aria-current={isActive ? 'page' : undefined}
                   className={
                     pageBtn +
                     (isActive
-                      ? ' bg-piramide text-white hover:bg-piramide hover:text-white'
+                      ? ' bg-piramide text-white hover:bg-piramide hover:text-white disabled:opacity-100 disabled:hover:bg-piramide disabled:hover:text-white'
                       : ' bg-espresso/5 text-espresso')
                   }
                 >
@@ -396,7 +491,7 @@ export function VideosExplorer({reels = []}: VideosExplorerProps) {
           <button
             type="button"
             onClick={() => handlePageChange(safeCurrentPage + 1)}
-            disabled={safeCurrentPage === totalPages}
+            disabled={safeCurrentPage >= totalPages}
             aria-label="Próxima página"
             className={pageBtn}
           >
