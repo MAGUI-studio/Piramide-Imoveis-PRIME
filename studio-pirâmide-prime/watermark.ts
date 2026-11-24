@@ -3,11 +3,11 @@ export const watermarkWidth = 0.3
 export const watermarkOpacity = 0.42
 export const watermarkMaxDimension = 3200
 
-function loadImage(url: string): Promise<HTMLImageElement> {
+function loadImage(url: string, errorMessage = 'Não foi possível abrir a imagem para aplicar a marca d’água.'): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image()
     image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('Não foi possível abrir a imagem para aplicar a marca d’água.'))
+    image.onerror = () => reject(new Error(errorMessage))
     image.src = url
   })
 }
@@ -15,9 +15,10 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 export async function watermarkFile(file: Blob): Promise<Blob> {
   const fileUrl = URL.createObjectURL(file)
   try {
+    const logoUrl = new URL('/static/watermark-logo.svg', window.location.origin).href
     const [image, logo] = await Promise.all([
       loadImage(fileUrl),
-      loadImage(new URL('static/watermark-logo.svg', document.baseURI).href),
+      loadImage(logoUrl, 'Não foi possível carregar o logotipo da marca d’água.'),
     ])
     const scale = Math.min(1, watermarkMaxDimension / Math.max(image.naturalWidth, image.naturalHeight))
     const canvas = document.createElement('canvas')
