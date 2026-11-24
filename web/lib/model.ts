@@ -15,6 +15,43 @@ export type Seo = {title?: string | null; description?: string | null; socialIma
 export const catalogPageSize = 10
 export type PropertyVideo = {_key: string; title: string; url: string; poster?: Photo | null; opening?: boolean | null}
 
+export type ReelRelatedListing = {
+  _type: 'property' | 'condominium'
+  title?: string | null
+  slug?: string | null
+}
+
+export type Reel = {
+  _id: string
+  title: string
+  description?: string | null
+  thumbnail?: Photo | null
+  videoFileUrl?: string | null
+  videoUrl?: string | null
+  relatedListing?: ReelRelatedListing | null
+  propertyTitle?: string | null
+  propertyUrl?: string | null
+  instagramUrl?: string | null
+  publishedAt?: string | null
+}
+
+export type ReelItem = Omit<Reel, 'thumbnail' | 'relatedListing'> & {
+  thumbnailUrl: string | null
+  posterUrl: string | null
+  listingHref: string | null
+  listingLabel: string | null
+  listingIsInternal: boolean
+}
+
+export function slugifyText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 export type Availability = 'available' | 'reserved' | 'sold'
 
 export type Specifications = {

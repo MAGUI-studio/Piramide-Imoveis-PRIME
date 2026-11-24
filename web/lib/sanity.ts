@@ -3,7 +3,7 @@ import type {SiteSettings} from './siteSettings'
 import {createClient, type QueryParams} from '@sanity/client'
 import {draftMode} from 'next/headers'
 import {cache} from 'react'
-import type {Condominium, HomeBanner, HomeStat, MarqueeItem, Photo, Property, PropertyCard, PropertyTypeOption, Seo} from './model'
+import type {Condominium, HomeBanner, HomeStat, MarqueeItem, Photo, Property, PropertyCard, PropertyTypeOption, Reel, Seo} from './model'
 
 const projectId = process.env.SANITY_PROJECT_ID
 export const dataset = process.env.SANITY_DATASET || 'production'
@@ -171,4 +171,28 @@ export const getCondominium = cache(async (slug: string, preview: boolean) => {
 
 export const getCondominiumDirectory = cache(async (preview: boolean) => {
   return await read<{title?: string; description?: string; featuredIds: string[]}>(`*[_id == "primeCondominiumDirectory"][0]{title,description,"featuredIds": coalesce(featured[]->_id, [])}`, {}, preview) || {featuredIds: []}
+})
+
+export const getReels = cache(async (preview: boolean): Promise<Reel[]> => {
+  return await read<Reel[]>(
+    `*[_type == "reel"] | order(publishedAt desc, _createdAt desc) {
+      _id,
+      title,
+      description,
+      thumbnail,
+      "videoFileUrl": videoFile.asset->url,
+      videoUrl,
+      "relatedListing": relatedListing->{
+        _type,
+        "title": coalesce(title, name),
+        "slug": slug.current
+      },
+      propertyTitle,
+      propertyUrl,
+      instagramUrl,
+      publishedAt
+    }`,
+    {},
+    preview,
+  ) || []
 })
