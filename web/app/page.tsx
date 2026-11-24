@@ -12,14 +12,15 @@ import { ScrollSpy } from '../components/scrollSpy'
 import { FinalCta } from '../components/finalCta'
 import { HomeStats } from '../components/homeStats'
 import { Lifestyle, type LifestyleItem } from '../components/lifestyle'
+import { ReelsSection } from '../components/reelsSection'
 import { SectionDivider } from '../components/sectionDivider'
 import { WhatsAppWidget } from '../components/whatsappWidget'
 import { JsonLd } from '../components/jsonLd'
 import { eyebrow, heading, previewBanner, textLink, wrap } from '../lib/classes'
-import { catalogPictures, picture } from '../lib/image'
+import { catalogPictures, picture, reelPictures } from '../lib/image'
 import {orderLifestyleItems} from '../lib/lifestyleOrder'
 import { locationOf, whatsappLink } from '../lib/model'
-import { getCondominiums, getHome, getExploreProperties, getOpeningProperties, getSiteSettings, isPreview } from '../lib/sanity'
+import { getCondominiums, getHome, getExploreProperties, getOpeningProperties, getReels, getSiteSettings, isPreview } from '../lib/sanity'
 import { homeDescription, homeStructuredData, homeTitle, pageMetadata } from '../lib/seo'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -30,9 +31,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Home() {
   const preview = await isPreview()
-  const data = await getHome(preview)
-  const settings = await getSiteSettings(preview)
-  const condominiums = await getCondominiums(preview)
+  const [data, settings, condominiums, rawReels] = await Promise.all([
+    getHome(preview),
+    getSiteSettings(preview),
+    getCondominiums(preview),
+    getReels(preview),
+  ])
+  const reels = rawReels.map(reelPictures)
   const [hero, ...otherSlides] = getOpeningProperties(data).map((item) => ({
     slug: item.slug,
     title: item.title,
@@ -128,6 +133,7 @@ export default async function Home() {
       </section>}
       {!!explore.length && <Suspense fallback={<p role="status" className={wrap + ' py-12 text-earth'}>Carregando imóveis…</p>}><Catalog items={explore.map(catalogPictures)} showAllLink /></Suspense>}
       {!!explore.length && <SectionDivider />}
+      {!!reels.length && <Suspense fallback={null}><ReelsSection reels={reels} /></Suspense>}
       <HomeStats stats={data.stats} intro={settings.statsIntro} />
     </main>
     <ScrollSpy containerId="conteudo" finalSectionIds={['por-que-escolher-a-piramide', 'contato']} />

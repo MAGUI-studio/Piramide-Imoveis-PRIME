@@ -125,6 +125,12 @@ export async function Footer() {
                     <span>Condomínios</span>
                   </Link>
                 </li>
+                <li>
+                  <Link href="/videos" className={footerLink}>
+                    <span aria-hidden="true" className={footerLinkAccent} />
+                    <span>Vídeos</span>
+                  </Link>
+                </li>
               </ul>
             </nav>
 

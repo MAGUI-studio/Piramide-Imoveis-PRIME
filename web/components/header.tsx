@@ -24,6 +24,7 @@ const navLinks = [
   {label: 'Início', href: '/'},
   {label: 'Imóveis', href: '/imoveis'},
   {label: 'Condomínios', href: '/condominios'},
+  {label: 'Vídeos', href: '/videos'},
 ]
 
 export function Header({contact = null, portalUrl = null, socialLinks = []}: HeaderProps) {

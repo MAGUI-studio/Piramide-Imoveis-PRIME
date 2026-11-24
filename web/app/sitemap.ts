@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {url: siteUrl + '/'},
     {url: siteUrl + '/imoveis'},
     {url: siteUrl + '/condominios'},
+    {url: siteUrl + '/videos'},
     ...condominiums.map(({slug}) => ({url: siteUrl + '/condominios/' + encodeURIComponent(slug)})),
     ...properties.map(({slug, updated}) => ({url: siteUrl + '/imoveis/' + encodeURIComponent(slug), lastModified: updated})),
   ]
