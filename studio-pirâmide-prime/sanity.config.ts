@@ -38,6 +38,7 @@ export default defineConfig({
           S.divider(),
           S.documentTypeListItem('condominium').title('Condomínios'),
           S.documentTypeListItem('property').title('Imóveis'),
+          S.documentTypeListItem('reel').title('Vídeos & Reels'),
           S.divider(),
           S.listItem().title('Página inicial').child(S.document().schemaType('primeHome').documentId('primeHome')),
           S.listItem().title('Página de condomínios').child(S.document().schemaType('primeCondominiumDirectory').documentId('primeCondominiumDirectory')),

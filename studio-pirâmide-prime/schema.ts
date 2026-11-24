@@ -20,7 +20,7 @@ const availabilities = [
 const types = ['Casa/Mansão', 'Apartamento/Cobertura', 'Condomínio', 'Loteamento', 'Terreno', 'Comercial']
 const floorProfiles = ['Térrea', 'Sobrado', 'Triplex', 'Andar alto', '1 por andar', 'Duplex', 'Cobertura']
 const sunOrientations = ['Sol da manhã', 'Sol da tarde', 'Face norte', 'Sol o dia todo']
-const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon', 'imoveis', 'empreendimentos', 'condominios'])
+const reservedSlugs = new Set(['api', 'studio', 'demo', 'robots', 'sitemap', 'favicon', 'imoveis', 'empreendimentos', 'condominios', 'videos'])
 
 type AssetValue = {asset?: {_ref?: string}}
 function validateAsset(maxMb: number, formats: string[]): CustomValidator<AssetValue> {
@@ -614,4 +614,112 @@ const marquee = defineType({
   preview: {prepare: () => ({title: 'Faixa informativa do rodapé'})},
 })
 
-export const schemaTypes = [photo, seo, condominium, condominiumDirectory, propertyTypeOption, city, neighborhood, property, home, marquee, siteSettings].map(withEditorialGuidance)
+const videoFormats = ['video/mp4', 'video/webm', 'video/quicktime']
+const reel = defineType({
+  name: 'reel',
+  title: 'Vídeos & Reels',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'title',
+      title: 'Título do Vídeo / Reel',
+      type: 'string',
+      placeholder: 'Ex: Tour Completo no Decorado do Residencial YVY Aquarius',
+      description: 'Título curto e chamativo para exibição no carrossel e na página de vídeos.',
+      validation: (rule) => rule.required().max(120).error('O título do vídeo é obrigatório.'),
+    }),
+    defineField({
+      name: 'thumbnail',
+      title: 'Capa / Thumbnail (Formato Vertical 9:16)',
+      type: 'image',
+      description: 'Foto de capa no formato vertical (tipo Story / Reel, 1080×1920 px, 9:16). Use JPEG, PNG ou WebP (preferencialmente WebP) com até 2 MB.',
+      options: {hotspot: true, accept: imageFormats.join(',')},
+      validation: (rule) =>
+        rule.required().error('A capa do vídeo é obrigatória.').custom((value, context) =>
+          value ? validateAsset(2, imageFormats)(value as AssetValue, context) : true,
+        ),
+    }),
+    defineField({
+      name: 'videoFile',
+      title: 'Arquivo de Vídeo (.mp4 ou .webm)',
+      type: 'file',
+      description: 'Faça upload do vídeo em formato vertical (MP4, WebM ou MOV, máximo 40 MB).',
+      options: {
+        accept: videoFormats.join(','),
+      },
+      validation: (rule) =>
+        rule.custom((value, context) =>
+          value ? validateAsset(40, videoFormats)(value as AssetValue, context) : true,
+        ),
+    }),
+    defineField({
+      name: 'videoUrl',
+      title: 'URL Direta do Vídeo (Opcional / CDN Externa)',
+      type: 'url',
+      placeholder: 'Ex: https://cdn.seusite.com/videos/tour-aquarius.mp4',
+      description: 'Caso o vídeo esteja hospedado em um servidor externo ou CDN, cole o link direto aqui.',
+      validation: (rule) => rule.uri({scheme: ['http', 'https']}),
+    }),
+    defineField({
+      name: 'description',
+      title: 'Descrição dos Destaques do Imóvel',
+      type: 'text',
+      rows: 3,
+      placeholder: 'Ex: Cobertura duplex com 4 suítes, piscina privativa e vista definitiva para a Serra da Mantiqueira...',
+      description: 'Texto exibido no modal do player de vídeo detalhando as características do imóvel.',
+    }),
+    defineField({
+      name: 'relatedListing',
+      title: 'Imóvel ou Condomínio vinculado (Opcional)',
+      type: 'reference',
+      to: [{type: 'property'}, {type: 'condominium'}],
+      description: 'Vincule a um imóvel ou condomínio já cadastrado para preencher automaticamente o nome e o link no player. Se preenchido, não é necessário informar o link manualmente abaixo.',
+    }),
+    defineField({
+      name: 'propertyTitle',
+      title: 'Nome do Imóvel / Empreendimento (Opcional)',
+      type: 'string',
+      placeholder: 'Ex: Residencial Parque Una São José dos Campos',
+      description: 'Opcional. Sobrescreve o nome exibido no card e no player, ou identifica um empreendimento não cadastrado acima.',
+    }),
+    defineField({
+      name: 'propertyUrl',
+      title: 'Link Externo do Imóvel (Opcional)',
+      type: 'url',
+      placeholder: 'Ex: https://www.piramideimoveissjc.com.br/imoveis/parque-una',
+      description: 'Opcional. Use apenas quando o vídeo não estiver vinculado a um imóvel ou condomínio cadastrado acima.',
+      validation: (rule) => rule.uri({scheme: ['http', 'https']}),
+    }),
+    defineField({
+      name: 'instagramUrl',
+      title: 'Link do Post Oficial no Instagram',
+      type: 'url',
+      placeholder: 'Ex: https://www.instagram.com/reel/C-xyz123/',
+      description: 'Permite que o usuário assista ou compartilhe o reel diretamente pelo Instagram.',
+      validation: (rule) => rule.uri({scheme: ['http', 'https']}),
+    }),
+    defineField({
+      name: 'publishedAt',
+      title: 'Data de Publicação',
+      type: 'datetime',
+      description: 'Data de lançamento do vídeo para ordenação cronológica.',
+      initialValue: () => new Date().toISOString(),
+    }),
+  ],
+  preview: {
+    select: {
+      title: 'title',
+      propertyTitle: 'propertyTitle',
+      relatedTitle: 'relatedListing.title',
+      relatedName: 'relatedListing.name',
+      media: 'thumbnail',
+    },
+    prepare: ({title, propertyTitle, relatedTitle, relatedName, media}) => ({
+      title,
+      subtitle: propertyTitle || relatedTitle || relatedName || undefined,
+      media,
+    }),
+  },
+} satisfies DocumentDefinition)
+
+export const schemaTypes = [photo, seo, condominium, condominiumDirectory, propertyTypeOption, city, neighborhood, property, reel, home, marquee, siteSettings].map(withEditorialGuidance)
