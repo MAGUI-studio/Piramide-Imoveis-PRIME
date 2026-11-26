@@ -207,7 +207,10 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
       : []
   ))).values()).sort((a, b) => collator.compare(a.label, b.label))
   const selectedNeighborhoods = (fixedLocation ? [] : params.getAll('bairro')).filter((value) => neighborhoods.some(({id}) => id === value))
-  const types = Array.from(new Set(items.map(({propertyType}) => propertyType))).filter(Boolean).sort(collator.compare)
+  const types = Array.from(new Set([
+    ...items.map(({propertyType}) => propertyType),
+    ...params.getAll('tipo').filter((value) => value.trim()),
+  ])).filter(Boolean).sort(collator.compare)
   const selectedTypes = params.getAll('tipo').filter((value) => types.includes(value))
   const suiteCounts = Array.from(new Set(items.map(({specifications}) => specifications?.suites).filter((n): n is number => typeof n === 'number' && n > 0))).sort((a, b) => a - b)
   const suiteValues = suiteCounts.map(String)
