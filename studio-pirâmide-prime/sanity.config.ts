@@ -6,7 +6,7 @@ import {schemaTypes} from './schema'
 import {withPublicationFields} from './publish'
 
 const previewUrl = process.env.SANITY_STUDIO_PREVIEW_URL || 'http://localhost:3000'
-const singletonTypes = ['primeHome', 'primeMarquee', 'primeSiteSettings', 'primeCondominiumDirectory']
+const singletonTypes = ['primeHome', 'primeHeroBackground', 'primeMarquee', 'primeSiteSettings', 'primeCondominiumDirectory']
 
 export default defineConfig({
   name: 'piramide-prime',
@@ -41,6 +41,7 @@ export default defineConfig({
           S.documentTypeListItem('reel').title('Vídeos & Reels'),
           S.divider(),
           S.listItem().title('Página inicial').child(S.document().schemaType('primeHome').documentId('primeHome')),
+          S.listItem().title('Fundo do Hero').child(S.document().schemaType('primeHeroBackground').documentId('primeHeroBackground')),
           S.listItem().title('Página de condomínios').child(S.document().schemaType('primeCondominiumDirectory').documentId('primeCondominiumDirectory')),
         ])
       },

@@ -537,10 +537,8 @@ const home = defineType({
     defineField({name: 'catalogSeo', title: 'SEO do catálogo de imóveis', type: 'primeSeo', group: 'seo'}),
     defineField({name: 'hero', title: 'Imóvel de abertura (legado)', type: 'reference', group: 'content', hidden: true, readOnly: true, weak: true, to: [{type: 'property'}]}),
     defineField({
-      name: 'heroSlides', title: 'Imóveis do hero', type: 'array', group: 'content',
-      description: 'Selecione no máximo 3 imóveis para a abertura da página. Arraste para definir a ordem. Publique os imóveis e esta configuração.',
-      of: [defineArrayMember({type: 'reference', to: [{type: 'property'}], options: {filter: 'defined(slug.current) && defined(cover.asset)'}})],
-      validation: (rule) => rule.max(3).unique(),
+      name: 'heroSlides', title: 'Imóveis do hero (legado)', type: 'array', group: 'content', hidden: true, readOnly: true,
+      of: [defineArrayMember({type: 'reference', to: [{type: 'property'}]})],
     }),
     defineField({
       name: 'propertyTypeOrder', title: 'Ordem dos tipos em Qual imóvel você procura?', type: 'array', group: 'content',
@@ -722,4 +720,113 @@ const reel = defineType({
   },
 } satisfies DocumentDefinition)
 
-export const schemaTypes = [photo, seo, condominium, condominiumDirectory, propertyTypeOption, city, neighborhood, property, reel, home, marquee, siteSettings].map(withEditorialGuidance)
+const heroBackground = defineType({
+  name: 'primeHeroBackground',
+  title: 'Fundo do Hero',
+  type: 'document',
+  fields: [
+    defineField({
+      name: 'headline',
+      title: 'Título principal do Hero',
+      type: 'string',
+      placeholder: 'Ex: Casas em condomínio e apartamentos de alto padrão em São José dos Campos',
+      description: 'Opcional. Texto principal exibido no centro do Hero acima da barra de pesquisa.',
+      validation: (rule) => rule.max(140),
+    }),
+    defineField({
+      name: 'subheadline',
+      title: 'Subtítulo do Hero',
+      type: 'string',
+      placeholder: 'Ex: Encontre seu lugar exclusivo',
+      description: 'Opcional. Frase curta exibida logo abaixo do título principal.',
+      validation: (rule) => rule.max(160),
+    }),
+    defineField({
+      name: 'media',
+      title: 'Fotos e vídeos de fundo',
+      type: 'array',
+      description: 'Cadastre aqui as fotos e vídeos que serão exibidos como plano de fundo no Hero da página inicial.',
+      of: [
+        defineArrayMember({
+          name: 'heroBackgroundImage',
+          title: 'Foto de fundo',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'image',
+              title: 'Foto (sem marca d’água)',
+              type: 'image',
+              description: 'JPEG, PNG ou WebP horizontal (preferencialmente 1920×1080 ou superior, até 4 MB).',
+              options: {hotspot: true, accept: imageFormats.join(',')},
+              validation: (rule) =>
+                rule.required().custom((value, context) =>
+                  value ? validateAsset(4, imageFormats)(value as AssetValue, context) : true,
+                ),
+            }),
+            defineField({
+              name: 'alt',
+              title: 'Descrição da imagem',
+              type: 'string',
+              validation: (rule) => rule.max(160),
+            }),
+          ],
+          preview: {
+            select: {title: 'alt', media: 'image'},
+            prepare: ({title, media}) => ({
+              title: title || 'Foto de fundo',
+              subtitle: 'Imagem',
+              media,
+            }),
+          },
+        }),
+        defineArrayMember({
+          name: 'heroBackgroundVideo',
+          title: 'Vídeo de fundo',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'label',
+              title: 'Identificação do vídeo',
+              type: 'string',
+              placeholder: 'Ex: Vista aérea Urbanova ao entardecer',
+              validation: (rule) => rule.max(120),
+            }),
+            defineField({
+              name: 'videoFile',
+              title: 'Arquivo de vídeo (.mp4 ou .webm)',
+              type: 'file',
+              description: 'Vídeo horizontal para plano de fundo (MP4, WebM ou MOV, até 40 MB). Será reproduzido automaticamente sem som em loop.',
+              options: {accept: videoFormats.join(',')},
+              validation: (rule) =>
+                rule.required().custom((value, context) =>
+                  value ? validateAsset(40, videoFormats)(value as AssetValue, context) : true,
+                ),
+            }),
+            defineField({
+              name: 'poster',
+              title: 'Imagem de capa do vídeo (opcional)',
+              type: 'image',
+              description: 'Exibida enquanto o vídeo carrega.',
+              options: {hotspot: true, accept: imageFormats.join(',')},
+              validation: (rule) =>
+                rule.custom((value, context) =>
+                  value ? validateAsset(4, imageFormats)(value as AssetValue, context) : true,
+                ),
+            }),
+          ],
+          preview: {
+            select: {title: 'label', media: 'poster'},
+            prepare: ({title, media}) => ({
+              title: title || 'Vídeo de fundo',
+              subtitle: 'Vídeo',
+              media,
+            }),
+          },
+        }),
+      ],
+    }),
+  ],
+  preview: {prepare: () => ({title: 'Fundo do Hero'})},
+} satisfies DocumentDefinition)
+
+export const schemaTypes = [photo, seo, condominium, condominiumDirectory, propertyTypeOption, city, neighborhood, property, reel, home, heroBackground, marquee, siteSettings].map(withEditorialGuidance)
