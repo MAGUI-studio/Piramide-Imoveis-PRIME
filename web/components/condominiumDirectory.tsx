@@ -9,6 +9,7 @@ import {glassField} from '../lib/classes'
 import {Frame} from './media'
 import {MultiSelect} from './multiSelect'
 import {EmptyState} from './emptyState'
+import type {CatalogOptions} from '../lib/sanity'
 
 type Entry = Condominium & {image: Picture; count: number}
 const normalize = (value: string) => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR')
@@ -60,13 +61,13 @@ function CondominiumCard({condo, featured = false}: {condo: Entry; featured?: bo
   </article>
 }
 
-export function CondominiumDirectory({items, featuredIds = []}: {items: Entry[]; featuredIds?: string[]}) {
+export function CondominiumDirectory({items, featuredIds = [], filterOptions}: {items: Entry[]; featuredIds?: string[]; filterOptions?: CatalogOptions}) {
   const params = useSearchParams()
   const query = params.get('busca') || ''
   const selectedCities = params.getAll('cidade')
   const selectedNeighborhoods = params.getAll('bairro')
-  const cities = [...new Map(items.flatMap((item) => item.city ? [[item.city.id, item.city] as const] : [])).values()].sort(sortByName)
-  const neighborhoods = [...new Map(items.flatMap((item) => item.neighborhood && (!selectedCities.length || selectedCities.includes(item.city?.id || '')) ? [[item.neighborhood.id, item.neighborhood] as const] : [])).values()].sort(sortByName)
+  const cities = [...new Map([...items, ...(filterOptions?.locations || [])].flatMap((item) => item.city ? [[item.city.id, item.city] as const] : [])).values()].sort(sortByName)
+  const neighborhoods = [...new Map([...items, ...(filterOptions?.locations || [])].flatMap((item) => item.neighborhood && (!selectedCities.length || selectedCities.includes(item.city?.id || '')) ? [[item.neighborhood.id, item.neighborhood] as const] : [])).values()].sort(sortByName)
   const words = normalize(query).trim().split(/\s+/).filter(Boolean)
   const filtered = !!(words.length || selectedCities.length || selectedNeighborhoods.length)
   const results = items.filter((item) => (!selectedCities.length || selectedCities.includes(item.city?.id || '')) && (!selectedNeighborhoods.length || selectedNeighborhoods.includes(item.neighborhood?.id || '')) && words.every((word) => normalize([item.name, item.neighborhood?.name, item.city?.name].filter(Boolean).join(' ')).includes(word)))

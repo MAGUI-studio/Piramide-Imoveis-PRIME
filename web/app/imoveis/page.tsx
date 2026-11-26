@@ -7,7 +7,7 @@ import {WhatsAppWidget} from '../../components/whatsappWidget'
 import {homeSectionHeading, previewBanner, wrap} from '../../lib/classes'
 import {catalogPictures} from '../../lib/image'
 import {catalogPageSize, whatsappLink} from '../../lib/model'
-import {getCatalog, getCatalogSeo, getSiteSettings, isPreview} from '../../lib/sanity'
+import {getCatalog, getCatalogOptions, getCatalogSeo, getSiteSettings, isPreview} from '../../lib/sanity'
 import {breadcrumbs, catalogDescription, catalogPath, catalogTitle, pageMetadata} from '../../lib/seo'
 
 export async function generateMetadata({searchParams}: {
@@ -30,7 +30,7 @@ export async function generateMetadata({searchParams}: {
 
 export default async function Imoveis() {
   const preview = await isPreview()
-  const [catalog, settings] = await Promise.all([getCatalog(preview), getSiteSettings(preview)])
+  const [catalog, settings, filterOptions] = await Promise.all([getCatalog(preview), getSiteSettings(preview), getCatalogOptions(preview)])
   const whatsapp = settings.organization?.commercialPhone ?? null
   const contact = whatsappLink(whatsapp)
 
@@ -42,7 +42,7 @@ export default async function Imoveis() {
         <h1 className={homeSectionHeading}>Todos os imóveis</h1>
         <p role="status" className="mt-4 text-earth">Carregando imóveis…</p>
       </div>}>
-        <Catalog items={catalog.map(catalogPictures)} full />
+        <Catalog items={catalog.map(catalogPictures)} filterOptions={filterOptions} full />
       </Suspense>
     </main>
     <CatalogCta contact={contact} />

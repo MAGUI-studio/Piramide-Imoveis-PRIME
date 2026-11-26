@@ -8,7 +8,7 @@ import {WhatsAppWidget} from '../../components/whatsappWidget'
 import {eyebrow, previewBanner, wrap} from '../../lib/classes'
 import {picture} from '../../lib/image'
 import {whatsappLink} from '../../lib/model'
-import {getCondominiumDirectory, getCondominiums, getSiteSettings, isPreview} from '../../lib/sanity'
+import {getCatalogOptions, getCondominiumDirectory, getCondominiums, getSiteSettings, isPreview} from '../../lib/sanity'
 import {pageMetadata} from '../../lib/seo'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Condominios() {
   const preview = await isPreview()
-  const [condominiums, settings, directory] = await Promise.all([getCondominiums(preview), getSiteSettings(preview), getCondominiumDirectory(preview)])
+  const [condominiums, settings, directory, filterOptions] = await Promise.all([getCondominiums(preview), getSiteSettings(preview), getCondominiumDirectory(preview), getCatalogOptions(preview)])
   const whatsapp = settings.organization?.commercialPhone ?? null
   const contact = whatsappLink(whatsapp)
   return <>
@@ -31,7 +31,7 @@ export default async function Condominios() {
           <p className="mt-4 text-sm leading-relaxed text-earth sm:text-base">{directory.description || 'Explore nossa seleção e encontre casas, apartamentos e terrenos no condomínio ideal para você.'}</p>
         </div>
         <Suspense fallback={<p role="status" className="py-8 text-earth">Carregando condomínios…</p>}>
-          <CondominiumDirectory featuredIds={directory.featuredIds} items={condominiums.map((condo) => ({...condo, image: picture(condo.cover, 1.8, 2000), count: condo.propertyCount}))} />
+          <CondominiumDirectory filterOptions={filterOptions} featuredIds={directory.featuredIds} items={condominiums.map((condo) => ({...condo, image: picture(condo.cover, 1.8, 2000), count: condo.propertyCount}))} />
         </Suspense>
         <Link href="/imoveis" className="mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-piramide hover:underline">Ver todos os imóveis <ArrowUpRight size={16} aria-hidden="true" /></Link>
       </section>

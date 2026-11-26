@@ -45,6 +45,14 @@ export const getCatalogSeo = cache(async (preview: boolean) => {
   return await read<Seo | null>('*[_id == "primeHome"][0].catalogSeo', {}, preview)
 })
 
+export type CatalogOptions = {types: string[]; locations: {city: {id: string; name: string} | null; neighborhood: {id: string; name: string}}[]}
+export const getCatalogOptions = cache(async (preview: boolean): Promise<CatalogOptions> => {
+  return await read<CatalogOptions>(`{
+    "types": *[_type == "propertyTypeOption" && defined(name) && lower(name) != "condomínio"].name,
+    "locations": *[_type == "neighborhood" && defined(name)]{"neighborhood": {"id": _id, name}, "city": city->{"id": _id, name}}
+  }`, {}, preview) || {types: [], locations: []}
+})
+
 type CatalogProperty = PropertyCard & {alternate?: Photo | null; coverOriginalFilename?: string | null}
 type Home = {propertyTypeOrder?: (string | null)[]; banners: HomeBanner[]; heroBackground?: HeroBackground | null; heroSlides?: (PropertyCard | null)[] | null; homeSelection?: (CatalogProperty | null)[] | null; hero: PropertyCard | null; featured: CatalogProperty[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
 const homeQuery = `{

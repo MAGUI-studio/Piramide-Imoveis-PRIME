@@ -6,6 +6,7 @@ import {useEffect, useId, useMemo, useRef, useState} from 'react'
 import {MultiSelect} from './multiSelect'
 import {Slider} from './slider'
 import {EmptyState} from './emptyState'
+import type {CatalogOptions} from '../lib/sanity'
 import {ArrowLeft, ArrowRight, ArrowUpDown, ArrowUpRight, BedDouble, Building2, CarFront, Check, ChevronDown, House, MapPin, PanelLeftClose, PanelLeftOpen, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
 import {cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyAreaValue, propertyPrice, propertyRentPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
@@ -190,7 +191,7 @@ function CardPriceRow({price, rentPrice, surface = 'overlay'}: {price?: number |
   )
 }
 
-export function Catalog({items, full = false, scopeTitle, fixedLocation = false, showAllLink = false, basePath = '/imoveis'}: {items: CatalogItem[]; full?: boolean; scopeTitle?: string; fixedLocation?: boolean; showAllLink?: boolean; basePath?: string}) {
+export function Catalog({items, full = false, scopeTitle, fixedLocation = false, showAllLink = false, basePath = '/imoveis', filterOptions}: {items: CatalogItem[]; full?: boolean; scopeTitle?: string; fixedLocation?: boolean; showAllLink?: boolean; basePath?: string; filterOptions?: CatalogOptions}) {
   const params = useSearchParams()
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [desktopFiltersOpen, setDesktopFiltersOpen] = useState(true)
@@ -199,15 +200,16 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
   const query = params.get('busca') || ''
   const selectedCondominium = params.get('condominio') || ''
   const condominiumName = items.find((item) => item.condominium?.slug === selectedCondominium)?.condominium?.name
-  const cities = Array.from(new Map(items.flatMap(({city}) => city ? [[city.id, city]] : [])).values()).sort((a, b) => collator.compare(a.name, b.name))
+  const cities = Array.from(new Map([...items, ...(filterOptions?.locations || [])].flatMap(({city}) => city ? [[city.id, city]] : [])).values()).sort((a, b) => collator.compare(a.name, b.name))
   const selectedCities = (fixedLocation ? [] : params.getAll('cidade')).filter((value) => cities.some(({id}) => id === value))
-  const neighborhoods = Array.from(new Map(items.flatMap(({neighborhood, city}) => (
+  const neighborhoods = Array.from(new Map([...items, ...(filterOptions?.locations || [])].flatMap(({neighborhood, city}) => (
     neighborhood && (!selectedCities.length || (city && selectedCities.includes(city.id)))
       ? [[neighborhood.id, {...neighborhood, label: selectedCities.length === 1 ? neighborhood.name : [neighborhood.name, city?.name].filter(Boolean).join(', ')}]]
       : []
   ))).values()).sort((a, b) => collator.compare(a.label, b.label))
   const selectedNeighborhoods = (fixedLocation ? [] : params.getAll('bairro')).filter((value) => neighborhoods.some(({id}) => id === value))
   const types = Array.from(new Set([
+    ...(filterOptions?.types || []),
     ...items.map(({propertyType}) => propertyType),
     ...params.getAll('tipo').filter((value) => value.trim()),
   ])).filter(Boolean).sort(collator.compare)
@@ -574,7 +576,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
       })}
     </div>
   ) : (
-    <EmptyState icon={House} title="Nenhum imóvel encontrado" description="Não encontramos imóveis com os filtros aplicados. Tente ajustar os critérios ou limpar a seleção para explorar todo o portfólio." onClear={clear} />
+    <EmptyState icon={House} title={hasAnyFilter ? 'Nenhum imóvel encontrado' : 'Novos imóveis em breve'} description={hasAnyFilter ? 'Não encontramos imóveis com os filtros aplicados. Tente ajustar os critérios ou limpar a seleção para explorar todo o portfólio.' : 'Estamos preparando uma seleção exclusiva de imóveis para você. Em breve, novas oportunidades estarão disponíveis aqui.'} onClear={hasAnyFilter ? clear : undefined} />
   )
 
   const pagination = full && totalPages > 1 ? (() => {
@@ -647,7 +649,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
         )}
       </Reveal>
 
-      {items.length ? (
+      {(full || items.length > 0) ? (
         isEcommerceLayout ? (
           <div
             className={
