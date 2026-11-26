@@ -1,4 +1,4 @@
-import {ArrowUp, ArrowUpRight} from 'lucide-react'
+import {ArrowUpRight} from 'lucide-react'
 import {sweepButton, sweepFill, sweepSolid, sweepContent, wrap} from '../lib/classes'
 import {picture} from '../lib/image'
 import {getSiteSettings, isPreview} from '../lib/sanity'
@@ -83,19 +83,7 @@ export async function FinalCta({contact, marquee}: {contact: string | null; marq
                   </span>
                 </a>
               )}
-              {content.secondaryLabel && (
-                <a
-                  href="/imoveis"
-                  className="group/explore inline-flex items-center gap-2.5 text-sm font-medium text-white transition-colors hover:text-white/75 sm:text-base"
-                >
-                  {content.secondaryLabel}{' '}
-                  <ArrowUp
-                    aria-hidden="true"
-                    size={18}
-                    className="transition-transform duration-300 group-hover/explore:-translate-y-1 motion-reduce:transition-none"
-                  />
-                </a>
-              )}
+
             </div>
           </Reveal>
         )}
