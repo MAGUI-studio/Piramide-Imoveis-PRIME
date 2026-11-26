@@ -5,7 +5,7 @@ import {useSearchParams} from 'next/navigation'
 import {useEffect, useId, useMemo, useRef, useState} from 'react'
 import {MultiSelect} from './multiSelect'
 import {Slider} from './slider'
-import {ArrowLeft, ArrowRight, ArrowUpDown, ArrowUpRight, BedDouble, Building2, CarFront, Check, ChevronDown, House, MapPin, RotateCcw, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
+import {ArrowLeft, ArrowRight, ArrowUpDown, ArrowUpRight, BedDouble, Building2, CarFront, Check, ChevronDown, House, MapPin, PanelLeftClose, PanelLeftOpen, RotateCcw, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
 import {cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyAreaValue, propertyPrice, propertyRentPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
 import {eyebrow, glassField, heading, homeSectionHeading, riseIn, wrap} from '../lib/classes'
@@ -188,6 +188,7 @@ function CardPriceRow({price, rentPrice}: {price?: number | null; rentPrice?: nu
 export function Catalog({items, full = false, scopeTitle, fixedLocation = false, showAllLink = false, basePath = '/imoveis'}: {items: CatalogItem[]; full?: boolean; scopeTitle?: string; fixedLocation?: boolean; showAllLink?: boolean; basePath?: string}) {
   const params = useSearchParams()
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [desktopFiltersOpen, setDesktopFiltersOpen] = useState(true)
   const isEcommerceLayout = full && !fixedLocation
 
   const query = params.get('busca') || ''
@@ -408,7 +409,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
   }
 
   const cardsGrid = displayed.length ? (
-    <div className={'grid gap-3 sm:gap-4 xl:gap-5 ' + (full ? 'sm:grid-cols-2' : 'min-[801px]:grid-cols-12')}>
+    <div className={'grid gap-3 sm:gap-4 xl:gap-5 ' + (full ? (isEcommerceLayout && !desktopFiltersOpen ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2') : 'min-[801px]:grid-cols-12')}>
       {displayed.map((item, index) => {
         const isLead = !full && index === 0
         const isStacked = !full && hasLeadStack && index > 0 && index < 3
@@ -431,11 +432,13 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
         }
 
         const sizes = full ? '(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 38vw' : '(max-width: 800px) 100vw, ' + desktopImageWidth
-        const cardHeight = isLead
-          ? 'min-h-[27rem] sm:min-h-[34rem]'
-          : isStacked
-            ? 'min-h-[23rem] xl:min-h-[24.5rem]'
-            : 'min-h-[24rem] xl:min-h-[27rem]'
+        const cardHeight = full
+          ? 'aspect-square'
+          : isLead
+            ? 'min-h-[29rem] sm:min-h-[36rem]'
+            : isStacked
+              ? 'min-h-[26rem] sm:min-h-[28rem] xl:min-h-[30rem]'
+              : 'min-h-[28rem] sm:min-h-[32rem] xl:min-h-[35rem]'
         const titleSize = isLead
           ? 'text-[clamp(1.65rem,2.75vw,3.25rem)]'
           : 'text-[clamp(1.35rem,1.8vw,2rem)]'
@@ -454,7 +457,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
                 {item.alternate && <div className="absolute inset-0 [clip-path:inset(0_100%_0_0)] group-focus-visible:[clip-path:inset(0)] group-hover:[clip-path:inset(0)] motion-safe:transition-[clip-path] motion-safe:duration-700" aria-hidden="true">
                   <Frame className="size-full object-cover" photo={item.alternate} sizes={sizes} />
                 </div>}
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,#080808_0%,#080808f5_30%,#080808c9_50%,#0808084d_75%,#08080814_100%)]" />
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(8,8,8,0.98)_0%,rgba(8,8,8,0.88)_28%,rgba(8,8,8,0.52)_50%,rgba(8,8,8,0.12)_72%,transparent_88%)]" />
               </div>
               <div className={'absolute right-5 bottom-5 left-5 text-white sm:right-6 sm:bottom-6 sm:left-6 ' + (isLead ? 'xl:right-8 xl:bottom-8 xl:left-8' : '')}>
                 {item.propertyType && <p className="mb-2 text-xs font-medium tracking-wide text-white/80">{item.propertyType}</p>}
@@ -577,8 +580,23 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
 
       {items.length ? (
         isEcommerceLayout ? (
-          <div className="grid gap-7 lg:grid-cols-[19.5rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[21rem_minmax(0,1fr)] xl:gap-10">
-            <aside aria-label="Filtros do catálogo" className="lg:border-r lg:border-rule lg:pr-8 xl:pr-10">
+          <div
+            className={
+              'grid gap-7 motion-safe:transition-[grid-template-columns,gap] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] ' +
+              (desktopFiltersOpen
+                ? 'lg:grid-cols-[19.5rem_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[21rem_minmax(0,1fr)] xl:gap-10'
+                : 'lg:grid-cols-[0rem_minmax(0,1fr)] lg:gap-0')
+            }
+          >
+            <aside
+              aria-label="Filtros do catálogo"
+              className={
+                'min-w-0 motion-safe:transition-[opacity,padding,border-color] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] lg:border-r ' +
+                (desktopFiltersOpen
+                  ? 'lg:border-rule lg:pr-8 lg:opacity-100 xl:pr-10'
+                  : 'lg:pointer-events-none lg:overflow-hidden lg:border-transparent lg:pr-0 lg:opacity-0')
+              }
+            >
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen((prev) => !prev)}
@@ -602,7 +620,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
                 aria-label="Filtrar imóveis"
                 onSubmit={(event) => event.preventDefault()}
                 className={
-                  'space-y-4 border-b border-rule pb-6 lg:sticky lg:top-6 lg:border-b-0 lg:pb-0 ' +
+                  'space-y-4 border-b border-rule pb-6 lg:sticky lg:top-6 lg:w-[17.5rem] lg:border-b-0 lg:pb-0 xl:w-[18.5rem] ' +
                   (mobileFiltersOpen ? 'block' : 'hidden lg:block')
                 }
               >
@@ -611,15 +629,26 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
                     <SlidersHorizontal aria-hidden="true" size={14} className="text-piramide" />
                     Filtros
                   </span>
-                  {hasAnyFilter && (
+                  <div className="flex items-center gap-3">
+                    {hasAnyFilter && (
+                      <button
+                        type="button"
+                        onClick={clear}
+                        className="cursor-pointer text-xs font-semibold text-piramide transition-opacity hover:opacity-75"
+                      >
+                        Limpar tudo
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={clear}
-                      className="cursor-pointer text-xs font-semibold text-piramide transition-opacity hover:opacity-75"
+                      onClick={() => setDesktopFiltersOpen(false)}
+                      aria-label="Recolher filtros"
+                      title="Recolher filtros"
+                      className="hidden cursor-pointer items-center gap-1.5 text-xs font-medium text-earth transition-colors hover:text-espresso lg:inline-flex"
                     >
-                      Limpar tudo
+                      <PanelLeftClose aria-hidden="true" size={16} />
                     </button>
-                  )}
+                  </div>
                 </div>
 
                 <div className={glassField}>
@@ -772,9 +801,26 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
 
             <div className="flex min-w-0 flex-col">
               <div id="resultados" className="mb-4 flex scroll-mt-4 flex-wrap items-center justify-between gap-3">
-                <span aria-live="polite" className="text-xs font-medium text-earth sm:text-sm">
-                  {results.length} {results.length === 1 ? 'imóvel encontrado' : 'imóveis encontrados'}
-                </span>
+                <div className="flex items-center gap-3">
+                  {!desktopFiltersOpen && (
+                    <button
+                      type="button"
+                      onClick={() => setDesktopFiltersOpen(true)}
+                      className="hidden min-h-11 cursor-pointer items-center gap-2.5 border border-zinc-200/80 bg-white/80 px-3.5 text-xs font-semibold text-espresso shadow-[0_4px_16px_rgba(15,23,42,0.03)] backdrop-blur-md backdrop-saturate-150 transition-all hover:border-zinc-300 hover:bg-white focus-visible:border-piramide/70 lg:inline-flex dark:border-white/[0.06] dark:bg-white/[0.03] dark:shadow-[0_6px_20px_rgba(0,0,0,0.22)] dark:hover:border-white/[0.12] dark:hover:bg-white/[0.05]"
+                    >
+                      <PanelLeftOpen aria-hidden="true" size={15} className="shrink-0 text-piramide" />
+                      <span>Mostrar filtros</span>
+                      {activeFilterCount > 0 && (
+                        <span className="bg-piramide px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+                  <span aria-live="polite" className="text-xs font-medium text-earth sm:text-sm">
+                    {results.length} {results.length === 1 ? 'imóvel encontrado' : 'imóveis encontrados'}
+                  </span>
+                </div>
                 <SortDropdown
                   value={sort}
                   onChange={(next) => updateSingleParam('ordem', next, 'recente')}
