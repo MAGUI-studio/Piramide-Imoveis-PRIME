@@ -57,7 +57,10 @@ export default async function Home() {
     return []
   })
   const heroPropertyTypes = Array.from(
-    new Set(data.catalog.map(({propertyType}) => propertyType).filter(Boolean)),
+    new Set([
+      ...(data.propertyTypes || []).map(({name}) => name).filter((name) => name && name.trim().toLowerCase() !== 'condomínio'),
+      ...data.catalog.map(({propertyType}) => propertyType).filter(Boolean),
+    ]),
   ).sort((a, b) => a.localeCompare(b, 'pt-BR'))
   const featured = (data.featured || []).filter((item) => item?.slug && item.cover)
   const contact = whatsappLink(data.whatsapp)
@@ -69,6 +72,15 @@ export default async function Home() {
       .map((entry) => [entry.name.trim().toLowerCase(), entry.image!]),
   )
   const lifestyleMap = new Map<string, LifestyleItem>()
+  for (const entry of data.propertyTypes || []) {
+    if (!entry.name || !entry.image?.asset) continue
+    const type = entry.name.trim().toLowerCase() === 'condomínio' ? 'Condomínio' : entry.name.trim()
+    lifestyleMap.set(type, {
+      type,
+      count: 0,
+      image: picture(entry.image, type === 'Condomínio' ? 1.15 : 3 / 4, type === 'Condomínio' ? 1200 : 900),
+    })
+  }
   for (const item of data.catalog) {
     if (item.propertyType) {
       const entry = lifestyleMap.get(item.propertyType)
