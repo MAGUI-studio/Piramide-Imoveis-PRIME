@@ -982,7 +982,12 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
           </>
         )
       ) : (
-        <EmptyState icon={House} title="Novos imóveis em breve" description="Estamos preparando uma seleção exclusiva de imóveis para você. Em breve, novas oportunidades estarão disponíveis aqui." />
+        <EmptyState
+          icon={House}
+          title={hasAnyFilter ? 'Nenhum imóvel encontrado' : 'Novos imóveis em breve'}
+          description={hasAnyFilter ? 'Não encontramos imóveis com os filtros aplicados. Tente ajustar os critérios ou limpar a seleção para explorar todo o portfólio.' : 'Estamos preparando uma seleção exclusiva de imóveis para você. Em breve, novas oportunidades estarão disponíveis aqui.'}
+          onClear={hasAnyFilter ? clear : undefined}
+        />
       )}
     </section>
   )
