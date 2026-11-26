@@ -193,14 +193,16 @@ export function HeroSearch({
         onChange={setSelectedTypes}
       />
 
-      <MultiSelect
-        label="Condomínio"
-        placeholder="Todos os condomínios"
-        icon={MapPin}
-        values={selectedCondominiums}
-        options={condominiums.map((c) => ({value: c.slug, label: c.name}))}
-        onChange={(next) => setSelectedCondominiums(next.slice(-1))}
-      />
+      <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+        <MultiSelect
+          label="Condomínio"
+          placeholder="Todos os condomínios"
+          icon={MapPin}
+          values={selectedCondominiums}
+          options={condominiums.map((c) => ({value: c.slug, label: c.name}))}
+          onChange={(next) => setSelectedCondominiums(next.slice(-1))}
+        />
+      </div>
 
       <div className={glassField + ' sm:col-span-2 lg:col-span-1'}>
         <label className="flex min-w-0 flex-1 items-center gap-3">
@@ -294,12 +296,12 @@ export function HeroSearch({
         {/* Centered content + desktop floating glass inputs */}
         <div className="relative z-20 mx-auto flex w-full max-w-[84rem] flex-col items-center text-center">
           {titleText && (
-            <h1 className={heading + ' max-w-[24ch] text-balance text-[clamp(1.85rem,4.4vw,3.85rem)] leading-[1.12] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.45)]'}>
+            <h1 className={heading + ' max-w-[36ch] text-balance text-[clamp(1.85rem,4.4vw,3.85rem)] leading-[1.12] tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.45)]'}>
               {titleText}
             </h1>
           )}
           {subtitleText && (
-            <p className={(titleText ? 'mt-3 sm:mt-4 ' : '') + 'max-w-[46ch] text-sm font-normal tracking-wide text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-base lg:text-lg'}>
+            <p className={(titleText ? 'mt-3 sm:mt-4 ' : '') + 'max-w-[64ch] text-sm font-normal tracking-wide text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-base lg:text-lg'}>
               {subtitleText}
             </p>
           )}
