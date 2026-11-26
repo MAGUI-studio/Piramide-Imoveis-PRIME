@@ -9,7 +9,7 @@ type Banner = {id: string; title: string; href: string; newTab?: boolean; image:
 const slideDuration = 6500
 const transitionDuration = 1800
 
-export function HomeBanners({items}: {items: Banner[]}) {
+export function HomeBanners({items, className = ''}: {items: Banner[]; className?: string}) {
   const [index, setIndex] = useState(0)
   const [previousIndex, setPreviousIndex] = useState(-1)
   const [transitioning, setTransitioning] = useState(false)
@@ -124,7 +124,7 @@ export function HomeBanners({items}: {items: Banner[]}) {
     setIndex(target)
   }
 
-  return <section id="campanhas" ref={banner} aria-label="Novidades e campanhas" aria-roledescription={count > 1 ? 'carrossel' : undefined} className={wrap} onFocus={(event) => {if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) setFocused(true)}} onBlur={(event) => {if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)}}>
+  return <section id="campanhas" ref={banner} aria-label="Novidades e campanhas" aria-roledescription={count > 1 ? 'carrossel' : undefined} className={wrap + ' ' + className} onFocus={(event) => {if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) setFocused(true)}} onBlur={(event) => {if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)}}>
     <div className="w-full overflow-hidden bg-coal">
     <div className="relative aspect-[3/1] overflow-hidden">
       {items.map((item, position) => <a key={item.id} href={item.href} target={item.newTab ? '_blank' : undefined} rel={item.newTab ? 'noopener noreferrer' : undefined} aria-label={item.title + (item.newTab ? ' (abre em nova aba)' : '')} aria-hidden={position !== active} tabIndex={position === active ? 0 : -1} className={'absolute inset-0 block focus-visible:-outline-offset-4 focus-visible:outline-white ' + (position === active ? 'z-10' : position === previousIndex ? 'pointer-events-none z-0' : 'pointer-events-none invisible -z-10')}>

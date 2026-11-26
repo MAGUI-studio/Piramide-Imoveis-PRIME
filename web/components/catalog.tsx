@@ -5,7 +5,8 @@ import {useSearchParams} from 'next/navigation'
 import {useEffect, useId, useMemo, useRef, useState} from 'react'
 import {MultiSelect} from './multiSelect'
 import {Slider} from './slider'
-import {ArrowLeft, ArrowRight, ArrowUpDown, ArrowUpRight, BedDouble, Building2, CarFront, Check, ChevronDown, House, MapPin, PanelLeftClose, PanelLeftOpen, RotateCcw, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
+import {EmptyState} from './emptyState'
+import {ArrowLeft, ArrowRight, ArrowUpDown, ArrowUpRight, BedDouble, Building2, CarFront, Check, ChevronDown, House, MapPin, PanelLeftClose, PanelLeftOpen, Ruler, Search, SlidersHorizontal, X} from 'lucide-react'
 import {cardAreaOf, cardAttributesOf, catalogPageSize, locationOf, propertyAreaValue, propertyPrice, propertyRentPrice, type PropertyCard} from '../lib/model'
 import type {Picture} from '../lib/image'
 import {eyebrow, glassField, heading, homeSectionHeading, riseIn, wrap} from '../lib/classes'
@@ -570,31 +571,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
       })}
     </div>
   ) : (
-    <div className="relative flex min-h-[30rem] flex-1 flex-col items-center justify-center overflow-hidden border border-rule bg-white/40 px-6 py-16 text-center sm:min-h-[36rem] sm:px-12 sm:py-24 dark:bg-white/[0.015]">
-      <img
-        src="/logos/piramide/icon.png"
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-12 -bottom-6 w-[26rem] max-w-none select-none object-contain opacity-[0.07] grayscale sm:-right-16 sm:-bottom-8 sm:w-[42rem] dark:opacity-[0.06] dark:brightness-200 dark:grayscale"
-      />
-      <div className="relative z-10 flex max-w-md flex-col items-center">
-        <p className={eyebrow + ' mb-2 text-[.68rem] text-piramide'}>Nenhum resultado</p>
-        <h3 className="text-xl font-semibold tracking-tight text-espresso sm:text-2xl">
-          Nenhum imóvel encontrado
-        </h3>
-        <p className="mt-2.5 text-sm leading-relaxed text-earth">
-          Não encontramos imóveis com os filtros aplicados. Tente ajustar os critérios ou limpar a seleção para explorar todo o portfólio.
-        </p>
-        <button
-          type="button"
-          onClick={clear}
-          className="mt-7 inline-flex min-h-11 cursor-pointer items-center gap-2.5 border border-[#1b1916]/[0.12] bg-white/75 px-6 text-sm font-medium text-espresso shadow-[0_6px_20px_rgba(27,25,22,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl transition-all hover:border-[#1b1916]/[0.24] hover:bg-white dark:border-white/[0.1] dark:bg-white/[0.06] dark:text-[#f5f2ec] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)] dark:hover:border-white/[0.2] dark:hover:bg-white/[0.1]"
-        >
-          <RotateCcw size={15} strokeWidth={1.7} aria-hidden="true" className="text-earth" />
-          <span>Limpar filtros</span>
-        </button>
-      </div>
-    </div>
+    <EmptyState icon={House} title="Nenhum imóvel encontrado" description="Não encontramos imóveis com os filtros aplicados. Tente ajustar os critérios ou limpar a seleção para explorar todo o portfólio." onClear={clear} />
   )
 
   const pagination = full && totalPages > 1 ? (() => {
@@ -1005,7 +982,7 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
           </>
         )
       ) : (
-        <div className="border border-rule p-7 text-earth">Nenhum imóvel disponível no momento.</div>
+        <EmptyState icon={House} title="Novos imóveis em breve" description="Estamos preparando uma seleção exclusiva de imóveis para você. Em breve, novas oportunidades estarão disponíveis aqui." />
       )}
     </section>
   )

@@ -109,7 +109,7 @@ export default async function Home() {
         />
       </div>
       <Lifestyle items={lifestyle} />
-      <HomeBanners items={data.banners.flatMap((banner) => {
+      <HomeBanners className={!lifestyle.length ? 'pt-10 sm:pt-14 lg:pt-16' : undefined} items={data.banners.flatMap((banner) => {
         const href = bannerHref(banner.href)
         return href ? [{id: banner._key, title: banner.title, href, newTab: banner.newTab, image: picture(banner.image, 3, 2400)}] : []
       })} />

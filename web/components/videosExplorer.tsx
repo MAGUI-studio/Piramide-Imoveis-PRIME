@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import {VideoModalPlayer} from './videoModalPlayer'
+import {EmptyState} from './emptyState'
 import {glassField} from '../lib/classes'
 import type {ReelItem} from '../lib/model'
 
@@ -413,26 +414,7 @@ export function VideosExplorer({reels = []}: VideosExplorerProps) {
           ))}
         </div>
       ) : (
-        <div className="bg-espresso/[.035] px-6 py-12 text-center">
-          <VideoOff className="mx-auto mb-3 size-10 text-earth/70" aria-hidden="true" />
-          <p className="text-lg font-medium text-espresso">
-            {hasActiveFilters ? 'Nenhum vídeo encontrado' : 'Novos vídeos em breve'}
-          </p>
-          <p className="mx-auto mt-2 max-w-md text-sm text-earth">
-            {hasActiveFilters
-              ? 'Tente ajustar os termos de busca ou limpar os filtros.'
-              : 'Ainda não há vídeos cadastrados no momento. Em breve publicaremos novos tours exclusivos.'}
-          </p>
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="mt-4 min-h-11 cursor-pointer text-sm font-medium text-piramide hover:underline"
-            >
-              Limpar filtros
-            </button>
-          )}
-        </div>
+        <EmptyState icon={VideoOff} title={hasActiveFilters ? 'Nenhum vídeo encontrado' : 'Novos vídeos em breve'} description={hasActiveFilters ? 'Tente ajustar os termos de busca ou limpar os filtros.' : 'Ainda não há vídeos cadastrados no momento. Em breve publicaremos novos tours exclusivos.'} onClear={hasActiveFilters ? handleClearFilters : undefined} />
       )}
 
       {sortedReels.length > 0 && (
