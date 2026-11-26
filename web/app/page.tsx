@@ -43,7 +43,10 @@ export default async function Home() {
     title: item.title,
     summary: item.summary,
     specifications: item.specifications,
-    location: locationOf(item),
+    refCode: item.refCode,
+    condominium: item.condominium,
+    condominiumName: item.condominiumName,
+    location: [item.neighborhood?.name, item.city?.name].filter(Boolean).join(', '),
     photo: picture(item.cover, 16 / 9, 2400),
   }))
   const featured = (data.featured || []).filter((item) => item?.slug && item.cover && item.slug !== hero?.slug)

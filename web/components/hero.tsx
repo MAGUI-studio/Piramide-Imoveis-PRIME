@@ -1,14 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowDown, ArrowUpRight } from 'lucide-react'
+import { ArrowDown, ArrowUpRight, Building2, ChevronDown } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {sweepButton, sweepFill, sweepOnCover, sweepRegular, sweepContent,  eyebrow, heading } from '../lib/classes'
 import type { Picture } from '../lib/image'
 import type { PropertyCard } from '../lib/model'
 import { Frame } from './media'
 
-type HeroItem = Pick<PropertyCard, 'slug' | 'title' | 'summary' | 'specifications'> & { location: string; photo: Picture }
+type HeroItem = Pick<PropertyCard, 'slug' | 'title' | 'summary' | 'specifications' | 'refCode' | 'condominium' | 'condominiumName'> & { location: string; photo: Picture }
 const slideDuration = 6500
 const transitionDuration = 1800
 const number = new Intl.NumberFormat('pt-BR')
@@ -21,6 +21,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
   const [visible, setVisible] = useState(false)
   const [canAnimate, setCanAnimate] = useState(false)
   const [transitioning, setTransitioning] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const hero = useRef<HTMLElement>(null)
   const progress = useRef<SVGSVGElement>(null)
   const photoLayers = useRef<(HTMLDivElement | null)[]>([])
@@ -174,7 +175,7 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
 
   return <>
     <div className="relative [--hero-notch:16px] lg:[--hero-notch:clamp(28px,2.6vw,42px)]">
-      <section className="relative isolate h-[clamp(34rem,80svh,54rem)] overflow-hidden bg-coal transform-gpu [clip-path:polygon(0_0,101%_0,101%_100%,54%_100%,46%_calc(100%_-_var(--hero-notch)),0_calc(100%_-_var(--hero-notch)))] after:pointer-events-none after:absolute after:inset-0 after:z-2 after:bg-[linear-gradient(0deg,#100e0ceb_0%,#100e0ca8_45%,transparent_100%),linear-gradient(180deg,#100e0c73_0%,transparent_22%),linear-gradient(270deg,#100e0c99_0%,transparent_28%)] sm:h-[clamp(30rem,76svh,54rem)]"
+      <section className="relative isolate h-[clamp(34rem,80svh,54rem)] overflow-hidden bg-coal transform-gpu [clip-path:polygon(0_0,101%_0,101%_100%,54%_100%,46%_calc(100%_-_var(--hero-notch)),0_calc(100%_-_var(--hero-notch)))] after:pointer-events-none after:absolute after:inset-0 after:z-2 after:bg-[linear-gradient(to_top,rgba(8,8,8,0.98)_0%,rgba(8,8,8,0.88)_28%,rgba(8,8,8,0.52)_50%,rgba(8,8,8,0.12)_72%,transparent_88%)] sm:h-[clamp(30rem,76svh,54rem)]"
         ref={hero} aria-label={'Fotos de ' + active.title}
         onFocus={(event) => {
           if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) {
@@ -197,8 +198,66 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
             </div>
           ))}
         </div>
-        <div className="absolute inset-x-5 bottom-[calc(var(--hero-notch)+8.5rem)] z-3 text-white sm:inset-x-9 sm:bottom-[calc(var(--hero-notch)+7rem)] lg:inset-x-auto lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-10 lg:w-[min(82%,80rem)]"
-          aria-live={focused || !canAnimate ? 'polite' : 'off'}>
+        <div className="absolute top-5 left-5 z-3 sm:top-8 sm:left-9 lg:top-8 lg:left-10">
+          <div className="grid items-start justify-items-start [grid-template-areas:'stack']">
+            {items.map((item, idx) => {
+              const condoName = item.condominium?.name || item.condominiumName
+              const condoSlug = item.condominium?.slug
+              const refCode = item.refCode?.trim()
+              if (!condoName && !refCode) return null
+              const isCurrent = idx === leftIndex
+              const glassBadge =
+                'inline-flex items-center gap-2 border border-white/20 bg-black/35 px-3.5 py-2 text-xs font-medium tracking-wide text-white shadow-[0_8px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md backdrop-saturate-150'
+              return (
+                <div
+                  key={item.slug + '-badges'}
+                  aria-hidden={!isCurrent}
+                  className={
+                    "[grid-area:stack] flex flex-wrap items-center gap-2 transition-opacity duration-500 ease-out motion-reduce:transition-none " +
+                    (isCurrent ? 'opacity-100' : 'pointer-events-none select-none opacity-0')
+                  }
+                >
+                  {condoName && (
+                    condoSlug ? (
+                      <Link
+                        href={'/condominios/' + encodeURIComponent(condoSlug)}
+                        tabIndex={isCurrent ? undefined : -1}
+                        className={glassBadge + ' group/condo transition-colors hover:border-white/35 hover:bg-black/50'}
+                      >
+                        <Building2 aria-hidden="true" size={14} className="shrink-0 text-white/85" />
+                        <span>{condoName}</span>
+                        <ArrowUpRight
+                          aria-hidden="true"
+                          size={13}
+                          className="shrink-0 text-white/75 transition-transform duration-200 group-hover/condo:translate-x-0.5 group-hover/condo:-translate-y-0.5"
+                        />
+                      </Link>
+                    ) : (
+                      <span className={glassBadge}>
+                        <Building2 aria-hidden="true" size={14} className="shrink-0 text-white/85" />
+                        <span>{condoName}</span>
+                      </span>
+                    )
+                  )}
+                  {refCode && (
+                    <span className={glassBadge + ' tabular-nums text-white/90'}>
+                      Cód. {refCode}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        <div
+          className={
+            'absolute inset-x-5 z-3 text-white transition-[bottom] duration-300 ease-out sm:inset-x-9 lg:inset-x-auto lg:bottom-[calc(var(--hero-notch)+2rem)] lg:left-10 lg:w-[min(82%,80rem)] ' +
+            (detailsOpen
+              ? 'bottom-[calc(var(--hero-notch)+8.5rem)] sm:bottom-[calc(var(--hero-notch)+7rem)]'
+              : 'bottom-[calc(var(--hero-notch)+3.5rem)] sm:bottom-[calc(var(--hero-notch)+4rem)]')
+          }
+          aria-live={focused || !canAnimate ? 'polite' : 'off'}
+        >
           <div className="grid items-end [grid-template-areas:'stack']">
             {items.map((item, idx) => (
               <div
@@ -215,47 +274,77 @@ export function Hero({ items }: { items: [HeroItem, ...HeroItem[]] }) {
               </div>
             ))}
           </div>
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3.5">
-            <Link className={sweepButton + sweepRegular + ' ' + sweepOnCover} href={'/imoveis/' + encodeURIComponent(leftActive.slug)}>
+          <div className="mt-6 grid w-full max-w-md grid-cols-2 gap-3 lg:flex lg:w-auto lg:max-w-none lg:flex-wrap lg:items-center lg:gap-x-6 lg:gap-y-3.5">
+            <Link className={sweepButton + sweepRegular + ' ' + sweepOnCover + ' w-full justify-center lg:w-auto'} href={'/imoveis/' + encodeURIComponent(leftActive.slug)}>
               <span aria-hidden="true" className={sweepFill} />
               <span className={sweepContent}>
                 Ver imóvel <ArrowUpRight size={18} className="transition-transform duration-300 ease-out group-hover/cta:translate-x-0.5 group-hover/cta:-translate-y-0.5 motion-reduce:transition-none" />
               </span>
             </Link>
-            <a className="group/explore inline-flex w-fit items-center gap-2.5 text-sm text-ivory transition-colors hover:text-white sm:text-base motion-reduce:transition-none" href="/imoveis">
+            <a className="group/explore hidden w-fit items-center gap-2.5 text-sm text-ivory transition-colors hover:text-white sm:text-base lg:inline-flex motion-reduce:transition-none" href="/imoveis">
               Explorar imóveis <ArrowDown size={18} className="transition-transform duration-300 ease-out group-hover/explore:translate-y-1 motion-reduce:transition-none" />
             </a>
+            <button
+              type="button"
+              aria-expanded={detailsOpen}
+              onClick={() => setDetailsOpen((prev) => !prev)}
+              className={sweepButton + sweepRegular + ' ' + sweepOnCover + ' w-full cursor-pointer justify-center lg:hidden'}
+            >
+              <span aria-hidden="true" className={sweepFill} />
+              <span className={sweepContent}>
+                {detailsOpen ? 'Ocultar detalhes' : 'Ver detalhes'}
+                <ChevronDown
+                  aria-hidden="true"
+                  size={16}
+                  className={'shrink-0 transition-transform duration-300 ' + (detailsOpen ? 'rotate-180' : '')}
+                />
+              </span>
+            </button>
           </div>
         </div>
-        <div className="absolute inset-x-5 bottom-[calc(var(--hero-notch)+1rem)] z-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-t border-white/25 pt-4 text-white sm:inset-x-9 sm:bottom-[calc(var(--hero-notch)+1.5rem)] lg:inset-x-auto lg:right-10 lg:bottom-[calc(var(--hero-notch)+2rem)] lg:flex-col lg:gap-y-5 lg:border-t-0 lg:pt-0">
-          <div className="grid items-end justify-items-start [grid-template-areas:'stack'] lg:justify-items-center">
-            {items.map((item, idx) => {
-              const itemFacts = factsOf(item)
-              if (!itemFacts.length) return null
-              return (
-                <dl
-                  key={item.slug + '-facts'}
-                  aria-label="Dados do imóvel"
-                  aria-hidden={idx !== rightIndex}
-                  aria-live={idx === rightIndex && (focused || !canAnimate) ? 'polite' : 'off'}
-                  className={
-                    "[grid-area:stack] flex flex-wrap items-start gap-x-5 gap-y-2 sm:gap-x-8 lg:w-24 lg:flex-col lg:items-center lg:gap-y-3 transition-opacity duration-500 ease-out motion-reduce:transition-none " +
-                    (idx === rightIndex ? 'opacity-100' : 'pointer-events-none select-none opacity-0')
-                  }
-                >
-                  {itemFacts.map(([label, value, icon]) => (
-                    <div key={label} className="contents">
-                      <div className="flex flex-col items-start justify-center gap-2 text-start lg:items-center lg:text-center">
-                        <dt className="text-[.56rem] font-medium tracking-[.08em] text-white/75 uppercase sm:text-[.64rem]">{label}</dt>
-                        <dd className="relative isolate inline-flex items-baseline justify-center whitespace-nowrap font-sans text-lg leading-none font-semibold tracking-tight text-white tabular-nums sm:text-2xl">
-                          {typeof value === 'number' ? number.format(value) : value}{icon === 'metragem' && <span className="ml-1 font-sans text-[.7rem] font-medium tracking-normal text-white/85 sm:text-xs">m²</span>}
-                        </dd>
-                      </div>
-                    </div>
-                  ))}
-                </dl>
-              )
-            })}
+        <div
+          className={
+            'absolute inset-x-5 bottom-[calc(var(--hero-notch)+1rem)] z-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 text-white transition-[padding,border-color] duration-300 sm:inset-x-9 sm:bottom-[calc(var(--hero-notch)+1.5rem)] lg:inset-x-auto lg:right-10 lg:bottom-[calc(var(--hero-notch)+2rem)] lg:flex-col lg:gap-y-5 lg:border-t-0 lg:pt-0 ' +
+            (detailsOpen ? 'border-t border-white/25 pt-4' : 'border-t border-transparent pt-0')
+          }
+        >
+          <div
+            className={
+              'grid transition-[grid-template-rows,opacity] duration-300 ease-out lg:pointer-events-auto lg:grid-rows-[1fr] lg:opacity-100 ' +
+              (detailsOpen ? 'grid-rows-[1fr] opacity-100' : 'pointer-events-none grid-rows-[0fr] opacity-0')
+            }
+          >
+            <div className="min-h-0 overflow-hidden">
+              <div className="grid items-end justify-items-start [grid-template-areas:'stack'] lg:justify-items-center">
+                {items.map((item, idx) => {
+                  const itemFacts = factsOf(item)
+                  if (!itemFacts.length) return null
+                  return (
+                    <dl
+                      key={item.slug + '-facts'}
+                      aria-label="Dados do imóvel"
+                      aria-hidden={idx !== rightIndex}
+                      aria-live={idx === rightIndex && (focused || !canAnimate) ? 'polite' : 'off'}
+                      className={
+                        "[grid-area:stack] flex flex-wrap items-start gap-x-5 gap-y-2 sm:gap-x-8 lg:w-24 lg:flex-col lg:items-center lg:gap-y-3 transition-opacity duration-500 ease-out motion-reduce:transition-none " +
+                        (idx === rightIndex ? 'opacity-100' : 'pointer-events-none select-none opacity-0')
+                      }
+                    >
+                      {itemFacts.map(([label, value, icon]) => (
+                        <div key={label} className="contents">
+                          <div className="flex flex-col items-start justify-center gap-2 text-start lg:items-center lg:text-center">
+                            <dt className="text-[.56rem] font-medium tracking-[.08em] text-white/75 uppercase sm:text-[.64rem]">{label}</dt>
+                            <dd className="relative isolate inline-flex items-baseline justify-center whitespace-nowrap font-sans text-lg leading-none font-semibold tracking-tight text-white tabular-nums sm:text-2xl">
+                              {typeof value === 'number' ? number.format(value) : value}{icon === 'metragem' && <span className="ml-1 font-sans text-[.7rem] font-medium tracking-normal text-white/85 sm:text-xs">m²</span>}
+                            </dd>
+                          </div>
+                        </div>
+                      ))}
+                    </dl>
+                  )
+                })}
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2.5" role="group" aria-label="Selecionar imóvel">
             {items.map((item, idx) => (
