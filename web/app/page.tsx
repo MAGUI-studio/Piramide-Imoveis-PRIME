@@ -3,7 +3,7 @@ import {Suspense} from 'react'
 import Link from 'next/link'
 import { ArrowUpRight, BedDouble, Building2, CarFront, MapPin, Ruler } from 'lucide-react'
 import { Catalog } from '../components/catalog'
-import { Hero } from '../components/hero'
+import { HeroSearch, type HeroSearchMedia } from '../components/heroSearch'
 import {HomeBanners} from '../components/homeBanners'
 import {bannerHref} from '../lib/banner'
 import { Frame } from '../components/media'
@@ -38,18 +38,28 @@ export default async function Home() {
     getReels(preview),
   ])
   const reels = rawReels.map(reelPictures)
-  const [hero, ...otherSlides] = getOpeningProperties(data).map((item) => ({
-    slug: item.slug,
-    title: item.title,
-    summary: item.summary,
-    specifications: item.specifications,
-    refCode: item.refCode,
-    condominium: item.condominium,
-    condominiumName: item.condominiumName,
-    location: [item.neighborhood?.name, item.city?.name].filter(Boolean).join(', '),
-    photo: picture(item.cover, 16 / 9, 2400),
-  }))
-  const featured = (data.featured || []).filter((item) => item?.slug && item.cover && item.slug !== hero?.slug)
+  const heroMedia: HeroSearchMedia[] = (data.heroBackground?.media || []).flatMap<HeroSearchMedia>((entry) => {
+    if (entry._type === 'heroBackgroundVideo' && entry.videoUrl) {
+      return [{
+        id: entry._key,
+        kind: 'video' as const,
+        videoUrl: entry.videoUrl,
+        posterUrl: entry.poster?.asset ? picture(entry.poster, 16 / 9, 1600).src : null,
+      }]
+    }
+    if (entry._type === 'heroBackgroundImage' && entry.image?.asset) {
+      return [{
+        id: entry._key,
+        kind: 'image' as const,
+        photo: picture({...entry.image, alt: entry.alt || entry.image.alt || homeTitle}, 16 / 9, 2400),
+      }]
+    }
+    return []
+  })
+  const heroPropertyTypes = Array.from(
+    new Set(data.catalog.map(({propertyType}) => propertyType).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+  const featured = (data.featured || []).filter((item) => item?.slug && item.cover)
   const contact = whatsappLink(data.whatsapp)
   const explore = getExploreProperties(data)
 
@@ -89,11 +99,15 @@ export default async function Home() {
     {!preview && <JsonLd data={homeStructuredData(settings.organization || undefined)} />}
     {preview && <a className={previewBanner} href="/api/draft-mode/disable">Prévia de rascunhos · Sair</a>}
     <main id="conteudo" className="bg-paper text-espresso">
-      {hero ? <div id="inicio" className="relative"><h1 className="sr-only">{homeTitle}</h1><Hero items={[hero, ...otherSlides]} /></div> :
-        <section id={data.catalog.length ? 'inicio' : 'imoveis'} className={wrap + ' py-[clamp(85px,12vw,170px)]'}>
-          <h1 className={heading + ' text-[clamp(3.5rem,7vw,8rem)]'}>Imóveis de alto padrão</h1>
-          <p className="mt-6 text-earth">{data.catalog.length ? 'Conheça nossa seleção de imóveis e encontre seu próximo endereço.' : 'Nenhum imóvel disponível no momento.'}</p>
-        </section>}
+      <div id="inicio" className="relative">
+        <HeroSearch
+          media={heroMedia}
+          propertyTypes={heroPropertyTypes}
+          condominiums={condominiums.map(({slug, name}) => ({slug, name}))}
+          headline={data.heroBackground?.headline}
+          subheadline={data.heroBackground?.subheadline}
+        />
+      </div>
       <Lifestyle items={lifestyle} />
       <HomeBanners items={data.banners.flatMap((banner) => {
         const href = bannerHref(banner.href)
@@ -229,7 +243,7 @@ export default async function Home() {
       <HomeStats stats={data.stats} intro={settings.statsIntro} />
     </main>
     <ScrollSpy containerId="conteudo" finalSectionIds={['por-que-escolher-a-piramide', 'contato']} />
-    {hero && <FinalCta contact={contact} marquee={data.marquee} />}
+    <FinalCta contact={contact} marquee={data.marquee} />
     <WhatsAppWidget phone={data.whatsapp} />
   </>
 }

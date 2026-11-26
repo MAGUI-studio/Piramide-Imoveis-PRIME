@@ -3,7 +3,7 @@ import type {SiteSettings} from './siteSettings'
 import {createClient, type QueryParams} from '@sanity/client'
 import {draftMode} from 'next/headers'
 import {cache} from 'react'
-import type {Condominium, HomeBanner, HomeStat, MarqueeItem, Photo, Property, PropertyCard, PropertyTypeOption, Reel, Seo} from './model'
+import type {Condominium, HeroBackground, HomeBanner, HomeStat, MarqueeItem, Photo, Property, PropertyCard, PropertyTypeOption, Reel, Seo} from './model'
 
 const projectId = process.env.SANITY_PROJECT_ID
 export const dataset = process.env.SANITY_DATASET || 'production'
@@ -46,10 +46,26 @@ export const getCatalogSeo = cache(async (preview: boolean) => {
 })
 
 type CatalogProperty = PropertyCard & {alternate?: Photo | null; coverOriginalFilename?: string | null}
-type Home = {propertyTypeOrder?: (string | null)[]; banners: HomeBanner[]; heroSlides?: (PropertyCard | null)[] | null; homeSelection?: (CatalogProperty | null)[] | null; hero: PropertyCard | null; featured: CatalogProperty[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
+type Home = {propertyTypeOrder?: (string | null)[]; banners: HomeBanner[]; heroBackground?: HeroBackground | null; heroSlides?: (PropertyCard | null)[] | null; homeSelection?: (CatalogProperty | null)[] | null; hero: PropertyCard | null; featured: CatalogProperty[]; catalog: CatalogProperty[]; propertyTypes: PropertyTypeOption[]; whatsapp: string | null; marquee: MarqueeItem[]; stats: HomeStat[]; homeSeo?: Seo | null; catalogSeo?: Seo | null}
 const homeQuery = `{
   "propertyTypeOrder": coalesce(*[_id == "primeHome"][0].propertyTypeOrder[]->name, []),
   "banners": coalesce(*[_id == "primeHome"][0].banners[defined(image.asset) && defined(href)]{_key,title,image,href,newTab}, []),
+  "heroBackground": *[_id == "primeHeroBackground"][0]{
+    headline,
+    subheadline,
+    "media": coalesce(media[
+      (_type == "heroBackgroundImage" && defined(image.asset)) ||
+      (_type == "heroBackgroundVideo" && defined(videoFile.asset->url))
+    ]{
+      _key,
+      _type,
+      alt,
+      label,
+      image,
+      poster,
+      "videoUrl": videoFile.asset->url
+    }, [])
+  },
   "heroSlides": *[_id == "primeHome"][0].heroSlides[]->{${cardFields}},
   "homeSelection": *[_id == "primeHome"][0].homeSelection[]->{
     ${cardFields},

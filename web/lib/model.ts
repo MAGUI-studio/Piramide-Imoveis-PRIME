@@ -7,6 +7,14 @@ export type Photo = {
 }
 
 export type HomeBanner = {_key: string; title: string; image: Photo; href: string; newTab?: boolean}
+export type HeroBackgroundMedia =
+  | {_key: string; _type: 'heroBackgroundImage'; image: Photo; alt?: string | null}
+  | {_key: string; _type: 'heroBackgroundVideo'; videoUrl: string; poster?: Photo | null; label?: string | null}
+export type HeroBackground = {
+  headline?: string | null
+  subheadline?: string | null
+  media: HeroBackgroundMedia[]
+}
 export type MarqueeItem = {_key: string; title: string; description: string}
 export type HomeStat = {_key: string; label: string; value: number; prefix?: string | null; suffix?: string | null}
 export type PropertyTypeOption = {id: string; name: string; image?: Photo | null}
