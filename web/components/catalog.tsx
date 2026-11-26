@@ -439,10 +439,10 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
         const cardHeight = full
           ? 'aspect-square'
           : isLead
-            ? 'min-h-[29rem] sm:min-h-[36rem]'
+            ? 'sm:min-h-[36rem]'
             : isStacked
-              ? 'min-h-[26rem] sm:min-h-[28rem] xl:min-h-[30rem]'
-              : 'min-h-[28rem] sm:min-h-[32rem] xl:min-h-[35rem]'
+              ? 'sm:min-h-[28rem] xl:min-h-[30rem]'
+              : 'sm:min-h-[32rem] xl:min-h-[35rem]'
         const titleSize = isLead
           ? 'text-[clamp(1.65rem,2.75vw,3.25rem)]'
           : 'text-[clamp(1.35rem,1.8vw,2rem)]'
@@ -528,21 +528,28 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
               </Link>
             ) : (
               <Link
-                className={'group relative isolate flex h-full min-w-0 items-end overflow-hidden bg-coal px-5 pt-28 pb-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] ring-1 ring-inset ring-black/[0.04] transition-shadow duration-300 after:pointer-events-none after:absolute after:inset-0 after:z-10 after:ring-1 after:ring-inset after:ring-white/[0.06] after:transition-colors after:duration-300 hover:after:ring-white/[0.12] sm:px-6 sm:pt-32 sm:pb-6 dark:shadow-[0_12px_30px_rgba(0,0,0,0.35)] dark:ring-white/[0.05] ' + cardHeight + (isLead ? ' xl:px-8 xl:pt-36 xl:pb-8' : '')}
+                className={'group relative isolate flex h-full min-w-0 flex-col sm:flex-row sm:items-end sm:overflow-hidden sm:bg-coal sm:px-6 sm:pt-32 sm:pb-6 sm:shadow-[0_8px_24px_rgba(15,23,42,0.05)] sm:ring-1 sm:ring-inset sm:ring-black/[0.04] sm:transition-shadow sm:duration-300 sm:after:pointer-events-none sm:after:absolute sm:after:inset-0 sm:after:z-10 sm:after:ring-1 sm:after:ring-inset sm:after:ring-white/[0.06] sm:after:transition-colors sm:after:duration-300 sm:hover:after:ring-white/[0.12] dark:sm:shadow-[0_12px_30px_rgba(0,0,0,0.35)] dark:sm:ring-white/[0.05] ' + cardHeight + (isLead ? ' xl:px-8 xl:pt-36 xl:pb-8' : '')}
                 href={'/imoveis/' + encodeURIComponent(item.slug)}
               >
-                <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
+                <div aria-hidden="true" className="relative aspect-square w-full overflow-hidden bg-coal sm:absolute sm:inset-0 sm:-z-10 sm:aspect-auto sm:size-full">
                   <Frame className="size-full object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:group-hover:scale-104 motion-safe:group-focus-visible:scale-104" photo={item.image} sizes={sizes} />
                   {item.alternate && <div className="absolute inset-0 [clip-path:inset(0_100%_0_0)] group-focus-visible:[clip-path:inset(0)] group-hover:[clip-path:inset(0)] motion-safe:transition-[clip-path] motion-safe:duration-700" aria-hidden="true">
                     <Frame className="size-full object-cover" photo={item.alternate} sizes={sizes} />
                   </div>}
-                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(8,8,8,0.98)_0%,rgba(8,8,8,0.88)_28%,rgba(8,8,8,0.52)_50%,rgba(8,8,8,0.12)_72%,transparent_88%)]" />
+                  <div className="pointer-events-none absolute inset-0 hidden bg-[linear-gradient(to_top,rgba(8,8,8,0.98)_0%,rgba(8,8,8,0.88)_28%,rgba(8,8,8,0.52)_50%,rgba(8,8,8,0.12)_72%,transparent_88%)] sm:block" />
                 </div>
-                <div className={'absolute right-5 bottom-5 left-5 text-white sm:right-6 sm:bottom-6 sm:left-6 ' + (isLead ? 'xl:right-8 xl:bottom-8 xl:left-8' : '')}>
-                  {item.propertyType && <p className="mb-2 text-xs font-medium tracking-wide text-white/80">{item.propertyType}</p>}
-                  <h3 className={titleStyle + ' min-w-0 line-clamp-2 ' + titleSize} title={item.title}>{item.title}</h3>
-                  {location && <p className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-white/90"><MapPin aria-hidden="true" size={15} className="mt-0.5 shrink-0" /><span>{location}</span></p>}
-                  <div className="grid grid-rows-[0fr] opacity-0 transition-[grid-template-rows,opacity] duration-300 ease-out group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-visible:grid-rows-[1fr] group-focus-visible:opacity-100 motion-reduce:transition-none">
+                <div className={'flex flex-1 flex-col pt-4 sm:absolute sm:right-6 sm:bottom-6 sm:left-6 sm:block sm:pt-0 sm:text-white ' + (isLead ? 'xl:right-8 xl:bottom-8 xl:left-8' : '')}>
+                  {item.propertyType && <p className="mb-1.5 text-[11px] font-semibold tracking-wider text-piramide uppercase sm:mb-2 sm:text-xs sm:font-medium sm:tracking-wide sm:text-white/80 sm:normal-case">{item.propertyType}</p>}
+                  <h3 className={titleStyle + ' min-w-0 line-clamp-2 text-lg leading-snug text-espresso sm:text-white ' + (isLead ? 'sm:text-[clamp(1.65rem,2.75vw,3.25rem)]' : 'sm:text-[clamp(1.35rem,1.8vw,2rem)] sm:leading-tight')} title={item.title}>{item.title}</h3>
+                  {location && <p className="mt-2 flex items-start gap-1.5 text-sm leading-relaxed text-earth sm:gap-2 sm:text-white/90"><MapPin aria-hidden="true" size={15} className="mt-0.5 shrink-0 text-piramide/80 sm:text-white/90" /><span>{location}</span></p>}
+                  {(area || item.specifications?.suites || item.specifications?.parking) && (
+                    <ul aria-label="Características do imóvel" className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-espresso/85 sm:hidden [&>li]:inline-flex [&>li]:items-center [&>li]:gap-1.5 [&>li]:whitespace-nowrap [&>li]:tabular-nums [&>li:not(:first-child)]:before:me-1 [&>li:not(:first-child)]:before:size-1 [&>li:not(:first-child)]:before:rounded-full [&>li:not(:first-child)]:before:bg-earth/40 [&_svg]:shrink-0 [&_svg]:text-piramide">
+                      {area && <li><Ruler size={14} strokeWidth={1.7} aria-hidden="true" /><span>{area}</span></li>}
+                      {!!item.specifications?.suites && <li><BedDouble size={14} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.suites} {item.specifications.suites === 1 ? 'suíte' : 'suítes'}</span></li>}
+                      {!!item.specifications?.parking && <li><CarFront size={14} strokeWidth={1.7} aria-hidden="true" /><span>{item.specifications.parking} {item.specifications.parking === 1 ? 'vaga' : 'vagas'}</span></li>}
+                    </ul>
+                  )}
+                  <div className="hidden sm:grid sm:grid-rows-[0fr] sm:opacity-0 sm:transition-[grid-template-rows,opacity] sm:duration-300 sm:ease-out sm:group-hover:grid-rows-[1fr] sm:group-hover:opacity-100 sm:group-focus-visible:grid-rows-[1fr] sm:group-focus-visible:opacity-100 motion-reduce:transition-none">
                     <div className="min-h-0 overflow-hidden">
                       {item.summary && <p className="mt-4 line-clamp-2 max-w-[52ch] text-sm leading-relaxed text-white/80">{item.summary}</p>}
                       <ul aria-label="Características do imóvel" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-medium text-white [&>li]:inline-flex [&>li]:items-center [&>li]:gap-2 [&>li]:whitespace-nowrap [&>li]:tabular-nums [&>li:not(:first-child)]:before:me-1 [&>li:not(:first-child)]:before:size-1 [&>li:not(:first-child)]:before:rounded-full [&>li:not(:first-child)]:before:bg-white/50 [&_svg]:shrink-0 [&_svg]:text-white/80">
@@ -552,7 +559,9 @@ export function Catalog({items, full = false, scopeTitle, fixedLocation = false,
                       </ul>
                     </div>
                   </div>
-                  <CardPriceRow price={item.price} rentPrice={item.rentPrice} />
+                  <div className="mt-auto sm:mt-0">
+                    <CardPriceRow price={item.price} rentPrice={item.rentPrice} surface="responsive" />
+                  </div>
                 </div>
               </Link>
             )}
