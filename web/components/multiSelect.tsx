@@ -3,6 +3,7 @@
 import {useEffect, useId, useRef, useState} from 'react'
 import {Check, ChevronDown, MapPin, Search} from 'lucide-react'
 import {glassField} from '../lib/classes'
+import {VerticalScrollArea} from './scrollArea'
 
 const normalize = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-BR')
 
@@ -98,27 +99,29 @@ export function MultiSelect({
             />
           </label>
 
-          <fieldset className="mt-2 max-h-52 min-w-0 overflow-y-auto overscroll-contain">
-            <legend className="sr-only">{label}</legend>
-            {matching.map(({value, label: optionLabel}) => {
-              const checked = values.includes(value)
-              return (
-                <label key={value} className="flex min-h-10 cursor-pointer items-center gap-2.5 px-2.5 py-2 text-sm text-espresso transition-colors hover:bg-[#1b1916]/[0.06] focus-within:bg-piramide/10 dark:hover:bg-white/[0.08]">
-                  <span className="relative grid size-4 shrink-0 place-items-center">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => onChange(checked ? values.filter((selection) => selection !== value) : [...values, value])}
-                      className="peer size-4 appearance-none border border-espresso/30 checked:border-piramide checked:bg-piramide focus-visible:outline-piramide"
-                    />
-                    <Check aria-hidden="true" size={12} strokeWidth={2.5} className="pointer-events-none absolute hidden text-white peer-checked:block" />
-                  </span>
-                  <span className="min-w-0 break-words">{optionLabel}</span>
-                </label>
-              )
-            })}
-            {!matching.length && <p role="status" className="px-2.5 py-3 text-xs text-earth">Nenhuma opção encontrada.</p>}
-          </fieldset>
+          <VerticalScrollArea className="mt-2 max-h-52 overscroll-contain pr-2.5">
+            <fieldset className="min-w-0">
+              <legend className="sr-only">{label}</legend>
+              {matching.map(({value, label: optionLabel}) => {
+                const checked = values.includes(value)
+                return (
+                  <label key={value} className="flex min-h-10 cursor-pointer items-center gap-2.5 px-2.5 py-2 text-sm text-espresso transition-colors hover:bg-[#1b1916]/[0.06] focus-within:bg-piramide/10 dark:hover:bg-white/[0.08]">
+                    <span className="relative grid size-4 shrink-0 place-items-center">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => onChange(checked ? values.filter((selection) => selection !== value) : [...values, value])}
+                        className="peer size-4 appearance-none border border-espresso/30 checked:border-piramide checked:bg-piramide focus-visible:outline-piramide"
+                      />
+                      <Check aria-hidden="true" size={12} strokeWidth={2.5} className="pointer-events-none absolute hidden text-white peer-checked:block" />
+                    </span>
+                    <span className="min-w-0 break-words">{optionLabel}</span>
+                  </label>
+                )
+              })}
+              {!matching.length && <p role="status" className="px-2.5 py-3 text-xs text-earth">Nenhuma opção encontrada.</p>}
+            </fieldset>
+          </VerticalScrollArea>
           {!!selected.length && <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#1b1916]/10 px-2.5 pt-2 text-xs dark:border-white/[0.10]">
             <span className="text-earth">{selected.length} {selected.length === 1 ? 'selecionado' : 'selecionados'}</span>
             <button type="button" className="cursor-pointer py-1 font-semibold text-piramide hover:underline" onClick={() => {
