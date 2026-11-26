@@ -36,15 +36,15 @@ export default async function CondominiumPage({params}: Props) {
       <section aria-labelledby="condominium-title" className="relative isolate flex min-h-[36rem] flex-col justify-between overflow-hidden bg-coal text-white sm:min-h-[42rem] lg:min-h-[min(78svh,58rem)]">
         <div className="absolute inset-0 -z-10">
           <Frame photo={picture(condo.cover, 16 / 9, 2400)} priority className="size-full object-cover" sizes="100vw" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,14,13,.42)_0%,rgba(12,14,13,.08)_32%,rgba(12,14,13,.5)_66%,rgba(12,14,13,.88)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(8,8,8,0.98)_0%,rgba(8,8,8,0.88)_28%,rgba(8,8,8,0.52)_50%,rgba(8,8,8,0.12)_72%,transparent_88%)]" />
         </div>
         <nav aria-label="Navegação estrutural" className={wrap + ' flex flex-wrap items-center gap-x-3 gap-y-2 pt-7 text-[11px] text-white/80 sm:pt-10'}>
           <Link href="/" className="transition-colors hover:text-white">Início</Link><span aria-hidden="true" className="text-white/40">/</span><Link href="/condominios" className="transition-colors hover:text-white">Condomínios</Link><span aria-hidden="true" className="text-white/40">/</span><span aria-current="page">{condo.name}</span>
         </nav>
         <div className={wrap + ' pt-36 pb-9 sm:pt-44 sm:pb-12 lg:pb-16'}>
-          <p className={eyebrow + ' mb-5 flex items-center gap-3 text-white/80'}><span aria-hidden="true" className="h-px w-10 bg-white/55" />Condomínios · Pirâmide Prime</p>
+          <p className={eyebrow + ' mb-2.5 flex items-center gap-3 text-white/85'}><span aria-hidden="true" className="h-px w-10 bg-white/55" />Condomínios · Pirâmide Prime</p>
           <h1 id="condominium-title" className="max-w-[13ch] text-[clamp(3.3rem,8.5vw,9rem)] leading-[.98] font-medium tracking-[-.055em] text-balance">{condo.name}</h1>
-          <div className="mt-8 flex flex-col gap-6 pt-6 sm:mt-10 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mt-4 flex flex-col gap-5 sm:mt-5 sm:flex-row sm:items-end sm:justify-between">
             <p className="flex max-w-[48ch] items-start gap-2.5 text-sm leading-relaxed text-white/85"><MapPin size={17} strokeWidth={1.5} className="mt-0.5 shrink-0" aria-hidden="true" />{[condo.address, condo.neighborhood?.name, condo.city?.name].filter(Boolean).join(', ')}</p>
             <a href="#imoveis" className="group inline-flex min-h-12 w-fit shrink-0 items-center gap-8 border border-white/50 px-5 py-3 text-sm font-medium transition-colors hover:bg-white hover:text-coal focus-visible:outline-white">Explorar imóveis <ArrowDown size={17} strokeWidth={1.5} aria-hidden="true" className="motion-safe:transition-transform motion-safe:group-hover:translate-y-1" /></a>
           </div>
