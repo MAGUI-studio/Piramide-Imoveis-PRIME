@@ -23,6 +23,8 @@ import { cardAreaOf, cardAttributesOf, locationOf, propertyPrice, whatsappLink }
 import { getCondominiums, getHome, getExploreProperties, getOpeningProperties, getReels, getSiteSettings, isPreview } from '../lib/sanity'
 import { homeDescription, homeStructuredData, homeTitle, pageMetadata } from '../lib/seo'
 
+export const revalidate = 60
+
 export async function generateMetadata(): Promise<Metadata> {
   const preview = await isPreview()
   const data = await getHome(preview)

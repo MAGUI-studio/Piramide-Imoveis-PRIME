@@ -19,7 +19,6 @@ async function read<T>(query: string, params: QueryParams = {}, preview = false)
   if (preview) return client.fetch<T>(query, params, {perspective: 'drafts', cache: 'no-store'})
   return publishedClient!.fetch<T>(query, params, {
     perspective: 'published',
-    cache: 'force-cache',
     next: {revalidate: 60, tags: ['sanity-content']},
   })
 }
