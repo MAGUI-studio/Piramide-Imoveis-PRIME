@@ -105,7 +105,7 @@ export default async function Home() {
     lifestyleMap.set('Condomínio', {
       type: 'Condomínio',
       count: condominiums.reduce((total, condo) => total + condo.propertyCount, 0),
-      image: picture(typePhotos.get('condomínio') ?? condominiums[0].cover, 1.15, 1200),
+      image: picture(typePhotos.get('condomínio') ?? typePhotos.get('condomínios') ?? condominiums[0].cover, 1.15, 1200),
     })
   }
   const lifestyle = orderLifestyleItems([...lifestyleMap.values()], data.propertyTypeOrder)
