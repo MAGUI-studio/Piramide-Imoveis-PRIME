@@ -10,6 +10,8 @@ import {catalogPageSize, whatsappLink} from '../../lib/model'
 import {getCatalog, getCatalogOptions, getCatalogSeo, getSiteSettings, isPreview} from '../../lib/sanity'
 import {breadcrumbs, catalogDescription, catalogPath, catalogTitle, pageMetadata} from '../../lib/seo'
 
+export const revalidate = 60
+
 export async function generateMetadata({searchParams}: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }): Promise<Metadata> {

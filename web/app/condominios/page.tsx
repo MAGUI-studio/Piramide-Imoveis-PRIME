@@ -11,6 +11,8 @@ import {whatsappLink} from '../../lib/model'
 import {getCatalogOptions, getCondominiumDirectory, getCondominiums, getSiteSettings, isPreview} from '../../lib/sanity'
 import {pageMetadata} from '../../lib/seo'
 
+export const revalidate = 60
+
 export async function generateMetadata(): Promise<Metadata> {
   return pageMetadata({path: '/condominios', title: 'Condomínios', description: 'Conheça os condomínios e encontre casas, apartamentos e terrenos na localização que combina com você.', noIndex: await isPreview()})
 }

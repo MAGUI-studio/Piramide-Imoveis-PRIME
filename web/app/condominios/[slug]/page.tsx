@@ -14,6 +14,8 @@ import {whatsappLink} from '../../../lib/model'
 import {getCatalog, getCondominium, getSiteSettings, isPreview} from '../../../lib/sanity'
 import {pageMetadata} from '../../../lib/seo'
 
+export const revalidate = 60
+
 type Props = {params: Promise<{slug: string}>}
 export async function generateMetadata({params}: Props): Promise<Metadata> {
   const preview = await isPreview()

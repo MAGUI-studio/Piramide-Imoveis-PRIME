@@ -18,6 +18,8 @@ import {technicalFactsOf} from '../../../lib/technicalFacts'
 import {getCatalog, getProperty, isPreview} from '../../../lib/sanity'
 import {breadcrumbs, catalogPath, pageMetadata, propertySearchCopy} from '../../../lib/seo'
 
+export const revalidate = 60
+
 type Props = {params: Promise<{slug: string}>}
 const article = 'pb-[clamp(3rem,6vw,5rem)]'
 const editorialTitle = heading + ' text-[clamp(1.8rem,3vw,2.8rem)]'

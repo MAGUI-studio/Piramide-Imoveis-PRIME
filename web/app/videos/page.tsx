@@ -17,6 +17,8 @@ const videosDescription =
   'Assista a tours virtuais completos, detalhes arquitetônicos e apresentações exclusivas dos imóveis e lançamentos da Pirâmide Imóveis no Vale do Paraíba e Litoral Norte.'
 const videosPath = '/videos'
 
+export const revalidate = 60
+
 export async function generateMetadata(): Promise<Metadata> {
   const preview = await isPreview()
   return pageMetadata({
