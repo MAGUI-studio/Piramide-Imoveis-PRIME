@@ -24,8 +24,9 @@ export function ScrollSpy({containerId, finalSectionIds}: {containerId: string; 
       }
 
       const url = new URL(window.location.href)
-      if (!active || url.hash === '#' + active.id) return
-      url.hash = active.id
+      const nextHash = !active || active === sections[0] ? '' : '#' + active.id
+      if (url.hash === nextHash) return
+      url.hash = nextHash
       window.history.replaceState(window.history.state, '', url)
     }
 
@@ -37,7 +38,6 @@ export function ScrollSpy({containerId, finalSectionIds}: {containerId: string; 
       })
     }
 
-    if (!window.location.hash) schedule()
     window.addEventListener('scroll', schedule, {passive: true})
     window.addEventListener('resize', schedule)
     return () => {
